@@ -109,6 +109,10 @@ function Base.eachindex(s::Forecasts)
     return eachindex(s.obs)
 end
 
+"""
+    findindex(s::Forecasts, i::Integer)
+Return the index of `s`, for which the element of field `id` equals `i`.
+"""
 function findindex(s::Forecasts, i::Integer)
     t = findfirst(s.id .== i) 
     isnothing(t) && throw(error("field `id` of the provided series does not contain '$(i)'"))
