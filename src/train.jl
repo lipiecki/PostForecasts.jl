@@ -7,7 +7,6 @@ The number of regressors must match the specification of the model.
 
 For `m::UniRegProbModel`, `X` can be a vector, if it is a matrix with multiple columns, they will be averaged before training.
 """
-
 function train(m::UniRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVector{<:Number})
     length(X) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
