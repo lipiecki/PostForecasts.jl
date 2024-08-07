@@ -212,6 +212,26 @@ function _train(m::IDR, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{
     end
 end
 
+function _predict(m::IDR, input::Number, prob::AbstractFloat)
+    y = @view(m.y[1:m.lasty[]])
+    for j in 1:m.lasty[]
+        p = 0.0
+        x = @view(m.x[1:m.lastx[1], 1])
+        i = searchsortedfirst(x, input)
+        if i > m.lastx[1]
+            p += m.cdf[m.lastx[1], j, 1]
+        elseif i == 1
+            p += m.cdf[i, j, 1]
+        else
+            p += m.cdf[i-1, j, 1] + (m.cdf[i, j, 1] - m.cdf[i-1, j, 1])*(input - x[i-1])/(x[i] - x[i-1])
+        end
+        if p >= prob - eps(typeof(prob))
+            return y[j]
+        end
+    end
+    return y[end]
+end
+
 function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     y = @view(m.y[1:m.lasty[]])
     for j in 1:m.lasty[]
@@ -236,7 +256,7 @@ function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     return y[end]
 end
 
-function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
+function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
     end

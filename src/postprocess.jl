@@ -19,11 +19,11 @@ function point2prob(pf::PointForecasts{F, I}, window::Integer, modelname::Symbol
         sort!(prob)
         @warn "sorting `prob` vector"
     end
+    quantiles = zeros(F, last-first+1, length(prob))
     model = getmodel(Val(modelname), window, npred(pf), prob)
     if nreg(model) == 1 && npred(pf) > 1
         pf = average(pf)
     end
-    quantiles = zeros(F, last-first+1, length(prob))
     for t in first:last
         if t == first || (recalibration > 0 && (t - first) % recalibration == 0)
             train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))

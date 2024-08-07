@@ -90,6 +90,12 @@ function _train(m::QR, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{<
     end
 end
 
+function _predict(m::QR, input::Number, prob::AbstractFloat)
+    j = findfirst(p -> p ≈ prob, m.prob)
+    isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
+    return m.W[end, j] + m.W[1, j]*input
+end
+
 function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
@@ -100,14 +106,13 @@ function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     return output
 end
 
-function _predict(m::QR, input::AbstractVector{<:Number})
-    output = zeros(nquantiles)
+function _predict(m::QR, input::Union{Number, AbstractVector{<:Number}})
+    output = Vector{Float64}(undef, nquantiles(m))
     _predict!(m, output, input)
 end
 
-function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
-    nquantiles(m) == length(prob) || throw(ArgumentError("number of probability levels ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    prob .= m.prob
+function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, ::Vararg{AbstractVector{<:AbstractFloat}})
+    nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
     for j in eachindex(output)
         output[j] = m.W[end, j]
         for i in eachindex(input)
@@ -117,14 +122,10 @@ function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Abstra
     sort!(output)
 end
 
-function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
+function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, ::Vararg{AbstractVector{<:AbstractFloat}})
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    prob .= m.prob
     for j in eachindex(output)
-        output[j] = m.W[end, j]
-        for i in eachindex(input)
-            output[j] += m.W[i, j]*input[i]
-        end
+        output[j] = m.W[end, j] + m.W[1, j]*input
     end
     sort!(output)
 end

@@ -156,18 +156,21 @@ end
           all(y[i] ≈ -(101-i)/200 for i in 1:100)
 end
 
-@testset "Quantile Regression Averaging" begin
+@testset "Quantile Regression" begin
     pred = rand(100)
     obs = pred.*2 .+ 0.5
     W = [2. 2.; 0.5 0.5]
 
-    model = QR(100, 1, [0.25, 0.75])
+    prob = [0.25, 0.75]
+    model = QR(100, 1, prob)
     train(model, pred, obs)
-    prob = 0.5.*ones(2) # change this
+    
     @test all(getweights(model) .≈ W)
     @test all(predict(model, -1, prob) .≈ [-1.5, -1.5])
-    @test prob[1] ≈ 0.25 && prob[2] ≈ 0.75
-    
+    @test all(predict(model, -1) .≈ [-1.5, -1.5])
+    @test predict(model, -1, 0.25) ≈ -1.5
+    @test predict(model, [-1], 0.25) ≈ -1.5
+
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
@@ -175,12 +178,15 @@ end
 
     quantiles = zeros(50,2)
     quantiles2 = zeros(50,2)
+    quantiles3 = zeros(50,2)
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], prob)
-        quantiles2[i, :] = predict(model, pred_[100+i], prob)
+        predict!(model, @view(quantiles2[i, :]), pred_[100+i])
+        quantiles3[i, :] = predict(model, pred_[100+i], prob)
     end
     @test all(quantiles .≈ viewpred(qf))
     @test all(quantiles .≈ quantiles2)
+    @test all(quantiles2 .≈ quantiles3)
 
     pred = rand(100, 2)
     obs = pred*[2, 1] .+ 0.5

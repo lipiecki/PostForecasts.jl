@@ -21,6 +21,10 @@ using JuMP
 using SpecialFunctions: erfinv
 using Statistics: mean, median, quantile
 
+include(joinpath("models", "cp.jl"))
+include(joinpath("models", "idr.jl"))
+include(joinpath("models", "normal.jl"))
+include(joinpath("models", "qr.jl"))
 include("Forecasts.jl")
 include("utils.jl")
 include("helpers.jl")
@@ -30,10 +34,7 @@ include("postprocess.jl")
 include("evaluation.jl")
 include("averaging.jl")
 include("loadnsave.jl")
-include(joinpath("models", "cp.jl"))
-include(joinpath("models", "idr.jl"))
-include(joinpath("models", "normal.jl"))
-include(joinpath("models", "qr.jl"))
+
 
 export
     # Forecasts API
