@@ -29,11 +29,6 @@ firstweek = pred([20190101, 20190102, 20190103, 20190104, 20190105, 20190106, 20
 ```@docs
 PointForecasts
 QuantForecasts
-length
-getindex
-firstindex
-lastindex
-eachindex
 findindex
 decouple
 npred
