@@ -2,7 +2,6 @@ using Documenter, PostForecasts
 
 makedocs(
     sitename="PostForecasts.jl",
-    
     format = Documenter.HTML(
     repolink = "https://github.com/lipiecki/PostForecasts.jl",
     inventory_version = ""),
@@ -17,8 +16,7 @@ makedocs(
         "Examples" => "examples.md"
         ]
 )
-
-   deploydocs(
+deploydocs(
     repo = "github.com/lipiecki/PostForecasts.jl.git",
     branch = "docs"
 )

@@ -7,15 +7,24 @@ struct PointForecasts{F<:AbstractFloat, I<:Integer}<:Forecasts
     obs::Vector{<:F}
     id::Vector{<:I}
 
-    function PointForecasts(pred::AbstractMatrix{<:F}, obs::AbstractVector{<:F}, id::AbstractVector{<:I}=1:length(obs)) where {F<:AbstractFloat, I<:Integer}
+    function PointForecasts(pred::AbstractMatrix{<:F}, obs::AbstractVector{<:F}, id::AbstractVector{<:I}) where {F<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
         new{F, I}(Matrix(pred), Vector(obs), Vector(id))
     end
 
-    function PointForecasts(pred::AbstractVector{<:F}, obs::AbstractVector{<:F}, id::AbstractVector{<:I}=1:length(obs)) where {F<:AbstractFloat, I<:Integer}
+    function PointForecasts(pred::AbstractMatrix{<:F}, obs::AbstractVector{<:F}) where {F<:AbstractFloat}
+        size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
+        new{F, Int64}(Matrix(pred), Vector(obs), [i for i in 1:length(obs)])
+    end
+
+    function PointForecasts(pred::AbstractVector{<:F}, obs::AbstractVector{<:F}, id::AbstractVector{<:I}) where {F<:AbstractFloat, I<:Integer}
         PointForecasts(reshape(pred, length(pred), 1), obs, id)
+    end
+
+    function PointForecasts(pred::AbstractVector{<:F}, obs::AbstractVector{<:F}) where {F<:AbstractFloat}
+        PointForecasts(reshape(pred, length(pred), 1), obs)
     end
 end
 
