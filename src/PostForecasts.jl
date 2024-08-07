@@ -108,7 +108,7 @@ export
 
     # Data
     loaddata,
-    loaddlmddata,
+    loaddlmdata,
     loadpointf,
     loadquantf,
     save,
