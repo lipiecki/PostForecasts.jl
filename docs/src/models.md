@@ -68,7 +68,7 @@ $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\
 The coefficients $\beta^{(\tau)}_{0...m}$ are selected to minimize the pinball loss on the calibration window and estimated by solving a linear programming problem. For this task, Probcasts.jl employs [JuMP.jl](https://jump.dev/JuMP.jl/stable/) and HiGHS.jl packages. Different LP solvers compatible with JuMP can be used, but the constructor defaults to an open source [HiGHS](https://highs.dev).
 
 ```@docs
-QRA
+QR
 getweights
 ```
 

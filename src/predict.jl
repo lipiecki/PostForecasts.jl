@@ -4,7 +4,6 @@ Predict quantiles at specified `prob::Union{AbstractFloat, AbstractVector{<:Abst
 
 **Note:** for `m::QR` ...
 """
-
 function predict(m::UniRegProbModel, input::Number, prob::AbstractFloat)
     (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
     _predict(m, input, prob)

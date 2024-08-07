@@ -12,16 +12,16 @@ Details of the datasets are avaiable in documentation.
 """
 function loaddata(dataset::Symbol)
     if dataset ∈ keys(PANGU)
-        loaddlm_pointf(joinpath(@__DIR__, "..", "data", "pangu", PANGU[dataset][1]), predcol = PANGU[dataset][2], obscol = PANGU[dataset][3], colnames=true)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", PANGU[dataset][1]), predcol = PANGU[dataset][2], obscol = PANGU[dataset][3], colnames=true)
     elseif dataset ∈ keys(EPEX)
-        loaddlm_pointf(joinpath(@__DIR__, "..", "data", "epex", EPEX[dataset]), colnames=true)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", EPEX[dataset]), colnames=true)
     else
         throw(ArgumentError("$(dataset) is not a valid dataset name"))
     end
 end
 
 """
-    loaddlm_pointf(filepath::String; kwargs...)
+    loaddlmdata(filepath::String; kwargs...)
 Create a `PointForecasts` object from delimited file at `filepath`.
 ## Keyword Arguments
 - `delim=','`: Specifies the delimitter
@@ -30,7 +30,7 @@ Create a `PointForecasts` object from delimited file at `filepath`.
 - `obscol=2`: Specifies which column is used for observations
 - `colnames=false` If true, omit the first row of the file.
 """
-function loaddlm_pointf(filepath::String; delim::Char=',', idcol::Integer=1, predcol::Union{AbstractVector{Integer}, Integer}=0, obscol::Integer=2, colnames::Bool=false)
+function loaddlmdata(filepath::String; delim::Char=',', idcol::Integer=1, predcol::Union{AbstractVector{Integer}, Integer}=0, obscol::Integer=2, colnames::Bool=false)
     data = readdlm(filepath, delim)[(colnames ? 2 : 1):end, :]
     l, m = size(data)
     predcol = (ndims(predcol) == 0 && predcol == 0) ? [i for i in 1:m if i ∉ [idcol, obscol]] : predcol

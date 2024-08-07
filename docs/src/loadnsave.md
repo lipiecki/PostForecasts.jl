@@ -2,7 +2,7 @@
 
 ```@docs
 loaddata
-loaddlmpointf
+loaddlmdata
 loadpointf
 loadquantf
 save
