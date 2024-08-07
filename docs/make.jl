@@ -1,4 +1,4 @@
-using Documenter, Probcasts
+using Documenter, PostForecasts
 
 makedocs(
     sitename="PostForecasts.jl",
