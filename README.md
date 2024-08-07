@@ -1,5 +1,6 @@
 # PostForecasts.jl
 
+[![Static Badge](https://img.shields.io/badge/documentation-blue)](https://lipiecki.github.io/PostForecasts.jl/)
 [![codecov](https://codecov.io/github/lipiecki/PostForecasts.jl/graph/badge.svg?token=JJDOKDJ30H)](https://codecov.io/github/lipiecki/PostForecasts.jl)
 
 **Welcome to PostForecasts.jl, a Julia package for postprocessing point predictions for probabilistic forecasting.**
