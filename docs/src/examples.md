@@ -11,13 +11,13 @@ year = 2020
 window = 182
 models = [:idr, :cp, :qr]
 ```
-<br>
+
 
 Prepare a dictionary for storing pinball loss values for each model and hour.
 ```julia
 losses = Dict((model => zeros(24) for model in models)...)
 ```
-<br>
+
 
 Then, for each hour load the point forecasts as `fs::ForecastSeries` and find the indices corresponidng to the first and last day of the specified year. Generate the probabilistic forecasts at 9 equidistant probability levels (fourth argument of `point2prob`) using each model and save their pinball losses.
 ```julia
@@ -31,7 +31,7 @@ Threads.@threads for hour in 0:23
 end
 ```
 Here, `Threads.@threads` is used to parallelize over available threads. Use `julia --threads=X` to run a Julia instance with `X` threads.
-<br>
+
 
 Print the results
 ```julia
@@ -79,7 +79,7 @@ pf = pf[first-window:last]
 ```
 
 ### QRA
-**Q**uantile **R**egression **A**veraging - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
+**Q**uantile **R**egression **A**veraging (QRA) - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
 ```julia
 qfQRA = point2prob(pf, window, :qr, 9)
 ```
@@ -142,13 +142,13 @@ leadtime = 24 # between 0 and 186, divisible by 6
 pf = loaddata(Symbol(:pangu, leadtime, variable))
 println("$(uppercase(string(variable))) forecasts with lead time of $(leadtime) hours")
 ```
-<br>
+
 
 Compute the quantile forecasts (9 quantiles at equidistant probabilities) using IDR with a training window of a single year.
 ```julia
 qf = point2prob(pf, 364, :idr, 9)
 ```
-<br>
+
 
 Print the coverage of `ps`.
 ```julia
@@ -163,13 +163,13 @@ for cov in coverage(qf)
 end
 println()
 ```
-<br>
+
 
 Conformalize the quanitle forecasts `qf`, with 182-day training window. Note that the in-place method `confomalize!` will leave the first 182 unmodified predictions in the `qf`. 
 ```julia
 conformalize!(qf, 182)
 ```
-<br>
+
 
 Print the coverage of conformalized `qf`.
 ```julia
@@ -221,7 +221,7 @@ last = findindex(fsBUY, lastdate)
 qfBUY = point2prob(fsBUY, 182, :idr, 9, first=first, last=last)
 qfSELL = point2prob(fsSELL, 182, :idr, 9, first=first, last=last)
 ```
-<br>
+
 
 Let us see what we can learn from the forecasts of median price:
 ```julia
@@ -241,7 +241,7 @@ end
 ![image](plots/trading2.png)
 
 Now we see that on the 3rd day, the upper quantiles of prices at 3:00 significantly overlap the lower quantiles of prices at 19:00. Depending on our risk appetite, we could refrain from trading during this day to avoid possible losses.
-<br>
+
 
 Finally, let's add the observed prices during this period:
 ```julia
