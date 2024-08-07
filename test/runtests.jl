@@ -34,7 +34,7 @@ end
 @testset "Conformalize" begin
     quantiles = sort(rand(150, 99), dims=2)
     obs = rand(150)
-    qf = QuantForecasts(quantiles, obs)
+    qf = QuantForecasts(copy(quantiles), obs)
     qfc = conformalize(qf, 100)
     conformalize!(qf, 100)
     qf = qf[101:end]
@@ -228,7 +228,7 @@ end
     pred = rand(100, 3)
     sort!(pred, dims=2)
     obs = rand(100)
-    pf = PointForecasts(pred, obs, 1:100)
+    pf = PointForecasts(pred, obs, Vector(1:100))
     
     pfm = average(pf)
     pfm2 = average(decouple(pf))

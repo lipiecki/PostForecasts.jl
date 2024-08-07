@@ -30,8 +30,8 @@ function average(PF::AbstractVector{PointForecasts{F, I}}; agg::Symbol=:mean) wh
     else
         throw(ArgumentError("$(agg) is not a viable aggregation scheme"))
     end
-    avergedpred = Vector{Float64}(undef, length(PF[begin]))
-    auxiliary = Vector{Float64}(undef, m)
+    avergedpred = Vector{F}(undef, length(PF[begin]))
+    auxiliary = Vector{F}(undef, m)
     for t in eachindex(PF[begin])
         f = 0
         for pf in PF
@@ -53,11 +53,11 @@ Average probabilistic pred from `QF` by averaging probabilities of the distribut
 
 Return `ProbcastsSeries` containing quantile pred at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
 """
-function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector{<:AbstractFloat}) where {F, I}
+function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector{F}) where {F, I}
     arematching(QF)
-    quantiles = Matrix{Float64}(undef, length(QF[begin]), length(prob))
-    y = Vector{Float64}(undef, sum(npred(qf) for qf in QF))
-    cdf = Vector{Float64}(undef, length(y))
+    quantiles = Matrix{F}(undef, length(QF[begin]), length(prob))
+    y = Vector{F}(undef, sum(npred(qf) for qf in QF))
+    cdf = Vector{F}(undef, length(y))
     order = Vector{Int}(undef, length(y))
     for t in 1:length(QF[begin])
         counter = 0
@@ -80,12 +80,12 @@ function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector
         quantiles,
         getobs(QF[begin]),
         getid(QF[begin]),
-        prob)
+        Vector(prob))
 end
 
-paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractFloat) where {F, I} = paverage(QF, [prob])
+paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::F) where {F, I} = paverage(QF, [prob])
 
-paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob))
+paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob, F))
 
 """
     qaverage(QF::AbstractVector{QuantForecasts})
@@ -95,7 +95,7 @@ Return `ProbcastsSeries` containing quantile pred at the same prob as `QuantFore
 """
 function qaverage(QF::AbstractVector{QuantForecasts{F, I}}) where {F, I}
     arematching(QF, checkpred=true)
-    quantiles = zeros(length(QF[begin]), npred(QF[begin]))
+    quantiles = zeros(F, length(QF[begin]), npred(QF[begin]))
     for t in eachindex(QF[begin])
         for i in 1:npred(QF[begin])
             for qf in QF
