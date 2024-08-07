@@ -59,8 +59,6 @@ jobs:
     needs: builddocs
     name: Deploy docs
 
-    workflow_dispatch:
-
     permissions:
       contents: read
       pages: write
