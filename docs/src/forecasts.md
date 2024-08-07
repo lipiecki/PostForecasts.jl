@@ -45,5 +45,5 @@ getprob,
 viewpred,
 viewobs,
 viewid,
-viewprob,
+viewprob
 ```
