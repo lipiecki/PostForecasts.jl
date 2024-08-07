@@ -20,7 +20,5 @@ makedocs(
 
    deploydocs(
     repo = "github.com/lipiecki/PostForecasts.jl.git",
-    branch = "main",
-    dirname = "docs",
-    devurl = ""
+    branch = "docs",
 )
