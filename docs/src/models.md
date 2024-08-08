@@ -73,6 +73,8 @@ $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\
 
 The coefficients $\beta^{(\tau)}_{0...m}$ are selected to minimize the pinball loss on the calibration window and estimated by solving a linear programming problem. For this task, Probcasts.jl employs [JuMP.jl](https://jump.dev/JuMP.jl/stable/) and HiGHS.jl packages. Different LP solvers compatible with JuMP can be used, but the constructor defaults to an open source [HiGHS](https://highs.dev).
 
+Apart from the standard QRA of [[Nowotarski & Weron (2015)]](https://doi.org/10.1007/s00180-014-0523-0), **PostForecasts.jl** allows to readily compute Quantile Regression Machine (QRM) [[Marcjasz et al. (2020)]](https://doi.org/10.1016/j.ijforecast.2019.07.002) and Quantile Regression with probability (F) or Quanitle averaging (QRF or QRQ) [[Uniejewski et al. (2019)]][https://doi.org/10.1016/j.eneco.2018.02.007]. See [*Different flavors of Quantile Regression Averaging*](https://lipiecki.github.io/PostForecasts.jl/dev/examples/#Different-flavors-of-Quantile-Regression-Averaging) for details.
+
 ```@docs
 QR
 getweights

@@ -15,6 +15,7 @@ makedocs(
         "Evaluation Metrics" => "evaluation.md",
         "Utilities" => "utils.md",
         "Examples" => "examples.md",
+        "Expand" => "expand.md"
         ]
 )
 deploydocs(

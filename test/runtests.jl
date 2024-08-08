@@ -328,21 +328,21 @@ end
     pred3[1] += 9.0
     
     pf = PointForecasts(pred, obs)
-    @test mae(pf) ≈ 0.109
-    @test rmse(pf) ≈ sqrt(0.0199)
+    @test mae(pf)[1] ≈ 0.109
+    @test rmse(pf)[1] ≈ sqrt(0.0199)
 
     pf = PointForecasts([pred pred3], obs)
     @test all(mae(pf) .≈ [0.109, 1.09])
     @test all(rmse(pf) .≈ [sqrt(0.0199), sqrt(1.99)])
 
     qf = QuantForecasts(pred, obs, 0.2)
-    @test pinball(qf) ≈ 0.109*0.2
+    @test pinball(qf)[1] ≈ 0.109*0.2
 
     qf = QuantForecasts(pred2, obs, 0.5)
-    @test pinball(qf) ≈ 0.109*0.5
+    @test pinball(qf)[1] ≈ 0.109*0.5
 
     qf = QuantForecasts(pred3, obs, 0.8)
-    @test pinball(qf) ≈ 1.09*0.2
+    @test pinball(qf)[1] ≈ 1.09*0.2
 
     qf = QuantForecasts([pred pred2 pred3], obs, [0.2, 0.5, 0.8])
     @test all(pinball(qf) .≈ 0.109.*[0.2, 0.5, 0.2*10])

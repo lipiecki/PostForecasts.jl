@@ -61,6 +61,11 @@ function predict(m::MultiRegProbModel, input::AbstractVector{<:Number}, prob::Ab
     return output
 end
 
+# QR-specific predict! below
+predict(m::QR, input::Number, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
+
+predict(m::QR, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
+
 function predict(m::QR, input::AbstractVector{<:Number})::Vector{Float64}
     Base.require_one_based_indexing(input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
@@ -96,16 +101,7 @@ function predict!(m::ProbModel, output::AbstractVector{<:AbstractFloat}, input::
     _predict!(m, output, input, prob)
 end
 
-function predict!(m::UniRegProbModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
-    Base.require_one_based_indexing(output, input, prob)
-    length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
-    length(input) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(length(input)) were provided"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict!(m, output, input[1], prob)
-end
-
-function predict!(m::MultiRegProbModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
+function predict!(m::ProbModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
     Base.require_one_based_indexing(output, input, prob)
     length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
@@ -114,14 +110,21 @@ function predict!(m::MultiRegProbModel, output::AbstractVector{<:AbstractFloat},
     _predict!(m, output, input, prob)
 end
 
+# QR-specific predict! below
+predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
+
+predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
+
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     Base.require_one_based_indexing(output, input)
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
     _predict!(m, output, input)
 end
 
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
     Base.require_one_based_indexing(output)
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
     _predict!(m, output, input)
 end

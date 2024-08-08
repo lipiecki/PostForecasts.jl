@@ -1,51 +1,43 @@
 """
     mae(pf::PointForecasts)
-Calculate Mean Absolute Error of pred from `pf`. If `pf` contains more than one forecast series, return the vector of MAE corresponding to each series.
+Calculate Mean Absolute Error of pred from `pf`. Return the vector of MAE corresponding to each forecaster.
 """
-function mae(pf::PointForecasts{F, I}) where {F, I}
-    loss = zeros(F, npred(pf))
+function mae(pf::PointForecasts)
+    loss = zeros(Float64, npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
             loss[i] += abs(getobs(pf, t) -  getpred(pf, t, i))
         end
     end
     loss /= length(pf)
-    if npred(pf) == 1
-        return loss[begin]
-    else 
-        return loss
-    end
+    return loss
 end
 
 """
     rmse(pf::PointForecasts)
-Calculate Root Mean Squared Error of pred from `pf`. If `pf` contains more than one forecast series, return the vector of RMSE corresponding to each series.
+Calculate Root Mean Squared Error of pred from `pf`. Return the vector of RMSE corresponding to each forecaster.
 """
-function rmse(pf::PointForecasts{F, I}) where {F, I}
-    loss = zeros(F, npred(pf))
+function rmse(pf::PointForecasts)
+    loss = zeros(Float64, npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
             loss[i] += (getobs(pf, t) - getpred(pf, t, i))^2
         end
     end
     loss /= length(pf)
-    if npred(pf) == 1
-        return sqrt(loss[begin])
-    else 
-        return sqrt.(loss)
-    end
+    return sqrt.(loss)
 end
 
 """
     pinball(qf::QuantForecasts)
-Calculate the Pinball Loss over all quantiles in `qf`.
+Calculate the Pinball Loss over all quantiles in `qf`. Return the vector of pinball loss corresponding to each quantile.
 See [Gneiting 2011](httqf://doi.org/10.1016/j.ijforecast.2009.12.015) for more details about Pinball Loss. 
 
 ## Note
 Average pinball score over equidistant quantiles approximates Continuous Ranked Probability Score.
 """
-function pinball(qf::QuantForecasts{F, I}) where {F, I}
-    loss = zeros(F, npred(qf))
+function pinball(qf::QuantForecasts)
+    loss = zeros(Float64, npred(qf))
     for i in 1:npred(qf)
         for t in eachindex(qf)
             if getobs(qf, t) < getpred(qf, t, i)
@@ -56,19 +48,15 @@ function pinball(qf::QuantForecasts{F, I}) where {F, I}
         end
     end
     loss /= length(qf)
-    if npred(qf) == 1
-        return loss[begin]
-    else 
-        return loss
-    end
+    return loss
 end
 
 """
     coverage(qf::QuantForecasts)
-Calculate empirical coverage of quantile pred in `qf`. Return the vector of coverage corresponding to each quantile level in `qf`. 
+Calculate empirical coverage of quantile pred in `qf`. Return the vector of coverage corresponding to each quantile. 
 """
-function coverage(qf::QuantForecasts{F, I}) where {F, I}
-    cover = zeros(F, npred(qf))
+function coverage(qf::QuantForecasts)
+    cover = zeros(Float64, npred(qf))
     for i in 1:npred(qf)
         for t in eachindex(qf)
             if getobs(qf, t) <= getpred(qf, t, i)
@@ -76,5 +64,6 @@ function coverage(qf::QuantForecasts{F, I}) where {F, I}
             end
         end
     end
-    return cover./length(qf)
+    cover /= length(qf)
+    return cover
 end

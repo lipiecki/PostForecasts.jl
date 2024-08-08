@@ -116,7 +116,6 @@ function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
 end
 
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
-    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
     for j in 1:nquant(m)
         @inbounds output[j] = m.W[end, j]
         for i in 1:nreg(m)
@@ -127,7 +126,6 @@ function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Abstra
 end
 
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
-    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
     for j in 1:nquant(m)
         @inbounds output[j] = m.W[end, j] + m.W[1, j]*input
     end

@@ -62,7 +62,7 @@ QRA     |1.586
 
 ## Different flavors of Quantile Regression Averaging
 
-There are multiple approaches to applying Quantile Regression to a pool of point forecasts, here we compare four of them, which can be readily computed using the **Post4Casts.jl** package.
+There are multiple approaches to applying Quantile Regression to a pool of point forecasts, here we compare four of them, which can be readily computed using the **PostForecasts.jl** package.
 
 First, specify the calibration window, the number of quantiles to be forecasted and the data to be used for postprocessing:
 
@@ -81,7 +81,7 @@ pf = pf[first-window:last]
 ```
 
 ### QRA
-**Q**uantile **R**egression **A**veraging (QRA) - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
+**Q**uantile **R**egression **A**veraging - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
 ```julia
 qfQRA = point2prob(pf, window, :qr, 9)
 ```
