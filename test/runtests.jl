@@ -202,6 +202,7 @@ end
 
     @test all(getweights(model) .≈ W)
     @test all(predict(model, -1, prob) .≈ [-1.5, -1.5])
+    @test all(predict(model, [-1], prob) .≈ [-1.5, -1.5])
     @test all(predict(model, -1) .≈ [-1.5, -1.5])
     @test all(predict(model, [-1]) .≈ [-1.5, -1.5])
     @test predict(model, -1, 0.25) ≈ -1.5

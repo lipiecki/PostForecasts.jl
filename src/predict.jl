@@ -61,11 +61,6 @@ function predict(m::MultiRegProbModel, input::AbstractVector{<:Number}, prob::Ab
     return output
 end
 
-# QR-specific predict! below
-predict(m::QR, input::Number, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
-
-predict(m::QR, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
-
 function predict(m::QR, input::AbstractVector{<:Number})::Vector{Float64}
     Base.require_one_based_indexing(input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
@@ -80,6 +75,9 @@ function predict(m::QR, input::Number)::Vector{Float64}
     _predict!(m, output, input)
     return output
 end
+
+predict(m::QR, input::Number, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
+predict(m::QR, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict(m, input)
 
 """
     predict!(m, output, input[, prob])
@@ -110,11 +108,6 @@ function predict!(m::ProbModel, output::AbstractVector{<:AbstractFloat}, input::
     _predict!(m, output, input, prob)
 end
 
-# QR-specific predict! below
-predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
-
-predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
-
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     Base.require_one_based_indexing(output, input)
     nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
@@ -128,3 +121,6 @@ function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
     _predict!(m, output, input)
 end
+
+predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
+predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, _::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
