@@ -1,6 +1,6 @@
 # Forecasts structures
 
-`Forecasts` type is a supertype that spans `PointForecasts` and `QuantForecast` types.
+To make working with forecasts easy and user-friendy, **PostForecasts.jl** introduces `Forecasts` type, a supertype that spans `PointForecasts` and `QuantForecast` structures.
 
 ## PointForecasts
 `PointForecasts` is a structure intended for storing the series of point `pred`ictions (both single pred and pools of forecasts), along with the `obs`ervations and `id`entifiers (timestamps). The package provides functions for building `PointForecasts` objects from delimited files, calculating error measures (MAE and RMSE) and averaging point pred.

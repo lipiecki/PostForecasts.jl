@@ -154,7 +154,7 @@ end
     pred_ = [pred; randn(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :idr, 99, recalibration=0)
+    qf = point2prob(pf, 100, :idr, 0.01:0.01:0.99, recalibration=0)
 
     quantiles = zeros(50, 99)
     quantiles2 = zeros(50, 99)
@@ -447,8 +447,8 @@ end
     end
 
     @testset "Matching QuantForecasts" begin
-        qf = QuantForecasts(zeros(2, 2), zeros(2), [0.25, 0.75])
-        qf_ = QuantForecasts(ones(2, 2), zeros(2), [0.25, 0.75]) # should match qf
+        qf = QuantForecasts(zeros(2, 2), zeros(2))
+        qf_ = QuantForecasts(ones(2, 2), zeros(2), [1.0/3, 2.0/3]) # should match qf
         testvar = true
         try
             checkmatch([qf, qf_])
@@ -459,7 +459,7 @@ end
         @test testvar
 
         testvar = false
-        qf_ = QuantForecasts(zeros(2, 2), zeros(2), [-1, 2], [0.25, 0.75]) # different `id`
+        qf_ = QuantForecasts(zeros(2, 2), zeros(2), [0, 1]) # different `id`
         try
             checkmatch([qf, qf_])
         catch e
@@ -468,7 +468,7 @@ end
         @test testvar
 
         testvar = false
-        qf_ = QuantForecasts(zeros(2, 2), ones(2), [0.25, 0.75]) # different `obs`
+        qf_ = QuantForecasts(zeros(2, 2), ones(2)) # different `obs`
         try
             checkmatch([qf, qf_])
         catch e
@@ -495,7 +495,7 @@ end
         @test testvar
 
         testvar = false
-        qf_ = QuantForecasts(zeros(3, 2), ones(3), [0.25, 0.75]) # different length of the QuantForecasts
+        qf_ = QuantForecasts(zeros(3, 2), ones(3), [1.0/3, 2.0/3]) # different length of the QuantForecasts
         try
             checkmatch([qf, qf_])
         catch e

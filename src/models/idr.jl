@@ -229,7 +229,6 @@ function _predict(m::IDR, input::Number, prob::AbstractFloat)
             return y[j]
         end
     end
-    return y[end]
 end
 
 function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
@@ -253,7 +252,6 @@ function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
             return y[j]
         end
     end
-    return y[end]
 end
 
 function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVector{<:AbstractFloat})

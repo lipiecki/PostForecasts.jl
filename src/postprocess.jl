@@ -14,7 +14,7 @@ Available options for `model`:
 
 Return `QuantForecasts` containing quantile forecasts at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
 """
-function point2prob(pf::PointForecasts{F, I}, window::Integer, modelname::Symbol, prob::Vector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), recalibration::Integer=1) where {F, I}
+function point2prob(pf::PointForecasts{F, I}, window::Integer, modelname::Symbol, prob::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), recalibration::Integer=1) where {F, I}
     issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
     (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
     prob = Vector{F}(prob)

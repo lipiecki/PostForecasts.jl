@@ -106,13 +106,6 @@ function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     return output
 end
 
-function _predict(m::QR, input::Union{Number, AbstractVector{<:Number}})
-    output = Vector{Float64}(undef, nquantiles(m))
-    _predict!(m, output, input)
-end
-
-_predict(m::QR, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVector{<:AbstractFloat}) = _predict(m, input)
-
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
     for j in 1:nquantiles(m)

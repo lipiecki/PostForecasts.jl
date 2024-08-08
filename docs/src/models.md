@@ -1,6 +1,6 @@
 # Models
 
-Point2Prob.jl provides four model for postprocessing point predictions for probabilistic forecasts: 
+Point2Prob.jl provides four models for postprocessing point predictions for probabilistic forecasts: 
 - Normal Errors
 - Conformal Prediction
 - Isotonic Distributional Regression

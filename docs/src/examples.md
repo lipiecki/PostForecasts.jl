@@ -1,5 +1,7 @@
 # Examples
 
+Below You can find some simple examples of what can be achieved with `PostForecasts.jl`
+
 ## Electricity Price Forecasting
 This example showcases how to prepare probabilistic forecasts of day-ahead electricity prices for all 24 hours, using three different models (IDR, CP and QRA), for a specified calendar year.
 
