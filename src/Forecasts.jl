@@ -74,7 +74,7 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     end
 end
 
-Base.show(io::IO, fs::Forecasts) = println(io, "$(typeof(fs)) with a pool of $(npred(fs)) forecasts at $(length(fs)) timesteps, between $(fs.id[begin]) and $(fs.id[end])")
+Base.show(io::IO, fs::Forecasts) = println(io, "$(typeof(fs)) with a pool of $(npred(fs)) forecast(s) at $(length(fs)) timesteps, between $(fs.id[begin]) and $(fs.id[end])")
 
 function Base.length(fs::Forecasts)
     return length(fs.obs)

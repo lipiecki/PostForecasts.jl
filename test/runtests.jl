@@ -27,8 +27,13 @@ using Test, PostForecasts
           getid(pf, 1) ≈ qf[begin][:id] && 
           getid(qf, 1) ≈ qf[begin][:id] &&
 
-
     @test pf(10)[:obs] == obs[10] && all(viewobs(qf([50, 100])) .≈ @view(obs[[50, 100]]))
+    
+    io = IOBuffer()
+    show(io, pf)
+    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 1 and 100\n"
+    show(io, qf)
+    @test String(take!(io)) == "QuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 1 and 100\n"
 end
 
 @testset "Conformalize" begin
@@ -220,8 +225,8 @@ end
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], prob)
         predict!(model, @view(quantiles2[i, :]), pred_[100+i])
-        predict!(model, @view(quantiles3[i, :]), [pred_[100+i]])
-        quantiles4[i, :] = predict(model, pred_[100+i], prob)
+        predict!(model, @view(quantiles3[i, :]), [pred_[100+i]], prob)
+        predict!(model, @view(quantiles4[i, :]), [pred_[100+i]])
     end
     @test all(quantiles .≈ viewpred(qf))
     @test all(quantiles .≈ quantiles2)
