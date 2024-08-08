@@ -5,7 +5,7 @@
 
 **Welcome to PostForecasts.jl, a Julia package for postprocessing point predictions into probabilistic forecasts.**
 
-The package provides structures and functions that allow to easily compute predictive distributions conditional on point forecasts. Probabilistic forecasts are calibrated on the history of point forecasts only, i.e. pairs $(\hat{y}_t, y_t)$, where $\hat{y}_t$ is either a single point prediction or a vector of point predictions, and $y_t$ is the observed value of the timeseries at moment $t$.
+The package provides structures and functions that allow to easily compute predictive distributions conditional on point forecasts. Probabilistic forecasts are trained on the history of point forecasts only, i.e. pairs $(\hat{y}_t, y_t)$, where $\hat{y}_t$ is either a single point prediction or a vector of point predictions, and $y_t$ is the observed value of the timeseries at moment $t$.
 
 **PostForecasts.jl** implements four postprocessing models that differ in terms of computational complexity and assumptions about the underlying distributions. Our package
 
@@ -33,7 +33,7 @@ Each model belongs to the `ProbModel` type and has a corresponding `train` metho
 In addition to methods for postprocessing point forecasts, **PostForecasts.jl** provides `conformalize` function, allowing to correct the quantile forecasts using historical errors.
 
 ## From point to probabilistic forecasts
-`point2prob` function is an easy way to build probabilistic forecasts from point predictions. It creates a `QuantSeries` from `PointSeries`, using a selected model, calibration window and quantile levels.
+`point2prob` function is an easy way to build probabilistic forecasts from point predictions. It creates a `QuantSeries` from `PointSeries`, using a selected model, training window length and quantile levels.
 
 ```@docs
 point2prob
