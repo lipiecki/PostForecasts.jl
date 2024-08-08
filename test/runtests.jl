@@ -349,7 +349,7 @@ end
         pf_ = PointForecasts(ones(2, 2), zeros(2)) # should match pf
         testvar = true
         try
-            arematching([pf, pf_])
+            checkmatch([pf, pf_])
         catch e
             testvar = false
         end
@@ -358,7 +358,7 @@ end
         testvar = false
         pf_ = PointForecasts(zeros(2, 2), zeros(2), [-1, 2]) # different `id`
         try
-            arematching([pf, pf_])
+            checkmatch([pf, pf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` identifiers (elements of `id` field) do not match"
         end
@@ -367,7 +367,7 @@ end
         testvar = false
         pf_ = PointForecasts(zeros(2, 2), ones(2)) # different `obs`
         try
-            arematching([pf, pf_])
+            checkmatch([pf, pf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` observations (elements of `obs` field) do not match"
         end
@@ -376,7 +376,7 @@ end
         testvar = false
         pf_ = PointForecasts(zeros(2), zeros(2)) # different size of the forecast pool
         try
-            arematching([pf, pf_], checkpred=true)
+            checkmatch([pf, pf_], checkpred=true)
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` have different sizes of forecast pools"
         end
@@ -385,7 +385,7 @@ end
         testvar = false
         pf_ = PointForecasts(zeros(3, 2), zeros(3)) # different length of the PointForecasts
         try
-            arematching([pf, pf_])
+            checkmatch([pf, pf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` have different lengths"
         end
@@ -397,7 +397,7 @@ end
         qf_ = QuantForecasts(ones(2, 2), zeros(2), [0.25, 0.75]) # should match qf
         testvar = true
         try
-            arematching([qf, qf_])
+            checkmatch([qf, qf_])
         catch e
             println(e)
             testvar = false
@@ -407,7 +407,7 @@ end
         testvar = false
         qf_ = QuantForecasts(zeros(2, 2), zeros(2), [-1, 2], [0.25, 0.75]) # different `id`
         try
-            arematching([qf, qf_])
+            checkmatch([qf, qf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` identifiers (elements of `id` field) do not match"
         end
@@ -416,7 +416,7 @@ end
         testvar = false
         qf_ = QuantForecasts(zeros(2, 2), ones(2), [0.25, 0.75]) # different `obs`
         try
-            arematching([qf, qf_])
+            checkmatch([qf, qf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` observations (elements of `obs` field) do not match"
         end
@@ -425,7 +425,7 @@ end
         testvar = false
         qf_ = QuantForecasts(zeros(2), zeros(2), 0.25) # different number of quantiles
         try
-            arematching([qf, qf_], checkpred=true)
+            checkmatch([qf, qf_], checkpred=true)
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different number of quantiles"
         end
@@ -434,7 +434,7 @@ end
         testvar = false
         qf_ = QuantForecasts(zeros(2, 2), zeros(2), [0.1, 0.9]) # different quantile prob
         try
-            arematching([qf, qf_], checkpred=true)
+            checkmatch([qf, qf_], checkpred=true)
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different quantile levels"
         end
@@ -443,7 +443,7 @@ end
         testvar = false
         qf_ = QuantForecasts(zeros(3, 2), ones(3), [0.25, 0.75]) # different length of the QuantForecasts
         try
-            arematching([qf, qf_])
+            checkmatch([qf, qf_])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different lengths"
         end

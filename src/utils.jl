@@ -29,3 +29,42 @@ nreg(::UniRegProbModel) = 1
 Return `true` if `window` matches the specification of model `m`, otherwise return `false`.
 """
 matchwindow(::ProbModel, ::Integer) = true
+
+"""
+    chechmatch(S::AbstractVector{<:ForecastSeries}; checkpred::Bool=false)
+Check if PointForecasts or QuantForecasts provided in vector `S` match, i.e.:
+- all their `id`entifiers match
+- all their `obs`ervations match
+- their number of forecasts match (if `checkpred=true`)
+- their `prob`abilities match (for QuantForecasts if `checkpred=true`).
+
+Return nothing, throw an `ArgumentError` if any of the requirements above is not met.
+"""
+function checkmatch(S::AbstractVector{PointForecasts{F, I}}; checkpred::Bool=false) where {F, I}
+    first, state = iterate(S, firstindex(S))
+    nextstatepair = iterate(S, state)
+    while !isnothing(nextstatepair)
+        next, state = nextstatepair
+        length(first) == length(next) || throw(ArgumentError("`PointForecasts` have different lengths"))
+        (!checkpred || npred(first) == npred(next)) || throw(ArgumentError("`PointForecasts` have different sizes of forecast pools"))
+        all(first.obs .≈ next.obs) || throw(ArgumentError("`PointForecasts` observations (elements of `obs` field) do not match"))
+        all(first.id .≈ next.id) || throw(ArgumentError("`PointForecasts` identifiers (elements of `id` field) do not match"))
+        nextstatepair = iterate(S, state)
+    end
+end
+
+function checkmatch(S::AbstractVector{QuantForecasts{F, I}}; checkpred::Bool=false) where {F, I}
+    first, state = iterate(S, firstindex(S))
+    nextstatepair = iterate(S, state)
+    while !isnothing(nextstatepair)
+        next, state = nextstatepair
+        length(first) == length(next) || throw(ArgumentError("`QuantForecasts` have different lengths"))
+        if checkpred
+            npred(first) == npred(next) || throw(ArgumentError("`QuantForecasts` have different number of quantiles"))
+            all(first.prob .≈ next.prob) || throw(ArgumentError("`QuantForecasts` have different quantile levels"))
+        end
+        all(first.obs .≈ next.obs) || throw(ArgumentError("`QuantForecasts` observations (elements of `obs` field) do not match"))
+        all(first.id .≈ next.id) || throw(ArgumentError("`QuantForecasts` identifiers (elements of `id` field) do not match"))
+        nextstatepair = iterate(S, state)
+    end
+end

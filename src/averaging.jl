@@ -19,8 +19,8 @@ function average(pf::PointForecasts; agg::Symbol=:mean)
             getid(pf))
 end
 
-function average(PF::AbstractVector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, I}
-    arematching(PF)
+function average(PF::Vector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, I}
+    checkmatch(PF)
     m = sum(npred(pf) for pf in PF) 
     m > 1 || return PF[begin]
     if agg == :mean
@@ -48,13 +48,14 @@ function average(PF::AbstractVector{PointForecasts{F, I}}; agg::Symbol=:mean) wh
 end
 
 """
-    paverage(QF::AbstractVector{QuantForecasts}, prob)
+    paverage(QF::Vector{QuantForecasts}, prob)
 Average probabilistic pred from `QF` by averaging probabilities of the distributions.
 
-Return `ProbcastsSeries` containing quantile pred at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
+Return `ProbcastsSeries` containing quantile pred at specified probabilities `prob` (vector of probabilities `::Vector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
 """
-function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector{F}) where {F, I}
-    arematching(QF)
+function paverage(QF::Vector{QuantForecasts{F, I}}, prob::Vector{<:F}) where {F, I}
+    Base.require_one_based_indexing(prob)
+    checkmatch(QF)
     quantiles = Matrix{F}(undef, length(QF[begin]), length(prob))
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
     cdf = Vector{F}(undef, length(y))
@@ -64,7 +65,7 @@ function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector
         for qf in QF
             for i in 1:npred(qf)
                 y[counter += 1] = qf.pred[t, i]
-                cdf[counter] = qf.prob[i] - ((i > 1) ? qf.prob[i-1] : 0.0)
+                cdf[counter] = qf.prob[i] - ((i > 1) ? qf.prob[i-1] : F(0.0))
             end
         end
         sortperm!(order, y)
@@ -83,18 +84,18 @@ function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector
         Vector(prob))
 end
 
-paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::F) where {F, I} = paverage(QF, [prob])
+paverage(QF::Vector{QuantForecasts{F, I}}, prob::F) where {F, I} = paverage(QF, [prob])
 
-paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob, F))
+paverage(QF::Vector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob, F))
 
 """
-    qaverage(QF::AbstractVector{QuantForecasts})
-Average probabilistic pred from `QF::AbstractVector{QuantForecasts}` by averaging quantiles of the distributions.
+    qaverage(QF::Vector{QuantForecasts})
+Average probabilistic pred from `QF::Vector{QuantForecasts}` by averaging quantiles of the distributions.
 
 Return `ProbcastsSeries` containing quantile pred at the same prob as `QuantForecasts` stored in `QF`.
 """
-function qaverage(QF::AbstractVector{QuantForecasts{F, I}}) where {F, I}
-    arematching(QF, checkpred=true)
+function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
+    checkmatch(QF, checkpred=true)
     quantiles = zeros(F, length(QF[begin]), npred(QF[begin]))
     for t in eachindex(QF[begin])
         for i in 1:npred(QF[begin])

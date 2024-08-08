@@ -105,7 +105,7 @@ export
     getmodel,
     nreg,
     matchwindow,
-    arematching,
+    checkmatch,
 
     # Data
     loaddata,

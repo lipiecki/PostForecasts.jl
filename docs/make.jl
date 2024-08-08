@@ -7,13 +7,15 @@ makedocs(
     inventory_version = ""),
     pages = [
         "Home" => "index.md",
-        "Series Structures" => "forecasts.md",
+        "Forecasts Structures" => "forecasts.md",
         "Loading and Saving Forecasts" => "loadnsave.md",
         "Datasets" => "data.md",
         "Models" => "models.md",
         "Averaging Forecasts" => "averaging.md",
         "Evaluation Metrics" => "evaluation.md",
-        "Examples" => "examples.md"
+        "Utilities" => "utils.md",
+        "Examples" => "examples.md",
+        "Developers" => "dev.md"
         ]
 )
 deploydocs(
