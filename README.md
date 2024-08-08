@@ -7,13 +7,13 @@
 
 The package provides structures and functions that allow to easily compute predictive distributions conditional on point forecasts. Probabilistic forecasts are trained on the history of point forecasts only, i.e. pairs $(\hat{y}_t, y_t)$, where $\hat{y}_t$ is either a single point prediction or a vector of point predictions, and $y_t$ is the observed value of the timeseries at moment $t$.
 
-**PostForecasts.jl** implements four postprocessing models that differ in terms of computational complexity and assumptions about the underlying distributions. Our package
+**PostForecasts.jl** implements four postprocessing models that differ in terms of computational complexity and assumptions about the underlying distributions. The main advantages of our package:
 
 - **Relies on deterministic models for reliable and repeatable results**
 
 - **Does not require hyperparameter tuning**
 
-- **Leverages forecaster diversity by averaging**
+- **Leverages forecaster diversity via averaging**
 
 We believe that following these three principles allowed us to develop a robust tool for computing probabilistic forecasts that combines ease of use, high accuracy, fast results and good interpretability of the results. This makes Probcasts.jl an attractive choice for both academic and industrial applications.
 
