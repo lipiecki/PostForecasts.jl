@@ -12,7 +12,7 @@ Available options for `model`:
 
 `QR` supports multiple regressors; `IDR` partially supports multiple regressors - one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions; `CP` and `Normal` do not support multiple regressors.
 
-Return QuantForecasts containing quantile forecasts at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
+Return `QuantForecasts` containing quantile forecasts at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
 """
 function point2prob(pf::PointForecasts{F, I}, window::Integer, modelname::Symbol, prob::Vector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), recalibration::Integer=1) where {F, I}
     issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
@@ -76,4 +76,23 @@ function conformalize!(qf::QuantForecasts{F, I}, window::Integer; first::Integer
         end
         sort!(viewpred(qf, t))
     end
+end
+
+"""
+    _point2prob(pf::PointForecasts{F, I}, window::Integer, model::ProbModel, prob::Vector{F}, first::Integer, last::Integer, recalibration::Integer) where {F, I}
+Helper function for `point2prob`. Not exported with the package and inteded for internal use with validated arguments.
+"""
+function _point2prob(pf::PointForecasts{F, I}, window::Integer, model::ProbModel, prob::Vector{F}, first::Integer, last::Integer, recalibration::Integer) where {F, I}
+    quantiles = zeros(F, last-first+1, length(prob))
+    for t in first:last
+        if t == first || (recalibration > 0 && (t - first) % recalibration == 0)
+            _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
+        end
+        _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
+    end
+    return QuantForecasts(
+        quantiles,
+        getobs(pf, first:last),
+        getid(pf, first:last),
+        prob)
 end
