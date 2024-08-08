@@ -11,16 +11,16 @@ last = findindex(pf, year*10_000 + 1231)
 pf = pf[first-window:last]
 
 # QRA
-qfQRA = point2prob(pf, window, :qr, 9)
+qfQRA = point2prob(pf, :qr, window, nquantiles)
 
 # QRM
-qfQRM = point2prob(average(pf), window, :qr, nquantiles)
+qfQRM = point2prob(average(pf), :qr, window, nquantiles)
 
 # QRF
-qfQRF = paverage([point2prob(ipf, window, :qr, nquantiles) for ipf in decouple(pf)], nquantiles)
+qfQRF = paverage([point2prob(ipf, :qr, window, nquantiles) for ipf in decouple(pf)], nquantiles)
 
 # QRQ
-qfQRQ = qaverage([point2prob(ipf, window, :qr, nquantiles) for ipf in decouple(pf)])
+qfQRQ = qaverage([point2prob(ipf, :qr, window, nquantiles) for ipf in decouple(pf)])
 
 println("Year $(year), hour $(hour):00")
 println("Calibration window of $(window) days")

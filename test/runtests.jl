@@ -65,7 +65,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :cp, 99, recalibration=0)
+    qf = point2prob(pf, :cp, 100, 99, retrain=0)
 
     corrections = [-quantile(λ, 0.98:-0.02:0.02, sorted=true, alpha=1, beta=1); 0; quantile(λ, 0.02:0.02:0.98, sorted=true, alpha=1, beta=1)]
     quantiles = zeros(50, 99)
@@ -102,7 +102,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :hs, 99, recalibration=0)
+    qf = point2prob(pf, :hs, 100, 99, retrain=0)
 
     corrections = quantile(λ, 0.01:0.01:0.99, sorted=true, alpha=1, beta=1)
     quantiles = zeros(50, 99)
@@ -154,7 +154,7 @@ end
     pred_ = [pred; randn(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :idr, 0.01:0.01:0.99, recalibration=0)
+    qf = point2prob(pf, :idr, 100, 0.01:0.01:0.99, retrain=0)
 
     quantiles = zeros(50, 99)
     quantiles2 = zeros(50, 99)
@@ -210,7 +210,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :qr, 0.5, recalibration=0)
+    qf = point2prob(pf, :qr, 100, 0.5, retrain=0)
 
     quantiles = zeros(50,2)
     quantiles2 = zeros(50,2)
@@ -251,7 +251,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :normal, 99, recalibration=0)
+    qf = point2prob(pf, :normal, 100, 99, retrain=0)
 
     quantiles = zeros(50, 99)
     quantiles2 = zeros(50, 99)
@@ -272,7 +272,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, 100, :zeronormal, 99, recalibration=0)
+    qf = point2prob(pf, :zeronormal, 100, 99, retrain=0)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
@@ -381,7 +381,7 @@ end
         pf = PointForecasts(rand(100), rand(100))    
         testvar = false
         try 
-            point2prob(pf, 10, :unknown, 99)
+            point2prob(pf, :unknown, 10, 99)
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "provided model name not recognized"
         end

@@ -10,7 +10,7 @@ Helper function that dispatches the model based on the model name passed as `Val
 - `getmodel(Val(:normal))` for Normal distribution of errors
 - `getmodel(Val(:zeronormal))` for Normal distribution of errors with fixed mean equal to 0
 
-where `n` is the length of the calibration window, `m` is the number of regressors and `prob` is the probability (scalar value or vector).
+where `n` is the length of the training window, `m` is the number of regressors and `prob` is the probability (scalar value or vector).
 
 Return an appropriate `ProbModel`.
 """

@@ -5,7 +5,7 @@ Below You can find some simple examples of what can be achieved with `PostForeca
 ## Electricity Price Forecasting
 This example showcases how to prepare probabilistic forecasts of day-ahead electricity prices for all 24 hours, using three different models (IDR, CP and QRA), for a specified calendar year.
 
-First, specify the year (between 2020 and 2023) and the length of the calibration window (note that data starts at the begining of 2019). Here we use the year 2020 and a half-year calibration.
+First, specify the year (between 2020 and 2023) and the length of the training window (note that data starts at the begining of 2019). Here we use the year 2020 and a half-year training.
 ```julia
 using Probcasts
 
@@ -28,7 +28,7 @@ Threads.@threads for hour in 0:23
     first = findindex(pf, year*10_000 + 0101)
     last = findindex(pf, year*10_000 + 1231)
     for model in models
-        losses[model][hour+1] = mean(pinball(point2prob(pf, window, model, 9, first=first, last=last)))
+        losses[model][hour+1] = mean(pinball(point2prob(pf, model, window, 9, first=first, last=last)))
     end
 end
 ```
@@ -64,7 +64,7 @@ QRA     |1.586
 
 There are multiple approaches to applying Quantile Regression to a pool of point forecasts, here we compare four of them, which can be readily computed using the **PostForecasts.jl** package.
 
-First, specify the calibration window, the number of quantiles to be forecasted and the data to be used for postprocessing:
+First, specify the training window, the number of quantiles to be forecasted and the data to be used for postprocessing:
 
 ```
 using Probcasts
@@ -83,25 +83,25 @@ pf = pf[first-window:last]
 ### QRA
 **Q**uantile **R**egression **A**veraging - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
 ```julia
-qfQRA = point2prob(pf, window, :qr, 9)
+qfQRA = point2prob(pf, :qr, window, nquantiles)
 ```
 
 ### QRM
 **Q**uantile **R**egression **M**achine - point forecasts are averaged and treated as a single regressor in a univariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\bar{\hat{y}}$
 ```julia
-qfQRM = point2prob(average(pf), window, :qr, nquantiles)
+qfQRM = point2prob(average(pf), :qr, window, nquantiles)
 ```
 
 ### QRF
 **Q**uantile **R**egression with probability (**F**) averaging - each point forecast is treated as a regressor of a univariate quantile regression, the output distributions of `m` quantile regressions are averaged over probabilities
 ```julia
-qfQRF = paverage([point2prob(ipf, window, :qr, nquantiles) for ipf in decouple(pf)], nquantiles)
+qfQRF = paverage([point2prob(ipf, :qr, window, nquantiles) for ipf in decouple(pf)], nquantiles)
 ```
 
 ### QRQ
 **Q**uantile **R**egression with **Q**uantile averaging **(QRQ)** - each point forecast is treated as a regressor of a univariate quantile regression, the output distributions of `m` quantile regressions are averaged over quantiles
 ```julia
-qfQRQ = qaverage([point2prob(ipf, window, :qr, nquantiles) for ipf in decouple(pf)])
+qfQRQ = qaverage([point2prob(ipf, :qr, window, nquantiles) for ipf in decouple(pf)])
 ```
 
 Print the results of the models
@@ -148,7 +148,7 @@ println("$(uppercase(string(variable))) forecasts with lead time of $(leadtime) 
 
 Compute the quantile forecasts (9 quantiles at equidistant probabilities) using IDR with a training window of a single year.
 ```julia
-qf = point2prob(pf, 364, :idr, 9)
+qf = point2prob(fs, :idr, 364, 9)
 ```
 
 
@@ -220,8 +220,8 @@ fsSELL = loaddata(Symbol(:epex, sellhour))
 first= findindex(fsBUY, firstdate)
 last = findindex(fsBUY, lastdate)
 
-qfBUY = point2prob(fsBUY, 182, :idr, 9, first=first, last=last)
-qfSELL = point2prob(fsSELL, 182, :idr, 9, first=first, last=last)
+qfBUY = point2prob(fsBUY, :idr, 182, 9, first=first, last=last)
+qfSELL = point2prob(fsSELL, :idr, 182, 9, first=first, last=last)
 ```
 
 

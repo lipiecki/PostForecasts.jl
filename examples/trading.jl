@@ -12,8 +12,8 @@ fsSELL = loaddata(Symbol(:epex, sellhour))
 first= findindex(fsBUY, firstdate)
 last = findindex(fsBUY, lastdate)
 
-qfBUY = point2prob(fsBUY, 182, :idr, 9, first=first, last=last)
-qfSELL = point2prob(fsSELL, 182, :idr, 9, first=first, last=last)
+qfBUY = point2prob(fsBUY, :idr, 182, 9, first=first, last=last)
+qfSELL = point2prob(fsSELL, :idr, 182, 9, first=first, last=last)
 
 theme(:dark)
 plot(legend = :bottom, xlabel = "Days", ylabel = "Price (€/MWh)", xticks = 1:14, framestyle = :box)

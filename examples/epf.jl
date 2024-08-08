@@ -11,7 +11,7 @@ Threads.@threads for hour in 0:23
     first = findindex(fs, year*10_000 + 0101)
     last = findindex(fs, year*10_000 + 1231)
     for model in models
-        losses[model][hour+1] = mean(pinball(point2prob(fs, window, model, 9, first=first, last=last)))
+        losses[model][hour+1] = mean(pinball(point2prob(fs, model, window, 9, first=first, last=last)))
     end
 end
 

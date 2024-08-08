@@ -6,7 +6,7 @@ leadtime = 24 # between 0 and 186, divisible by 6
 fs = loaddata(Symbol(:pangu, leadtime, variable))
 println("$(uppercase(string(variable))) forecasts with lead time of $(leadtime) hours")
 
-qf = point2prob(fs, 364, :idr, 9)
+qf = point2prob(fs, :idr, 364, 9)
 
 println("\t", "-"^73)
 println("\t| \t\t\t Coverage of α-quantiles \t\t\t|")
