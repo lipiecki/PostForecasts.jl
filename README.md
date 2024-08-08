@@ -20,6 +20,9 @@ We believe that following these three principles allowed us to develop a robust 
 ## Dedicated Structures
 **PostForecasts.jl** provides `PointForecasts` and `QuantForecasts` structures for storing time series data along with point and probabilistic forecasts respectively.
 
+## From point to probabilistic forecasts
+The core functionality of the package is `point2prob` function that builds probabilistic forecasts from point predictions. It creates a `QuantSeries` from `PointSeries`, using a selected model, training window length and quantile levels.
+
 ## Models
 The package provides interface to four selected models for probabilistic forecasting:
 - `CP`: Conformal Prediction
@@ -31,13 +34,6 @@ Each model belongs to the `ProbModel` type and has a corresponding `train` metho
 
 ## Conformalizing Quantile Forecasts
 In addition to methods for postprocessing point forecasts, **PostForecasts.jl** provides `conformalize` function, allowing to correct the quantile forecasts using historical errors.
-
-## From point to probabilistic forecasts
-`point2prob` function is an easy way to build probabilistic forecasts from point predictions. It creates a `QuantSeries` from `PointSeries`, using a selected model, training window length and quantile levels.
-
-```@docs
-point2prob
-```
 
 ## Installation
 
