@@ -260,7 +260,8 @@ end
     @test all(quantiles .≈ quantiles2)
 
     model = Normal(zeromean=true)
-    train(model, pred, obs)
+    
+    train(model, reshape(pred, 100, 1), obs) # reshape to another train method
 
     @test all(getmean(model) ≈ 0.0)
     @test all(getstd(model) ≈ sqrt(sum((obs - pred).^2)/100))
