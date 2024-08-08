@@ -74,77 +74,79 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     end
 end
 
-function Base.length(s::Forecasts)
-    return length(s.obs)
+Base.show(io::IO, fs::Forecasts) = println(io, "$(typeof(fs)) with a pool of $(npred(fs)) forecasts at $(length(fs)) timesteps, between $(fs.id[begin]) and $(fs.id[end])")
+
+function Base.length(fs::Forecasts)
+    return length(fs.obs)
 end
 
-function Base.getindex(ps::PointForecasts, t::Integer)
-    return (pred = ps.pred[t, :],
-            obs = ps.obs[t],
-            id = ps.id[t])
+function Base.getindex(pf::PointForecasts, t::Integer)
+    return (pred = pf.pred[t, :],
+            obs = pf.obs[t],
+            id = pf.id[t])
 end
 
-function Base.getindex(ps::PointForecasts, T::AbstractVector{<:Integer})
+function Base.getindex(pf::PointForecasts, T::AbstractVector{<:Integer})
     return PointForecasts(
-            ps.pred[T, :],
-            ps.obs[T],
-            ps.id[T])
+            pf.pred[T, :],
+            pf.obs[T],
+            pf.id[T])
 end
 
-function Base.getindex(qs::QuantForecasts, t::Integer)
-    return (pred = qs.pred[t, :],
-            obs = qs.obs[t],
-            id = qs.id[t],
-            prob = copy(qs.prob))
+function Base.getindex(qf::QuantForecasts, t::Integer)
+    return (pred = qf.pred[t, :],
+            obs = qf.obs[t],
+            id = qf.id[t],
+            prob = copy(qf.prob))
 end
 
-function Base.getindex(qs::QuantForecasts, T::AbstractVector{<:Integer})
+function Base.getindex(qf::QuantForecasts, T::AbstractVector{<:Integer})
     return QuantForecasts(
-            qs.pred[T, :],
-            qs.obs[T],
-            qs.id[T],
-            copy(qs.prob))
+            qf.pred[T, :],
+            qf.obs[T],
+            qf.id[T],
+            copy(qf.prob))
 end
 
-function Base.firstindex(s::Forecasts)
-    return firstindex(s.obs)
+function Base.firstindex(fs::Forecasts)
+    return firstindex(fs.obs)
 end
 
-function Base.lastindex(s::Forecasts)
-    return lastindex(s.obs)
+function Base.lastindex(fs::Forecasts)
+    return lastindex(fs.obs)
 end
 
-function Base.eachindex(s::Forecasts)
-    return eachindex(s.obs)
+function Base.eachindex(fs::Forecasts)
+    return eachindex(fs.obs)
 end
 
 """
-    findindex(s::Forecasts, i::Integer)
-Return the index of `s`, for which the element of field `id` equals `i`.
+    findindex(fs::Forecasts, i::Integer)
+Return the index of `fs`, for which the element of field `id` equals `i`.
 """
-function findindex(s::Forecasts, i::Integer)
-    t = findfirst(s.id .== i) 
+function findindex(fs::Forecasts, i::Integer)
+    t = findfirst(fs.id .== i) 
     isnothing(t) && throw(error("field `id` of the provided series does not contain '$(i)'"))
     return t
 end
 
-function (s::Forecasts)(i::Integer) 
-    s[findindex(s, i)]
+function (fs::Forecasts)(i::Integer) 
+    fs[findindex(fs, i)]
 end
 
-function (s::Forecasts)(I::AbstractVector{<:Integer})  
-    s[[findindex(s, i) for i in I]]
+function (fs::Forecasts)(I::AbstractVector{<:Integer})  
+    fs[[findindex(fs, i) for i in I]]
 end
 
 """
-    decouple(ps::PointForecasts) 
-Return `::Vector{PointForecasts}`, where each element contains an individual forecast series from `ps`.
+    decouple(pf::PointForecasts) 
+Return `::Vector{PointForecasts}`, where each element contains an individual forecast series from `pf`.
 """
-function decouple(ps::PointForecasts) 
+function decouple(pf::PointForecasts) 
     return [PointForecasts(
-            ps.pred[:, i],
-            copy(ps.obs),
-            copy(ps.id)) for i in 1:npred(ps)]
+            pf.pred[:, i],
+            copy(pf.obs),
+            copy(pf.id)) for i in 1:npred(pf)]
 end
 
 """

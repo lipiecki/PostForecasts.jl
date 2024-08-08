@@ -13,7 +13,7 @@ const PANGU_T850 = Dict(Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10)
 const PANGU_Z500 = Dict(Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)
 const PANGU = Dict(PANGU_U10..., PANGU_V10..., PANGU_T2M..., PANGU_T850..., PANGU_Z500...)
 
-import Base: getindex, firstindex, lastindex, eachindex, length
+import Base: getindex, firstindex, lastindex, eachindex, length, show
 using DelimitedFiles
 using HDF5
 using HiGHS
@@ -40,7 +40,8 @@ export
     # Forecasts API
     PointForecasts,
     QuantForecasts,
-    Forecasts,   
+    Forecasts, 
+    show,
     length,
     getindex,
     firstindex,
