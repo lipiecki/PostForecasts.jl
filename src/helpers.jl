@@ -35,3 +35,18 @@ function isunique(X::Vector{<:Integer})
     end
     return true
 end
+
+function _point2prob(pf::PointForecasts{F, I}, window::Integer, model::ProbModel, prob::Vector{F}, first::Integer, last::Integer, recalibration::Integer) where {F, I}
+    quantiles = zeros(F, last-first+1, length(prob))
+    for t in first:last
+        if t == first || (recalibration > 0 && (t - first) % recalibration == 0)
+            _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
+        end
+        _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
+    end
+    return QuantForecasts(
+        quantiles,
+        getobs(pf, first:last),
+        getid(pf, first:last),
+        prob)
+end

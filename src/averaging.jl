@@ -1,15 +1,15 @@
 """
     average(pf; agg::Symbol=:mean)
-Average the pool of point pred from `pf`. Return `PointForecasts` containing averaged pred, keyword argument `agg` specifies whether to average using simple mean (`:mean`) or median (`:median`).
+Average the pool of point pred from `pf`. Return `PointForecasts` containing averaged forecasts, keyword argument `agg` specifies whether to average using simple mean (`:mean`) or median (`:median`).
 
-If `pf` is a vector of `PointForecasts`, all individual pred from passed PointForecasts are averaged.
+If `pf` is a vector of `PointForecasts`, all individual forecasts from passed PointForecasts are averaged.
 """
 function average(pf::PointForecasts; agg::Symbol=:mean)
     npred(pf) == 1 && return pf
     if agg == :mean
-        aggpred = vec(mean(pf.pred, dims=2))
+        aggpred = vec(mean(viewpred(pf), dims=2))
     elseif agg == :median
-        aggpred = vec(median(pf.pred, dims=2))
+        aggpred = vec(median(viewpred(pf), dims=2))
     else
         throw(ArgumentError("$(agg) is not a viable aggregation scheme"))
     end
@@ -23,23 +23,17 @@ function average(PF::Vector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, 
     checkmatch(PF)
     m = sum(npred(pf) for pf in PF) 
     m > 1 || return PF[begin]
-    if agg == :mean
-        aggf = mean
-    elseif agg == :median
-        aggf = median
-    else
-        throw(ArgumentError("$(agg) is not a viable aggregation scheme"))
-    end
+    (agg == :mean || agg == :median) || throw(ArgumentError("$(agg) is not a viable aggregation scheme"))
     avergedpred = Vector{F}(undef, length(PF[begin]))
     auxiliary = Vector{F}(undef, m)
     for t in eachindex(PF[begin])
         f = 0
         for pf in PF
             for i in 1:npred(pf)
-                auxiliary[f+=1] = pf.pred[t, i]
+                auxiliary[f+=1] = getpred(pf, t, i)
             end
         end
-        avergedpred[t] = aggf(auxiliary)
+        avergedpred[t] = agg == :mean ? mean(auxiliary) : median(auxiliary)
     end
     return PointForecasts(
         avergedpred,

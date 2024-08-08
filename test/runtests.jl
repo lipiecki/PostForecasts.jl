@@ -54,6 +54,7 @@ end
 @testset "Conformal Prediction" begin
     pred = rand(100)
     obs = rand(100)
+    
     λ = sort(abs.(obs - pred))
 
     model = CP(100)
@@ -90,6 +91,31 @@ end
     @test all(quantiles .≈ quantiles4)
     @test all(@views(quantiles[:, 50]) .≈ medians)
     @test all(medians .≈ medians2)
+
+    λ = sort((obs - pred))
+
+    model = CP(100, abs=false)
+    train(model, pred, obs)
+
+    @test all(λ .≈ getscores(model))
+
+    pred_ = [pred; rand(50)]
+    obs_ = [obs; rand(50)]
+    pf = PointForecasts(pred_, obs_)
+    qf = point2prob(pf, 100, :hs, 99, recalibration=0)
+
+    corrections = quantile(λ, 0.01:0.01:0.99, sorted=true, alpha=1, beta=1)
+    quantiles = zeros(50, 99)
+    refquantiles = zeros(50, 99)
+    medians = zeros(50)
+    for i in 1:50
+        predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
+        refquantiles[i, :] = pred_[100 + i] .+ corrections
+        medians[i] = predict(model, pred_[100+i], 0.5)
+    end
+    @test all(quantiles .≈ viewpred(qf))
+    @test all(quantiles .≈ refquantiles)
+    @test all(@views(quantiles[:, 50]) .≈ medians)
 end
 
 @testset "Isotonic Distributional Regression" begin
@@ -226,6 +252,24 @@ end
 
     quantiles = zeros(50, 99)
     quantiles2 = zeros(50, 99)
+    for i in 1:50
+        predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
+        quantiles2[i, :] = predict(model,  pred_[100+i], 0.01:0.01:0.99)
+    end
+    @test all(quantiles .≈ viewpred(qf))
+    @test all(quantiles .≈ quantiles2)
+
+    model = Normal(zeromean=true)
+    train(model, pred, obs)
+
+    @test all(getmean(model) ≈ 0.0)
+    @test all(getstd(model) ≈ sqrt(sum((obs - pred).^2)/100))
+
+    pred_ = [pred; rand(50)]
+    obs_ = [obs; rand(50)]
+    pf = PointForecasts(pred_, obs_)
+    qf = point2prob(pf, 100, :zeronormal, 99, recalibration=0)
+
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
         quantiles2[i, :] = predict(model,  pred_[100+i], 0.01:0.01:0.99)

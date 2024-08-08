@@ -7,11 +7,11 @@ struct Normal <: UniRegProbModel
     σ::Base.RefValue{Float64}
     zeromean::Bool
 
-    Normal(zeromean::Bool=false) = new(Ref{Float64}(0.0), Ref{Float64}(1.0), zeromean)
+    Normal(;zeromean::Bool=false) = new(Ref{Float64}(0.0), Ref{Float64}(1.0), zeromean)
 end
 
 getmodel(::Val{:normal}, ::Vararg) = Normal()
-getmodel(::Val{:zeronormal}, ::Vararg) = Normal(true)
+getmodel(::Val{:zeronormal}, ::Vararg) = Normal(zeromean=true)
 
 """
     getmean(m::Normal)
