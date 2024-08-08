@@ -26,9 +26,9 @@ function point2prob(pf::PointForecasts{F, I}, window::Integer, modelname::Symbol
     end
     for t in first:last
         if t == first || (recalibration > 0 && (t - first) % recalibration == 0)
-            train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
+            _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
         end
-        predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
+        _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
     end
     return QuantForecasts(
         quantiles,
@@ -56,7 +56,7 @@ function conformalize(qf::QuantForecasts{F, I}, window::Integer; first::Integer=
     for t in first:last
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
-            quantiles[t - first + 1, i] = predict(model, quantiles[t - first + 1, i], 1.0 - getprob(qf, i))
+            quantiles[t - first + 1, i] = _predict(model, quantiles[t - first + 1, i], 1.0 - getprob(qf, i))
         end
     end
     sort!(quantiles, dims = 2)
@@ -76,7 +76,7 @@ function conformalize!(qf::QuantForecasts{F, I}, window::Integer; first::Integer
     for t in last:-1:first
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
-            setpred!(qf, t, i, predict(model, getpred(qf, t, i), 1.0 - getprob(qf, i)))
+            setpred(qf, t, i, _predict(model, getpred(qf, t, i), 1.0 - getprob(qf, i)))
         end
         sort!(viewpred(qf, t))
     end

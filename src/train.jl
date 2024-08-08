@@ -14,9 +14,10 @@ function train(m::UniRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVecto
 end
 
 function train(m::UniRegProbModel, X::AbstractMatrix{<:Number}, Y::AbstractVector{<:Number})
+    size(X, 1) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     size(X, 2) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(size(X, 2)) were provided"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
-    _train(m, selectdim(X, 2, 1), Y)
+    _train(m, X, Y)
 end
 
 function train(m::MultiRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}) 

@@ -23,7 +23,7 @@ function getscores(m::CP)
     return copy(m.scores)
 end
 
-function _train(m::CP, X::AbstractVector{<:Number}, Y::AbstractVector{<:Number})
+function _train(m::CP, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number})
     m.scores .= Y - X
     if m.abs
         for i in eachindex(m.scores)
@@ -49,5 +49,11 @@ end
 function _predict!(m::CP, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
+    end
+end
+
+function _predict!(m::CP, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
+    for j in eachindex(output)
+        output[j] = _predict(m, input[1], prob[j])
     end
 end

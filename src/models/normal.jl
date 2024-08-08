@@ -29,7 +29,7 @@ function getstd(m::Normal)
     return m.σ[]
 end
 
-function _train(m::Normal, X::AbstractVector{<:AbstractFloat}, Y::AbstractVector{<:AbstractFloat})
+function _train(m::Normal, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{<:AbstractFloat})
     n = length(Y)
     if m.zeromean
         m.μ[] = 0.0
@@ -47,5 +47,11 @@ end
 function _predict!(m::Normal, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
+    end
+end
+
+function _predict!(m::Normal, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
+    for j in eachindex(output)
+        output[j] = _predict(m, input[1], prob[j])
     end
 end

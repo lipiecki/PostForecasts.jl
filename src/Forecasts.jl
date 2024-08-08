@@ -156,10 +156,10 @@ function npred(fs::Forecasts)
 end
 
 """
-    setpred!(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
+    setpred(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
 Set the element of field `fs.pred` at indices `t, i` to `val`.
 """
-function setpred!(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
+function setpred(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
     fs.pred[t, i] = val
 end
 

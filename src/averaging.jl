@@ -59,7 +59,7 @@ function paverage(QF::AbstractVector{QuantForecasts{F, I}}, prob::AbstractVector
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
     cdf = Vector{F}(undef, length(y))
     order = Vector{Int}(undef, length(y))
-    for t in 1:length(QF[begin])
+    for t in eachindex(QF[begin])
         counter = 0
         for qf in QF
             for i in 1:npred(qf)

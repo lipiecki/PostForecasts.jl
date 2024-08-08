@@ -49,7 +49,7 @@ export
     findindex,
     decouple,
     npred,
-    setpred!,
+    setpred,
     getpred,
     getobs,
     getid,

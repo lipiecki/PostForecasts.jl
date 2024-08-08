@@ -100,7 +100,7 @@ function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
     output = m.W[end, j]
-    for i in eachindex(input)
+    for i in 1:nreg(m)
         output += m.W[i, j]*input[i]
     end
     return output
@@ -111,21 +111,25 @@ function _predict(m::QR, input::Union{Number, AbstractVector{<:Number}})
     _predict!(m, output, input)
 end
 
-function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, ::Vararg{AbstractVector{<:AbstractFloat}})
+_predict(m::QR, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVector{<:AbstractFloat}) = _predict(m, input)
+
+function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    for j in eachindex(output)
+    for j in 1:nquantiles(m)
         output[j] = m.W[end, j]
-        for i in eachindex(input)
+        for i in 1:nreg(m)
             output[j] += m.W[i, j]*input[i]
         end
     end
     sort!(output)
 end
 
-function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, ::Vararg{AbstractVector{<:AbstractFloat}})
+function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    for j in eachindex(output)
+    for j in 1:nquantiles(m)
         output[j] = m.W[end, j] + m.W[1, j]*input
     end
     sort!(output)
 end
+
+_predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Union{Number, AbstractVector{<:Number}}, _::AbstractVector{<:AbstractFloat}) = _predict!(m, output, input)
