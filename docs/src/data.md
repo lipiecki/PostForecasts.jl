@@ -1,6 +1,6 @@
 # Datasets
 
-Point2Prob.jl ships with several datasets for evaluating probabilistic forecasts, the detailed description along with the source is provided below.
+**PostForecasts.jl** ships with several datasets for evaluating probabilistic forecasts, the detailed description along with the source is provided below.
 
 ## EPEX - Prices on the German Day-Ahead Energy Market 
 ### Data
