@@ -8,12 +8,14 @@ The number of regressors must match the specification of the model.
 For `m::UniRegProbModel`, `X` can be a vector, if it is a matrix with multiple columns, they will be averaged before training.
 """
 function train(m::UniRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVector{<:Number})
+    Base.require_one_based_indexing(X, Y)
     length(X) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
     _train(m, X, Y)
 end
 
 function train(m::UniRegProbModel, X::AbstractMatrix{<:Number}, Y::AbstractVector{<:Number})
+    Base.require_one_based_indexing(X, Y)
     size(X, 1) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     size(X, 2) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(size(X, 2)) were provided"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
@@ -21,6 +23,7 @@ function train(m::UniRegProbModel, X::AbstractMatrix{<:Number}, Y::AbstractVecto
 end
 
 function train(m::MultiRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVector{<:Number}) 
+    Base.require_one_based_indexing(X, Y)
     length(X) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
@@ -28,6 +31,7 @@ function train(m::MultiRegProbModel, X::AbstractVector{<:Number}, Y::AbstractVec
 end
 
 function train(m::MultiRegProbModel, X::AbstractMatrix{<:Number}, Y::AbstractVector{<:Number}) 
+    Base.require_one_based_indexing(X, Y)
     size(X, 1) == length(Y) || throw(ArgumentError("lengths of `X` and `Y` do not match"))
     matchwindow(m, size(X, 1)) || throw(ArgumentError("length of `X` and `Y` does not match model specification"))
     nreg(m) == size(X, 2) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(size(X, 2)) were provided"))

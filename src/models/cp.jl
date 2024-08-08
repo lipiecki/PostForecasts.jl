@@ -27,7 +27,7 @@ function _train(m::CP, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number
     m.scores .= Y - X
     if m.abs
         for i in eachindex(m.scores)
-            m.scores[i] = abs(m.scores[i])
+            @inbounds m.scores[i] = abs(m.scores[i])
         end
     end
     sort!(m.scores)
@@ -48,12 +48,12 @@ end
 
 function _predict!(m::CP, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
-        output[j] = _predict(m, input, prob[j])
+        @inbounds output[j] = _predict(m, input, prob[j])
     end
 end
 
 function _predict!(m::CP, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
-        output[j] = _predict(m, input[1], prob[j])
+        @inbounds output[j] = _predict(m, input[1], prob[j])
     end
 end

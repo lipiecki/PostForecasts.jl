@@ -46,12 +46,12 @@ end
 
 function _predict!(m::Normal, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
-        output[j] = _predict(m, input, prob[j])
+        @inbounds output[j] = _predict(m, input, prob[j])
     end
 end
 
 function _predict!(m::Normal, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
-        output[j] = _predict(m, input[1], prob[j])
+        @inbounds output[j] = _predict(m, input[1], prob[j])
     end
 end

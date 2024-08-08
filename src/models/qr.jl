@@ -13,11 +13,11 @@ struct QR <: MultiRegProbModel
     H::Matrix{Float64}
     lpmodel::GenericModel{Float64}
 
-    function QR(n::Integer, m::Integer, prob::AbstractVector{<:AbstractFloat})
+    function QR(n::Integer, m::Integer, prob::Vector{<:AbstractFloat})
         lpmodel = Model(HiGHS.Optimizer)
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
-        new(Float64.(vec(prob)), Matrix{Float64}(undef, m + 1, length(prob)), 
+        new(Float64.(prob), Matrix{Float64}(undef, m + 1, length(prob)), 
             Vector{Float64}(undef, 2(m + 1 + n)),
             Matrix{Float64}(undef, n, 2(m + 1 + n)),
             lpmodel)
@@ -54,7 +54,7 @@ end
 function _train(m::QR, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{<:AbstractFloat})
     H, h, lpmodel = m.H, m.h, m.lpmodel
 
-    for (p, α) in enumerate(m.prob)
+    @inbounds for (p, α) in enumerate(m.prob)
         empty!(lpmodel)  
         n, d = ndims(X) > 1 ? size(X) : (length(X), 1)
         d += 1 # for the intercept
@@ -93,15 +93,15 @@ end
 function _predict(m::QR, input::Number, prob::AbstractFloat)
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
-    return m.W[end, j] + m.W[1, j]*input
+    @inbounds return m.W[end, j] + m.W[1, j]*input
 end
 
 function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
-    output = m.W[end, j]
+    @inbounds output = m.W[end, j]
     for i in 1:nreg(m)
-        output += m.W[i, j]*input[i]
+        @inbounds output += m.W[i, j]*input[i]
     end
     return output
 end
@@ -116,9 +116,9 @@ _predict(m::QR, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVe
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
     for j in 1:nquantiles(m)
-        output[j] = m.W[end, j]
+        @inbounds output[j] = m.W[end, j]
         for i in 1:nreg(m)
-            output[j] += m.W[i, j]*input[i]
+            @inbounds output[j] += m.W[i, j]*input[i]
         end
     end
     sort!(output)
@@ -127,7 +127,7 @@ end
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
     nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
     for j in 1:nquantiles(m)
-        output[j] = m.W[end, j] + m.W[1, j]*input
+        @inbounds output[j] = m.W[end, j] + m.W[1, j]*input
     end
     sort!(output)
 end

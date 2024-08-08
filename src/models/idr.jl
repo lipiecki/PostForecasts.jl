@@ -28,8 +28,8 @@ struct IDR <: MultiRegProbModel
         Array{Float64}(undef, n, n, m),
         Matrix{Float64}(undef, n, m),
         Vector{Float64}(undef, n),
-        Vector{UInt16}(undef, m),
-        Ref{UInt16}(),
+        ones(UInt16, m).*n,
+        Ref{UInt16}(n),
         Vector{UInt16}(undef, n),
         Vector{UInt16}(undef, n),
         Vector{UInt16}(undef, n),
@@ -84,7 +84,7 @@ function _train(m::IDR, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{
 
     fill!(cdf, 1.0)
 
-    for p in 1:npreds
+    @inbounds for p in 1:npreds
         
         fill!(w, 0)
         fill!(z, 0.0)
@@ -213,13 +213,13 @@ function _train(m::IDR, X::AbstractVecOrMat{<:AbstractFloat}, Y::AbstractVector{
 end
 
 function _predict(m::IDR, input::Number, prob::AbstractFloat)
-    y = @view(m.y[1:m.lasty[]])
-    for j in 1:m.lasty[]
+    @inbounds y = @view(m.y[1:m.lasty[]])
+    @inbounds for j in 1:m.lasty[]
         p = 0.0
         x = @view(m.x[1:m.lastx[1], 1])
         i = searchsortedfirst(x, input)
         if i > m.lastx[1]
-            p += m.cdf[m.lastx[1], j, 1]
+           p += m.cdf[m.lastx[1], j, 1]
         elseif i == 1
             p += m.cdf[i, j, 1]
         else
@@ -233,8 +233,8 @@ function _predict(m::IDR, input::Number, prob::AbstractFloat)
 end
 
 function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
-    y = @view(m.y[1:m.lasty[]])
-    for j in 1:m.lasty[]
+    @inbounds y = @view(m.y[1:m.lasty[]])
+    @inbounds for j in 1:m.lasty[]
         p = 0.0
         f = 0
         for val in input
@@ -258,6 +258,6 @@ end
 
 function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::Union{Number, AbstractVector{<:Number}}, prob::AbstractVector{<:AbstractFloat})
     for j in eachindex(output)
-        output[j] = _predict(m, input, prob[j])
+        @inbounds output[j] = _predict(m, input, prob[j])
     end
 end
