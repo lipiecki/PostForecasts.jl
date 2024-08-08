@@ -65,7 +65,7 @@ function predict(m::QR, input::AbstractVector{<:Number})::Vector{Float64}
     Base.require_one_based_indexing(input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
     output = Vector{Float64}(undef, nquantiles(m))
-    _predict!(m, output, input, prob)
+    _predict!(m, output, input)
     return output
 end
 

@@ -71,17 +71,20 @@ end
     quantiles2 = zeros(50, 99)
     quantiles3 = zeros(50, 99)
     quantiles4 = zeros(50, 99)
+    refquantiles = zeros(50, 99)
     medians = zeros(50)
     medians2 = zeros(50)
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
-        quantiles2[i, :] = predict(model, pred_[100+i], 0.01:0.01:0.99)
-        quantiles3[i, :] = predict(model, [pred_[100+i]], 0.01:0.01:0.99)
-        quantiles4[i, :] = pred_[100 + i] .+ corrections
+        predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
+        quantiles3[i, :] = predict(model, pred_[100+i], 0.01:0.01:0.99)
+        quantiles4[i, :] = predict(model, [pred_[100+i]], 0.01:0.01:0.99)
+        refquantiles[i, :] = pred_[100 + i] .+ corrections
         medians[i] = predict(model, pred_[100+i], 0.5)
         medians2[i] = predict(model, [pred_[100+i]], 0.5)
     end
     @test all(quantiles .≈ viewpred(qf))
+    @test all(quantiles .≈ refquantiles)
     @test all(quantiles .≈ quantiles2)
     @test all(quantiles .≈ quantiles3)
     @test all(quantiles .≈ quantiles4)
@@ -130,20 +133,23 @@ end
     quantiles = zeros(50, 99)
     quantiles2 = zeros(50, 99)
     quantiles3 = zeros(50, 99)
+    quantiles4 = zeros(50, 99)
     medians = zeros(50)
     medians2 = zeros(50)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
-        quantiles2[i, :] .= predict(model, pred_[100+i], 0.01:0.01:0.99)
-        quantiles3[i, :] .= predict(model, [pred_[100+i]], 0.01:0.01:0.99)
+        predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
+        quantiles3[i, :] .= predict(model, pred_[100+i], 0.01:0.01:0.99)
+        quantiles4[i, :] .= predict(model, [pred_[100+i]], 0.01:0.01:0.99)
         medians[i] = predict(model, pred_[100+i], 0.01:0.01:0.99)[50]
         medians2[i] = predict(model, pred_[100+i], 0.5)
     end
 
     @test all(quantiles .≈ viewpred(qf))
     @test all(quantiles .≈ quantiles2)
-    @test all(quantiles2 .≈ quantiles3)
+    @test all(quantiles .≈ quantiles3)
+    @test all(quantiles .≈ quantiles4)
     @test all(@view(quantiles[:, 50]) .≈ medians)
     @test all(medians .≈ medians2)
 
@@ -168,6 +174,7 @@ end
     @test all(getweights(model) .≈ W)
     @test all(predict(model, -1, prob) .≈ [-1.5, -1.5])
     @test all(predict(model, -1) .≈ [-1.5, -1.5])
+    @test all(predict(model, [-1]) .≈ [-1.5, -1.5])
     @test predict(model, -1, 0.25) ≈ -1.5
     @test predict(model, [-1], 0.25) ≈ -1.5
 
@@ -179,14 +186,17 @@ end
     quantiles = zeros(50,2)
     quantiles2 = zeros(50,2)
     quantiles3 = zeros(50,2)
+    quantiles4 = zeros(50,2)
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], prob)
         predict!(model, @view(quantiles2[i, :]), pred_[100+i])
-        quantiles3[i, :] = predict(model, pred_[100+i], prob)
+        predict!(model, @view(quantiles3[i, :]), [pred_[100+i]])
+        quantiles4[i, :] = predict(model, pred_[100+i], prob)
     end
     @test all(quantiles .≈ viewpred(qf))
     @test all(quantiles .≈ quantiles2)
-    @test all(quantiles2 .≈ quantiles3)
+    @test all(quantiles .≈ quantiles3)
+    @test all(quantiles .≈ quantiles4)
 
     pred = rand(100, 2)
     obs = pred*[2, 1] .+ 0.5
