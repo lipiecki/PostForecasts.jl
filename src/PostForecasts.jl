@@ -88,7 +88,8 @@ export
     # Quantile Regression
     QR,
     getweights,
-    nquantiles,
+    nquant,
+    quantprob,
 
     # Postprocessing
     point2prob,

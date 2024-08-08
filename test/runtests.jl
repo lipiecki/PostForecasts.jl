@@ -197,6 +197,9 @@ end
     model = QR(100, 1, prob)
     train(model, pred, obs)
     
+    @test(quantprob(model) == [0.25, 0.75])
+    @test(nquant(model) == 2)
+
     @test all(getweights(model) .≈ W)
     @test all(predict(model, -1, prob) .≈ [-1.5, -1.5])
     @test all(predict(model, -1) .≈ [-1.5, -1.5])

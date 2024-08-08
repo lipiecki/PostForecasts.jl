@@ -41,11 +41,19 @@ function getweights(m::QR)
 end
 
 """
-    nquantiles(m::QR)
+    nquant(m::QR)
 Return the number of quantiles matching the specification of QR model `m`.
 """
-function nquantiles(m::QR)
+function nquant(m::QR)
     return length(m.prob)
+end
+
+"""
+    quantprob(m::QR)
+Return the vector of probabilities at which quantiles of QR model `m` are calculated.
+"""
+function quantprob(m::QR)
+    return copy(m.prob)
 end
 
 function nreg(m::QR)
@@ -108,8 +116,8 @@ function _predict(m::QR, input::AbstractVector{<:Number}, prob::AbstractFloat)
 end
 
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
-    nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    for j in 1:nquantiles(m)
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
+    for j in 1:nquant(m)
         @inbounds output[j] = m.W[end, j]
         for i in 1:nreg(m)
             @inbounds output[j] += m.W[i, j]*input[i]
@@ -119,8 +127,8 @@ function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Abstra
 end
 
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
-    nquantiles(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquantiles(m)))"))
-    for j in 1:nquantiles(m)
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
+    for j in 1:nquant(m)
         @inbounds output[j] = m.W[end, j] + m.W[1, j]*input
     end
     sort!(output)

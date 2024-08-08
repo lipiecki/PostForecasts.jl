@@ -76,6 +76,8 @@ The coefficients $\beta^{(\tau)}_{0...m}$ are selected to minimize the pinball l
 ```@docs
 QR
 getweights
+nquant
+quantprob
 ```
 
 ## Training and prediction
