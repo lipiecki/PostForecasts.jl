@@ -21,16 +21,22 @@ getmean
 getstd
 ```
 
-## Conformal Prediction
-Conformal prediction is a machine learning framework for computing prediction intervals based on the outputs of an arbirary point forecasting model. The implemented version of Conformal Prediction is analogous to the inductive approach used by [Kath and Ziel (2021)](https://doi.org/10.1016/j.ijforecast.2020.09.006). 
+## Conformal Prediction and Hsitorical Simulation
+Conformal prediction is a machine learning framework for computing prediction intervals based on the outputs of an arbirary point forecasting model. The implemented version of Conformal Prediction is analogous to the inductive approach used by [[Kath & Ziel (2021)]](https://doi.org/10.1016/j.ijforecast.2020.09.006). 
 
 In the training step, the non-conformity scores $\lambda_i$ are calculated on the calibration set $(\hat{y}_i, y_i)_{i\in\text{calibration window}}$ as $\lambda_i := |\hat{y}_i - y_i|$.
 
 In the prediction step, the $\tau$-th quantile conditional on $\hat{y_t}$ is obtained by shifting the prediction by an appropriate empirical quantile of non-conformity scores:
 
-$\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau \leq 0.5\}} Q_{2\tau}(\lambda) + \mathbf{1}_{\{\tau > 0.5\}} Q_{2(1 - \tau)}(\lambda),$
+$\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{2\tau}(\lambda) + \mathbf{1}_{\{\tau > 0.5\}} Q_{2(1 - \tau)}(\lambda),$
 
 where $Q_{\alpha}(\lambda)$ is the $\alpha$-th empirical quantile of non-conformity scores from the calibration window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $(1-\alpha)$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
+
+It is also possible to use conformal prediction with non-absolute errors and define $\lambda_i := \hat{y}_i - y_i$. Then in the predcition step we obtain $\tau$-th quantile conditional on $\hat{y_t}$ as:
+
+$\hat{q}_{\tau|\hat{y}} = \hat{y} + Q_{\tau}(\lambda),$
+
+the method known as historical simulation [[Nowotarski & Weron (2018)]](https://doi.org/10.1016/j.rser.2017.05.234)
 
 ```@docs
 CP

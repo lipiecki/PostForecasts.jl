@@ -95,7 +95,7 @@ end
     λ = sort((obs - pred))
 
     model = CP(100, abs=false)
-    train(model, pred, obs)
+    train(model, reshape(pred, 100, 1), obs) # reshape to test the other train method
 
     @test all(λ .≈ getscores(model))
 
@@ -261,7 +261,7 @@ end
 
     model = Normal(zeromean=true)
     
-    train(model, reshape(pred, 100, 1), obs) # reshape to another train method
+    train(model, reshape(pred, 100, 1), obs) # reshape to test the other train method
 
     @test all(getmean(model) ≈ 0.0)
     @test all(getstd(model) ≈ sqrt(sum((obs - pred).^2)/100))

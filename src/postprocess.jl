@@ -4,8 +4,8 @@ Compute probabilistic forecast based on point forecasts `pf`. Probabilistic fore
 
 Available options for `model`:
 - `:qr` for Quantile Regression Averaging
-- `:cp` for Conformal Prediction
-- `:hs` for Conformal Prediction with non-symmetric errors (a.k.a. Historical Simulation)
+- `:cp` for Conformal Prediction with absolute errors
+- `:hs` for Conformal Prediction with non-absolute errors (a.k.a. Historical Simulation)
 - `:idr` for Isotonic Distributional Regression
 - `:normal` for Normal distribution of errors
 - `:zeronormal` for Normal distribution of errors with fixed mean equal to 0.
