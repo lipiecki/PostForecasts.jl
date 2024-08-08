@@ -32,7 +32,7 @@ $\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{2\tau}(\lambd
 
 where $Q_{\alpha}(\lambda)$ is the $\alpha$-th empirical quantile of non-conformity scores from the calibration window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $(1-\alpha)$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
 
-It is also possible to use conformal prediction with non-absolute errors and define $\lambda_i := \hat{y}_i - y_i$. Then in the predcition step we obtain $\tau$-th quantile conditional on $\hat{y_t}$ as:
+However, it is also possible to use conformal prediction to obtain non-symmetric distributions, by using non-absolute errors $\lambda_i := \hat{y}_i - y_i$. Then, in the predcition step $\tau$-th quantile conditional on $\hat{y_t}$ is computed as:
 
 $\hat{q}_{\tau|\hat{y}} = \hat{y} + Q_{\tau}(\lambda),$
 
