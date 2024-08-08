@@ -212,17 +212,17 @@ function getid(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
 end
 
 """
-    getprob(qs::QuantForecasts[, I])
-Return the copy of `prob`abilities from `qs`. 
+    getprob(qf::QuantForecasts[, I])
+Return the copy of `prob`abilities from `qf`. 
 
 Provide optional argument `I::Union{Integer, AbstractVector{<:Integer}}` to get `prob`abilities at specified forecast indices.
 """
-function getprob(qs::QuantForecasts)
-    return copy(qs.prob)
+function getprob(qf::QuantForecasts)
+    return copy(qf.prob)
 end
 
-function getprob(qs::QuantForecasts, I::Union{Integer, AbstractVector{<:Integer}})
-    return qs.prob[I]
+function getprob(qf::QuantForecasts, I::Union{Integer, AbstractVector{<:Integer}})
+    return qf.prob[I]
 end
 
 """
@@ -272,16 +272,17 @@ end
 function viewid(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
     return @view(fs.id[T])
 end
-function viewprob(qs::QuantForecasts)
-    return @view(qs.prob[:])
-end
 
 """
-    viewprob(qs::QuantForecasts[, I])
-Return the view of `prob`abilities from `qs`. 
+    viewprob(qf::QuantForecasts[, I])
+Return the view of `prob`abilities from `qf`. 
 
 Provide optional argument `I::Union{Integer, AbstractVector{<:Integer}}` to get `prob`abilities at specified forecast indices.
 """
-function viewprob(qs::QuantForecasts, I::Union{Integer, AbstractVector{<:Integer}})
-    return @view(qs.prob[I])
+function viewprob(qf::QuantForecasts)
+    return @view(qf.prob[:])
+end
+
+function viewprob(qf::QuantForecasts, I::Union{Integer, AbstractVector{<:Integer}})
+    return @view(qf.prob[I])
 end
