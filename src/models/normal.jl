@@ -1,6 +1,6 @@
 """
-    Normal
-Structure for storing parameters of the normal distribution.
+    Normal(;zeromean::Bool=false)
+Creates a `Normal<:UniRegProgModel<:ProbModel` for normally distributed errors. Optional keyword argument `zeromean` specifies wheter to assume a zero mean.
 """
 struct Normal <: UniRegProbModel
     μ::Base.RefValue{Float64}

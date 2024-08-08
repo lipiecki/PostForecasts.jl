@@ -1,8 +1,6 @@
 """
-    CP
-Structure for storing the non-conformity scores used for computing prediction intervals using [Conformal Prediction](https://doi.org/10.1016/j.ijforecast.2020.09.006).
-
-CP(n, abs=true) creates a new structure for storing non-conformity scores (absolute errors if `abs=true`) of `n` observations.
+    CP(n::Integer[; abs::Bool=true])
+Creates a `CP<:UniRegProgModel<:ProbModel` for [conformal prediction](https://doi.org/10.1016/j.ijforecast.2020.09.006) that stores the non-conformity scores of `n` observations. Optional keyword argument `abs` specifies wheter to use absolute errors.
 """
 struct CP <: UniRegProbModel
     scores::Vector{Float64}

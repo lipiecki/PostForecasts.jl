@@ -1,8 +1,6 @@
 """
-    QR
-Struct for storing variables necessary for calibration and prediction using quantile regression.
-
-QR(n, m, prob) creates a new structure for QR to be calibrated on `n` observations of `m` forecasts (regressors) for predicting quantiles at probabilties `prob`.
+    QR(n::Integer, m::Integer, prob::Vector{<:AbstractFloat})
+Creates a `QR<:MultiRegProgModel<:ProbModel` for quantile regression to be trained on `n` observations with `m` forecasts (regressors), fitting quantiles at probabilties specified by `prob`.
 """
 struct QR <: MultiRegProbModel
     prob::Vector{Float64} # vector of probabilities for which quantile regressions are fitted
@@ -14,6 +12,8 @@ struct QR <: MultiRegProbModel
     lpmodel::GenericModel{Float64}
 
     function QR(n::Integer, m::Integer, prob::Vector{<:AbstractFloat})
+        issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
+        (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = Model(HiGHS.Optimizer)
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
@@ -23,6 +23,7 @@ struct QR <: MultiRegProbModel
             lpmodel)
     end
     function QR(n::Integer, m::Integer, prob::AbstractFloat)
+        (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
         QR(n, m, [prob])
     end
 end

@@ -1,8 +1,6 @@
 """
-    IDR
-Struct for storing variables necessary for calibration and prediction using [Isotonic Distributional Regression](https://doi.org/10.1111/rssb.12450)
-
-IDR(n, m) creates a new structure for IDR to be calibrated on `n` observations of `m` forecasts (regressors).
+    IDR(n::Integer, m::Integer)
+Creates a `IDR<:MultiRegProgModel<:ProbModel` for [isotonic distributional Regression](https://doi.org/10.1111/rssb.12450) to be trained on `n` observations with `m` forecasts (regressors).
 """
 struct IDR <: MultiRegProbModel
     cdf::Array{Float64, 3} # Array storing estimated conditional `CDF`s, where `F[i, j, k]` is the `CDF(y[j])` given that `k`-th regressor value is `x[i, k]`.

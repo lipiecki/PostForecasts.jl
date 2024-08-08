@@ -1,8 +1,8 @@
 """
-    PointForecasts
-Structure for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
+    PointForecasts(pred, obs, id)
+Create `PointForecasts<:Forecasts` for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
 """
-struct PointForecasts{F<:AbstractFloat, I<:Integer}<:Forecasts
+struct PointForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     pred::Matrix{<:F}
     obs::Vector{<:F}
     id::Vector{<:I}
@@ -29,10 +29,10 @@ struct PointForecasts{F<:AbstractFloat, I<:Integer}<:Forecasts
 end
 
 """
-    QuantForecasts
-Structure for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
+    QuantForecasts(pred, obs, id, prob)
+Create `QuantForecasts<:Forecasts` for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
 """
-struct QuantForecasts{F<:AbstractFloat, I<:Integer}<:Forecasts
+struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     pred::Matrix{<:F}
     prob::Vector{<:F}
     obs::Vector{<:F}
