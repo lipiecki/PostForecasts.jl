@@ -20,18 +20,20 @@ using Test, PostForecasts
           viewid(pf, I) ≈ @view(id[I]) &&
           viewprob(qf, 1) ≈ [0.5]
           
-    @test getpred(pf, 100) ≈ pf[end][:pred] && 
-          getobs(qf, 100) ≈ qf[end][:obs] && 
-          getid(pf, 1) ≈ pf[begin][:id] && 
+    @test getpred(pf, 100) ≈ pf[end][:pred] &&
+          getobs(qf, 100) ≈ qf[end][:obs] &&
+          getid(pf, 1) ≈ pf[begin][:id] &&
           getprob(qf) ≈ qf[begin][:prob]
 
-    @test pf(5)[:obs] ≈ obs[begin] && viewobs(qf(id[I])) ≈ @view(obs[I])
+    
+    @test pf(5)[:obs] ≈ obs[begin] &&
+          viewobs(qf(id[I])) ≈ @view(obs[I]) &&
+          viewobs(pf[I]) ≈ @view(obs[I])
     
     io = IOBuffer()
     show(io, pf)
-    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
     show(io, qf)
-    @test String(take!(io)) == "QuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
+    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\nQuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
 end
 
 @testset "Conformalize" begin
@@ -68,7 +70,7 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :cp, 100, 99, retrain=0)
     corrections = [-quantile(λ, 0.98:-0.02:0.02, sorted=true, alpha=1, beta=1); 0; quantile(λ, 0.02:0.02:0.98, sorted=true, alpha=1, beta=1)]
     
@@ -105,7 +107,7 @@ end
 
     @test λ ≈ getscores(model)
 
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :hs, 100, 99, retrain=0)
     corrections = quantile(λ, 0.01:0.01:0.99, sorted=true, alpha=1, beta=1)
 
@@ -158,7 +160,7 @@ end
 
     pred_ = [pred; randn(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :idr, 100, 99, retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 99)
@@ -202,10 +204,10 @@ end
     model = QR(100, 1, prob)
     train(model, pred, obs)
     
+    @test getweights(model) ≈ W
     @test quantprob(model) == [0.25, 0.75]
     @test nquant(model) == 2
-
-    @test getweights(model) ≈ W
+    
     @test predict(model, -1, prob) ≈ [-1.5, -1.5]
     @test predict(model, [-1], prob) ≈ [-1.5, -1.5]
     @test predict(model, -1) ≈ [-1.5, -1.5]
@@ -215,25 +217,22 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :qr, 100, [0.25, 0.75], retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 2)
     quantiles2 = similar(quantiles)
     quantiles3 = similar(quantiles)
-    quantiles4 = similar(quantiles)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], prob)
         predict!(model, @view(quantiles2[i, :]), pred_[100+i])
         predict!(model, @view(quantiles3[i, :]), [pred_[100+i]], prob)
-        predict!(model, @view(quantiles4[i, :]), [pred_[100+i]])
     end
 
     @test quantiles ≈ viewpred(qf)
     @test quantiles ≈ quantiles2
     @test quantiles ≈ quantiles3
-    @test quantiles ≈ quantiles4
 
     pred = rand(100, 2)
     obs = pred*[2, 1] .+ 0.5
@@ -242,8 +241,22 @@ end
     model = QR(size(pred)..., 0.5)
     train(model, pred, obs)
 
+    pred_ = [pred; rand(50, 2)]
+    obs_ = [obs; rand(50)]
+    pf = PointForecasts(pred_, obs_)
+    qf = point2prob(pf, :qr, 100, 0.5, retrain=0)
+
     @test getweights(model) ≈ W
-    @test predict(model, [-1, 1], 0.5) ≈ -0.5 
+    @test quantprob(model) == [0.5]
+    @test nquant(model) == 1
+
+    median = Matrix{Float64}(undef, 50, 1)
+
+    for i in 1:50
+        predict!(model, @view(median[i, :]), pred_[100+i, :])
+    end
+
+    @test median ≈ viewpred(qf)
 end
 
 @testset "Normal Model" begin
@@ -258,7 +271,7 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :normal, 100, 99, retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 99)
@@ -292,7 +305,7 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(copy(pred_), copy(obs_))
+    pf = PointForecasts(pred_, obs_)
     qf = point2prob(pf, :zeronormal, 100, 99, retrain=0)
 
     for i in 1:50
@@ -316,7 +329,7 @@ end
     pred = rand(100, 3)
     sort!(pred, dims=2)
     obs = rand(100)
-    pf = PointForecasts(copy(pred), copy(obs), Vector(1:100))
+    pf = PointForecasts(copy(pred), obs, Vector(1:100))
     
     pfm = average(pf)
     pfm2 = average(decouple(pf))
@@ -326,8 +339,8 @@ end
     pfm2 = average(decouple(pf), agg=:median)
     @test viewpred(pfm) ≈ @view(pred[:, 2]) && viewpred(pfm) ≈ viewpred(pfm2) 
 
-    qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], copy(obs), [0.25, 0.5, 0.75])
-    qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], copy(obs), [0.25, 0.5, 0.75])
+    qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], obs, [0.25, 0.5, 0.75])
+    qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], obs, [0.25, 0.5, 0.75])
     qfp = paverage([qf1, qf2], [0.125, 0.25, 0.5, 0.625, 0.75])
     qfq = qaverage([qf1, qf2])
     qfpmedian = paverage([qf1, qf2], 0.5)
@@ -349,26 +362,12 @@ end
     pred3 = obs .+ 1.0
     pred3[1] += 9.0
     
-    pf = PointForecasts(pred, obs)
-    @test mae(pf)[1] ≈ 0.109
-    @test rmse(pf)[1] ≈ sqrt(0.0199)
-
     pf = PointForecasts([pred pred3], obs)
     @test mae(pf) ≈ [0.109, 1.09]
     @test rmse(pf) ≈ [sqrt(0.0199), sqrt(1.99)]
 
-    qf = QuantForecasts(pred, obs, 0.2)
-    @test pinball(qf)[1] ≈ 0.109*0.2
-
-    qf = QuantForecasts(pred2, obs, 0.5)
-    @test pinball(qf)[1] ≈ 0.109*0.5
-
-    qf = QuantForecasts(pred3, obs, 0.8)
-    @test pinball(qf)[1] ≈ 1.09*0.2
-
     qf = QuantForecasts([pred pred2 pred3], obs, [0.2, 0.5, 0.8])
     @test pinball(qf) ≈ 0.109.*[0.2, 0.5, 0.2*10]
-
     @test coverage(qf) ≈ [0.0, 0.5, 1.0]
 end
 

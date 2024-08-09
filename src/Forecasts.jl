@@ -1,6 +1,8 @@
 """
     PointForecasts(pred, obs, id)
 Create `PointForecasts<:Forecasts` for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
+
+Be aware that the constructor does not copy the arguments.
 """
 struct PointForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     pred::Matrix{<:F}
@@ -31,6 +33,8 @@ end
 """
     QuantForecasts(pred, obs, id, prob)
 Create `QuantForecasts<:Forecasts` for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
+
+Be aware that the constructor does not copy the arguments.
 """
 struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     pred::Matrix{<:F}
