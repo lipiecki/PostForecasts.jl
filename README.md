@@ -1,4 +1,5 @@
-![banner](https://github.com/user-attachments/assets/99ecf451-2f14-4bbf-af16-6e102f7f90c0)
+![banner](https://github.com/user-attachments/assets/4be63de1-0abf-4d54-b1be-1440ca5a8991)
+
 # PostForecasts.jl
 [![Static Badge](https://img.shields.io/badge/view-docs-blue)](https://lipiecki.github.io/PostForecasts.jl/)
 [![codecov](https://codecov.io/github/lipiecki/PostForecasts.jl/graph/badge.svg?token=JJDOKDJ30H)](https://codecov.io/github/lipiecki/PostForecasts.jl)
