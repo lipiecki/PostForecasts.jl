@@ -1,48 +1,45 @@
 """
-    PointForecasts(pred, obs, id)
-Create `PointForecasts<:Forecasts` for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
+    PointForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}[, id::AbstractVector{I}]) where {F<:AbstractFloat, I<:Integer}
+Create `PointForecasts{F, I}Forecasts` for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
 
-Be aware that the constructor does not copy the arguments.
+If `id` is not provided, it will default to `1:length(obs)`.
 """
 struct PointForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
-    pred::Matrix{<:F}
-    obs::Vector{<:F}
-    id::Vector{<:I}
+    pred::Matrix{F}
+    obs::Vector{F}
+    id::Vector{I}
 
-    function PointForecasts(pred::Matrix{<:F}, obs::Vector{<:F}, id::Vector{<:I}) where {F<:AbstractFloat, I<:Integer}
+    function PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
-        new{F, I}(pred, obs, id)
+        new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id))
     end
 
-    function PointForecasts(pred::Matrix{<:F}, obs::AbstractVector{<:F}) where {F<:AbstractFloat}
-        size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
-        new{F, Int64}(pred, obs, Vector(1:length(obs)))
-    end
-
-    function PointForecasts(pred::Vector{<:F}, obs::Vector{<:F}, id::Vector{<:I}) where {F<:AbstractFloat, I<:Integer}
+    PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
         PointForecasts(reshape(pred, length(pred), 1), obs, id)
-    end
 
-    function PointForecasts(pred::Vector{<:F}, obs::Vector{<:F}) where {F<:AbstractFloat}
-        PointForecasts(reshape(pred, length(pred), 1), obs)
-    end
+    PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
+        PointForecasts(pred, obs, 1:length(obs))
+
+    PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
+        PointForecasts(reshape(pred, length(pred), 1), obs, 1:length(obs))
 end
 
 """
-    QuantForecasts(pred, obs, id, prob)
-Create `QuantForecasts<:Forecasts` for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
+    QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}[, id::AbstractVector{I}, prob::Union{F, AbstractVector{F}}]) where {F<:AbstractFloat, I<:Integer}
+Create `QuantForecasts{F, I}Forecasts` for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
 
-Be aware that the constructor does not copy the arguments.
+If `id` is not provided, it will default to `1:length(obs)`.
+If `prob` is not provided, it will default to `size(pred, 2)` equidistant quantiles.
 """
 struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
-    pred::Matrix{<:F}
-    prob::Vector{<:F}
-    obs::Vector{<:F}
-    id::Vector{<:I}
+    pred::Matrix{F}
+    obs::Vector{F}
+    id::Vector{I}
+    prob::Vector{F}
 
-    function QuantForecasts(pred::Matrix{<:F}, obs::Vector{<:F}, id::Vector{<:I}, prob::Vector{<:F}) where {F<:AbstractFloat, I<:Integer}
+    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
@@ -54,27 +51,51 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
                 throw(ArgumentError("quantile `pred` passed to the constructor are decreasing"))
             end
         end
-        new{F, I}(pred, prob, obs, id)
+        new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob))
     end
     
-    function QuantForecasts(pred::Matrix{<:F}, obs::Vector{<:F}, prob::Vector{<:F}) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, Vector(1:length(obs)), prob)
-    end
-
-    function QuantForecasts(pred::Matrix{<:F}, obs::Vector{<:F}, id::Vector{<:I}) where {F<:AbstractFloat, I<:Integer}
+    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
         QuantForecasts(pred, obs, id, equidistant(size(pred, 2), F))
     end
 
-    function QuantForecasts(pred::Matrix{<:F}, obs::Vector{<:F}) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, Vector(1:length(obs)), equidistant(size(pred, 2), F))
+    function QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer}
+        QuantForecasts(reshape(pred, length(pred), 1), obs, id, prob)
     end
 
-    function QuantForecasts(pred::Vector{<:F}, obs::Vector{<:F}, id::Vector{<:I}, prob::F) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(reshape(pred, length(obs), 1), obs, id, [prob])
+    function QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
+        QuantForecasts(reshape(pred, length(pred), 1), obs, id)
     end
 
-    function QuantForecasts(pred::Vector{<:F}, obs::Vector{<:F}, prob::F) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, Vector(1:length(obs)), prob)
+    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, prob::AbstractVector{F}) where {F<:AbstractFloat}
+        QuantForecasts(pred, obs, 1:length(obs), prob)
+    end
+
+    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}) where {F<:AbstractFloat}
+        QuantForecasts(pred, obs, 1:length(obs))
+    end
+
+    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::F) where {F<:AbstractFloat, I<:Integer}
+        QuantForecasts(pred, obs, id, [prob])
+    end
+
+    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::Vector{F}, prob::F) where {F<:AbstractFloat}
+        QuantForecasts(pred, obs, [prob])
+    end
+
+    # no-copy method of the QuantForecast constructor
+    function QuantForecasts(::Val{:nocopy}, pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}) where {F<:AbstractFloat, I<:Integer}
+        size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
+        size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
+        size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
+        issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
+        (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
+        isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
+        for t in eachindex(@view(pred[:, begin]))
+            if !issorted(@view(pred[t, :]))
+                throw(ArgumentError("quantile `pred` passed to the constructor are decreasing"))
+            end
+        end
+        new{F, I}(pred, obs, id, prob)
     end
 end
 
@@ -92,9 +113,9 @@ end
 
 function Base.getindex(pf::PointForecasts, T::AbstractVector{<:Integer})
     return PointForecasts(
-            pf.pred[T, :],
-            pf.obs[T],
-            pf.id[T])
+            @view(pf.pred[T, :]),
+            @view(pf.obs[T]),
+            @view(pf.id[T]))
 end
 
 function Base.getindex(qf::QuantForecasts, t::Integer)
@@ -106,10 +127,10 @@ end
 
 function Base.getindex(qf::QuantForecasts, T::AbstractVector{<:Integer})
     return QuantForecasts(
-            qf.pred[T, :],
-            qf.obs[T],
-            qf.id[T],
-            copy(qf.prob))
+            @view(qf.pred[T, :]),
+            @view(qf.obs[T]),
+            @view(qf.id[T]),
+            qf.prob)
 end
 
 function Base.firstindex(fs::Forecasts)
@@ -148,9 +169,9 @@ Return `::Vector{PointForecasts}`, where each element contains an individual for
 """
 function decouple(pf::PointForecasts) 
     return [PointForecasts(
-            pf.pred[:, i],
-            copy(pf.obs),
-            copy(pf.id)) for i in 1:npred(pf)]
+            @view(pf.pred[:, i]),
+            pf.obs,
+            pf.id) for i in 1:npred(pf)]
 end
 
 """

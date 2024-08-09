@@ -2,9 +2,9 @@
     point2prob(pf, modelname, window, prob[; first, last, retrain])
 Compute probabilistic forecast based on point forecasts `pf::PointForecasts` using model `m::ProbModel`.
 
-Return `QuantForecasts` containing quantile pred at specified probabilities `prob`:
-- `prob::Vector{<:AbstractFloat}`: vector of probabilities, 
-- `prob::AbstractFloat`: a single probability value,
+Return `QuantForecasts` containing quantile pred at specified `prob`abilities:
+- `prob::AbstractVector{<:AbstractFloat}`: vector of probabilities
+- `prob::AbstractFloat`: a single probability value
 - `prob::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 
 ## Available options for `modelname`:
@@ -24,28 +24,32 @@ Return `QuantForecasts` containing quantile pred at specified probabilities `pro
 `QR` supports multiple regressors; `IDR` partially supports multiple regressors - one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions; `CP` and `Normal` do not support multiple regressors.
 """
 function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
+    window > 0 || throw(ArgumentError("`window` must be greater than 0"))
+    retrain >= 0 || throw(ArgumentError("`retrain` must be non-negative"))
+    (first >= firstindex(pf)+window && last <= lastindex(pf)) || throw(ArgumentError("`first` cannot be smaller than `firstindex(pf)+window` and `last` cannot be greater than `lastindex(pf)`"))
     prob = Vector{F}(prob)
+    quantiles = zeros(F, last-first+1, length(prob))
     model = getmodel(Val(modelname), window, npred(pf), prob)
     pf = (nreg(model) == 1 && npred(pf) > 1) ? average(pf) : pf
-    _point2prob(pf, model, window, prob, first, last, retrain)
+    for t in first:last
+        if t == first || (retrain > 0 && (t - first) % retrain == 0)
+            _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
+        end
+        _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
+    end
+    return QuantForecasts(Val(:nocopy),
+        quantiles,
+        getobs(pf, first:last),
+        getid(pf, first:last),
+        prob)
 end
 
-function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractFloat; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
-    (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
-    prob = [F(prob)]
-    model = getmodel(Val(modelname), window, npred(pf), prob)
-    pf = (nreg(model) == 1 && npred(pf) > 1) ? average(pf) : pf
-    _point2prob(pf, model, window, prob, first, last, retrain)
+function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractFloat; kwargs...) where {F, I}
+   point2prob(pf, modelname, window, [prob]; kwargs...)
 end
     
-function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::Integer; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
-    prob > 0 || throw(ArgumentError("number of quantiles must be greater than 0"))   
-    prob = equidistant(prob, F)
-    model = getmodel(Val(modelname), window, npred(pf), prob)
-    pf = (nreg(model) == 1 && npred(pf) > 1) ? average(pf) : pf
-    _point2prob(pf, model, window, prob, first, last, retrain)
+function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::Integer; kwargs...) where {F, I}
+    point2prob(pf, modelname, window, equidistant(prob, F); kwargs...)
 end
 
 """
@@ -65,7 +69,7 @@ function conformalize(qf::QuantForecasts{F, I}, window::Integer; first::Integer=
         end
     end
     sort!(quantiles, dims = 2)
-    return QuantForecasts(
+    return QuantForecasts(Val(:nocopy),
         quantiles,
         getobs(qf, first:last),
         getid(qf, first:last),
@@ -85,23 +89,4 @@ function conformalize!(qf::QuantForecasts{F, I}, window::Integer; first::Integer
         end
         sort!(viewpred(qf, t))
     end
-end
-
-"""
-    _point2prob(pf::PointForecasts{F, I}, model::ProbModel, window::Integer, prob::Vector{F}, first::Integer, last::Integer, retrain::Integer) where {F, I}
-Helper function for `point2prob`. Not exported with the package and inteded for internal use with validated arguments.
-"""
-function _point2prob(pf::PointForecasts{F, I}, model::ProbModel, window::Integer, prob::Vector{F}, first::Integer, last::Integer, retrain::Integer) where {F, I}
-    quantiles = zeros(F, last-first+1, length(prob))
-    for t in first:last
-        if t == first || (retrain > 0 && (t - first) % retrain == 0)
-            _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
-        end
-        _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
-    end
-    return QuantForecasts(
-        quantiles,
-        getobs(pf, first:last),
-        getid(pf, first:last),
-        prob)
 end

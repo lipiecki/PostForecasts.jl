@@ -1,5 +1,5 @@
 """
-    QR(n::Integer, m::Integer, prob::Vector{<:AbstractFloat})
+    QR(n::Integer, m::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}})
 Creates a `QR<:MultiRegProgModel<:ProbModel` for quantile regression to be trained on `n` observations with `m` forecasts (regressors), fitting quantiles at probabilties specified by `prob`.
 """
 struct QR <: MultiRegProbModel

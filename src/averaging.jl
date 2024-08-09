@@ -48,13 +48,14 @@ end
 Average probabilistic pred from `QF` by averaging probabilities of the distributions.
 
 Return `QuantForecasts` containing quantile pred at specified `prob`abilities:
-- `prob::Vector{<:AbstractFloat}`: vector of probabilities
+- `prob::AbstractVector{<:AbstractFloat}`: vector of probabilities
 - `prob::AbstractFloat`: a single probability value
 - `prob::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
-function paverage(QF::Vector{QuantForecasts{F, I}}, prob::Vector{<:F}) where {F, I}
+function paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractVector{<:AbstractFloat}) where {F, I}
     Base.require_one_based_indexing(prob)
     checkmatch(QF)
+    prob = Vector{F}(prob)
     quantiles = Matrix{F}(undef, length(QF[begin]), length(prob))
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
     cdf = Vector{F}(undef, length(y))
@@ -76,14 +77,14 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, prob::Vector{<:F}) where {F,
         end
         cdf2quantiles!(@view(quantiles[t, :]), @view(cdf[order]), @view(y[order]), prob)
     end
-    return QuantForecasts(
+    return QuantForecasts(Val(:nocopy),
         quantiles,
         getobs(QF[begin]),
         getid(QF[begin]),
-        Vector(prob))
+        prob)
 end
 
-paverage(QF::Vector{QuantForecasts{F, I}}, prob::F) where {F, I} = paverage(QF, [prob])
+paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractFloat) where {F, I} = paverage(QF, [prob])
 
 paverage(QF::Vector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob, F))
 
@@ -104,7 +105,7 @@ function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
         end
     end
     quantiles /= length(QF)
-    return QuantForecasts(
+    return QuantForecasts(Val(:nocopy),
         quantiles,
         getobs(QF[begin]),
         getid(QF[begin]),

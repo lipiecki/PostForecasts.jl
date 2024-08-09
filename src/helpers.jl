@@ -24,7 +24,7 @@ end
     isunique(X::Vector{<:Integer})
 Return `true`` if vector `X` contains only unique values, otherwise return `false`.
 """
-function isunique(X::Vector{<:Integer})
+function isunique(X::AbstractVector{<:Integer})
     iterated = Set{eltype(X)}()
     for x in X
         if x ∈ iterated
