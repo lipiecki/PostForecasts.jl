@@ -1,5 +1,7 @@
 # PostForecasts.jl
 
+![image](images/banner.png)
+
 **Welcome to PostForecasts.jl, a Julia package for postprocessing point predictions into probabilistic forecasts.**
 
 The package provides structures and functions that allow to easily compute predictive distributions conditional on point forecasts. Probabilistic forecasts are trained on the history of point forecasts only, i.e. pairs $(\hat{y}_t, y_t)$, where $\hat{y}_t$ is either a single point prediction or a vector of point predictions, and $y_t$ is the observed value of the timeseries at moment $t$.

@@ -206,7 +206,7 @@ Imagine that we have battery at our disposal, and for simplicity assume that eac
 
 As an example, we will focus on two weeks in April 2023. Firstly, we will postprocess point predictions to obtain quantile forecasts using IDR
 ```julia
-using PostForecasts, Plots
+using PostForecasts, images
 
 firstdate = 20230408
 lastdate = 20230421
@@ -232,7 +232,7 @@ plot(legend = :bottom, xlabel = "Days", ylabel = "Price (€/MWh)", xticks = 1:1
 plot!(viewpred(qfBUY, eachindex(qfBUY), 5), linealpha = 0.5, color=3, lw=3, label="Buy hour ($(buyhour):00)")
 plot!(viewpred(qfSELL, eachindex(qfBUY), 5), linealpha = 0.5, color=1, lw=3, label="Sell hour ($(sellhour):00)")
 ```
-![image](plots/trading1.png)
+![image](images/trading1.png)
 Analyzing the above plot, every day seems to be profitable, but the information is quite limited. To make an informed decision, we would like to see what can happens in more extreme scenarios. Since we computed 9 deciles, we can plot 4 prediction intervals centered around the median (with confidence of 20%, 40%, 60% and 80%):
 ```julia
 for i in 1:4
@@ -240,7 +240,7 @@ for i in 1:4
     plot!(viewpred(qfSELL, eachindex(qfBUY), 5-i), lw = 0, fillrange = viewpred(qfSELL, eachindex(qfBUY), 5+i), fillalpha = 0.1, color = 1, label = nothing)    
 end
 ```
-![image](plots/trading2.png)
+![image](images/trading2.png)
 
 Now we see that on the 3rd day, the upper quantiles of prices at 3:00 significantly overlap the lower quantiles of prices at 19:00. Depending on our risk appetite, we could refrain from trading during this day to avoid possible losses.
 
@@ -250,7 +250,7 @@ Finally, let's add the observed prices during this period:
 plot!(viewobs(qfBUY), color = 3, st=:scatter, markerstrokewidth=0, label=nothing)
 plot!(viewobs(qfSELL), color = 1, st=:scatter, markerstrokewidth=0, label=nothing)
 ```
-![image](plots/trading3.png)
+![image](images/trading3.png)
 
 Indeed, on the 3rd day the decision to avoid traiding would prevent us from incurring a loss. 
 
