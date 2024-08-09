@@ -15,16 +15,16 @@ struct PointForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
         isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
         new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id))
     end
+end
 
-    PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
+PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
         PointForecasts(reshape(pred, length(pred), 1), obs, id)
 
-    PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
-        PointForecasts(pred, obs, 1:length(obs))
+PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
+    PointForecasts(pred, obs, 1:length(obs))
 
     PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
         PointForecasts(reshape(pred, length(pred), 1), obs, 1:length(obs))
-end
 
 """
     QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}[, id::AbstractVector{I}, prob::Union{F, AbstractVector{F}}]) where {F<:AbstractFloat, I<:Integer}
@@ -39,51 +39,8 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
     id::Vector{I}
     prob::Vector{F}
 
-    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer}
-        size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
-        size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
-        size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
-        issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-        (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-        isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
-        for t in eachindex(@view(pred[:, begin]))
-            if !issorted(@view(pred[t, :]))
-                throw(ArgumentError("quantile `pred` passed to the constructor are decreasing"))
-            end
-        end
-        new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob))
-    end
-    
-    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(pred, obs, id, equidistant(size(pred, 2), F))
-    end
-
-    function QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(reshape(pred, length(pred), 1), obs, id, prob)
-    end
-
-    function QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(reshape(pred, length(pred), 1), obs, id)
-    end
-
-    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, prob::AbstractVector{F}) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, 1:length(obs), prob)
-    end
-
-    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, 1:length(obs))
-    end
-
-    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::F) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(pred, obs, id, [prob])
-    end
-
-    function QuantForecasts(pred::AbstractVecOrMat{F}, obs::Vector{F}, prob::F) where {F<:AbstractFloat}
-        QuantForecasts(pred, obs, [prob])
-    end
-
-    # no-copying method of the QuantForecast constructor
-    function QuantForecasts(::Val{:raw}, pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}) where {F<:AbstractFloat, I<:Integer}
+    # unsafe non-copying constructor
+    function QuantForecasts(pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}, safe::Val{false}) where {F<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
@@ -97,7 +54,38 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
         end
         new{F, I}(pred, obs, id, prob)
     end
+
+    # safe copying constructor
+    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}, safe::Val{true}) where {F<:AbstractFloat, I<:Integer}
+        QuantForecasts(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob), Val(false))
+    end
+    
 end
+
+QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer} = 
+    QuantForecasts(pred, obs, id, prob, Val(true))
+
+QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
+    QuantForecasts(pred, obs, id, equidistant(size(pred, 2), F))
+
+QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer} =
+    QuantForecasts(reshape(pred, length(pred), 1), obs, id, prob)
+
+QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
+    QuantForecasts(reshape(pred, length(pred), 1), obs, id)
+
+
+QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, prob::AbstractVector{F}) where {F<:AbstractFloat} =
+    QuantForecasts(pred, obs, 1:length(obs), prob)
+
+QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
+    QuantForecasts(pred, obs, 1:length(obs))
+
+QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::F) where {F<:AbstractFloat, I<:Integer} =
+    QuantForecasts(pred, obs, id, [prob])
+
+QuantForecasts(pred::AbstractVecOrMat{F}, obs::Vector{F}, prob::F) where {F<:AbstractFloat} =
+    QuantForecasts(pred, obs, [prob])
 
 Base.show(io::IO, fs::Forecasts) = println(io, "$(typeof(fs)) with a pool of $(npred(fs)) forecast(s) at $(length(fs)) timesteps, between $(fs.id[begin]) and $(fs.id[end])")
 

@@ -77,11 +77,12 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractVector{<:Abstr
         end
         cdf2quantiles!(@view(quantiles[t, :]), @view(cdf[order]), @view(y[order]), prob)
     end
-    return QuantForecasts(Val(:nocopy),
+    return QuantForecasts(
         quantiles,
         getobs(QF[begin]),
         getid(QF[begin]),
-        prob)
+        prob,
+        Val(false))
 end
 
 paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractFloat) where {F, I} = paverage(QF, [prob])
@@ -105,9 +106,10 @@ function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
         end
     end
     quantiles /= length(QF)
-    return QuantForecasts(Val(:nocopy),
+    return QuantForecasts(
         quantiles,
         getobs(QF[begin]),
         getid(QF[begin]),
-        getprob(QF[begin]))
+        getprob(QF[begin]), 
+        Val(false))
 end

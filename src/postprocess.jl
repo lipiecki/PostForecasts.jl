@@ -37,11 +37,12 @@ function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer
         end
         _predict!(model, @view(quantiles[t-first+1, :]), viewpred(pf, t), prob)
     end
-    return QuantForecasts(Val(:raw),
+    return QuantForecasts(
         quantiles,
         getobs(pf, first:last),
         getid(pf, first:last),
-        prob)
+        prob,
+        Val(false))
 end
 
 function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractFloat; kwargs...) where {F, I}
@@ -69,11 +70,12 @@ function conformalize(qf::QuantForecasts{F, I}, window::Integer; first::Integer=
         end
     end
     sort!(quantiles, dims = 2)
-    return QuantForecasts(Val(:raw),
+    return QuantForecasts(
         quantiles,
         getobs(qf, first:last),
         getid(qf, first:last),
-        getprob(qf))
+        getprob(qf),
+        Val(false))
 end
 
 """

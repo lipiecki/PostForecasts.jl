@@ -629,14 +629,6 @@ end
             testvar = isa(e, ArgumentError) && e.msg == "quantile `pred` passed to the constructor are decreasing"
         end
         @test testvar
-        
-        testvar = false
-        try
-            QuantForecasts(Val(:raw), [0.0 0.0; 0.0 -1.0], zeros(2), [1, 2], [0.25, 0.75])
-        catch e
-            testvar = isa(e, ArgumentError) && e.msg == "quantile `pred` passed to the constructor are decreasing"
-        end
-        @test testvar
     end
 
     @testset "Loading Datasets" begin
