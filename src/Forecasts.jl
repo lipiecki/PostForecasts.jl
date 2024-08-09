@@ -82,8 +82,8 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts
         QuantForecasts(pred, obs, [prob])
     end
 
-    # no-copy method of the QuantForecast constructor
-    function QuantForecasts(::Val{:nocopy}, pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}) where {F<:AbstractFloat, I<:Integer}
+    # no-copying method of the QuantForecast constructor
+    function QuantForecasts(::Val{:raw}, pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}) where {F<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
