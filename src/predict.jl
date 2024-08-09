@@ -110,14 +110,14 @@ end
 
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})
     Base.require_one_based_indexing(output, input)
-    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(output))) does not match the model specification ($(nquant(m)))"))
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
     _predict!(m, output, input)
 end
 
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)
     Base.require_one_based_indexing(output)
-    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(prob))) does not match the model specification ($(nquant(m)))"))
+    nquant(m) == length(output) || throw(ArgumentError("size of the output vector ($(length(output)) does not match the model specification ($(nquant(m)))"))
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
     _predict!(m, output, input)
 end

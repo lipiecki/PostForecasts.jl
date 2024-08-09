@@ -3,83 +3,83 @@ using Test, PostForecasts
 @testset "Forecasts" begin
     pred = rand(100)
     obs = rand(100)
-    pf = PointForecasts(pred, obs)
-    qf = QuantForecasts(pred, obs, 0.5)
+    id = Vector(5:5:500)
+    pf = PointForecasts(copy(pred), copy(obs), copy(id))
+    qf = QuantForecasts(copy(pred), copy(obs), copy(id), 0.5)
 
     @test length(pf) == 100 && length(qf) == 100
 
-    @test all(viewpred(qf) .≈ getpred(qf)) &&
-          all(viewobs(qf) .≈ getobs(qf)) &&
-          all(viewid(qf) .≈ getid(qf)) &&
-          all(viewprob(qf) .≈ getprob(qf))
+    @test viewpred(qf) ≈ getpred(qf) &&
+          viewobs(qf) ≈ getobs(qf) &&
+          viewid(qf) ≈ getid(qf) &&
+          viewprob(qf) ≈ getprob(qf)
 
-    @test all(viewpred(pf[begin:3:end]) .≈ viewpred(pf, 1:3:100)) &&
-          all(viewpred(qf[begin:3:end]) .≈ viewpred(qf, 1:3:100)) &&
-          all(viewobs(pf, 1:10) .≈ obs[1:10]) &&
-          all(viewid(qf, [1, 10, 50, 100]) .≈ [1, 10, 50, 100]) &&
-          all(viewprob(qf, 1) .≈ 0.5)
+    I = 1:11:100
+    @test viewpred(pf, I) ≈ @view(pred[I]) &&
+          viewobs(qf, I) ≈ @view(obs[I]) &&
+          viewid(pf, I) ≈ @view(id[I]) &&
+          viewprob(qf, 1) ≈ [0.5]
           
-
     @test getpred(pf, 100) ≈ pf[end][:pred] && 
-          all(getpred(qf, 100) .≈ qf[end][:pred])
-          getobs(pf, 100) ≈ pf[end][:obs] && 
-          getobs(qf, 1) ≈ qf[begin][:obs] &&
-          getid(pf, 1) ≈ qf[begin][:id] && 
-          getid(qf, 1) ≈ qf[begin][:id] &&
+          getobs(qf, 100) ≈ qf[end][:obs] && 
+          getid(pf, 1) ≈ pf[begin][:id] && 
+          getprob(qf) ≈ qf[begin][:prob]
 
-    @test pf(10)[:obs] == obs[10] && all(viewobs(qf([50, 100])) .≈ @view(obs[[50, 100]]))
+    @test pf(5)[:obs] ≈ obs[begin] && viewobs(qf(id[I])) ≈ @view(obs[I])
     
     io = IOBuffer()
     show(io, pf)
-    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 1 and 100\n"
+    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
     show(io, qf)
-    @test String(take!(io)) == "QuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 1 and 100\n"
+    @test String(take!(io)) == "QuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
 end
 
 @testset "Conformalize" begin
-    quantiles = sort(rand(150, 99), dims=2)
+    pred = sort(rand(150, 99), dims=2)
     obs = rand(150)
-    qf = QuantForecasts(copy(quantiles), obs)
+    qf = QuantForecasts(copy(pred), copy(obs))
     qfc = conformalize(qf, 100)
     conformalize!(qf, 100)
     qf = qf[101:end]
+    
     @test all(viewpred(qfc) .≈ viewpred(qf)) && all(viewobs(qfc) .≈ viewobs(qf)) && all(viewid(qfc) .≈ viewid(qf))
-    testvar = true
-    refquantiles = zeros(99)
+    
+    refquantiles = Matrix{Float64}(undef, 50, 99)
     for i in 1:50
         for j in 1:99
-             refquantiles[j] = quantiles[100+i, j] + quantile(obs[i:100+i-1] - quantiles[i:100+i-1, j], 1 - j/100, alpha=1, beta=1)
+             refquantiles[i, j] = pred[100+i, j] + quantile(obs[i:100+i-1] - pred[i:100+i-1, j], 1 - j/100, alpha=1, beta=1)
         end
-        sort!(refquantiles)
-        testvar = testvar && all(viewpred(qf, i) .≈ refquantiles)
     end    
-    @test testvar
+    
+    sort!(refquantiles, dims=2)
+    @test viewpred(qf) ≈ refquantiles
 end
 
 @testset "Conformal Prediction" begin
     pred = rand(100)
     obs = rand(100)
     
+    # conformal prediction (absolute errors)
     λ = sort(abs.(obs - pred))
-
     model = CP(100)
     train(model, pred, obs)
     
-    @test all(λ .≈ getscores(model))
+    @test λ ≈ getscores(model)
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
+    pf = PointForecasts(copy(pred_), copy(obs_))
     qf = point2prob(pf, :cp, 100, 99, retrain=0)
-
     corrections = [-quantile(λ, 0.98:-0.02:0.02, sorted=true, alpha=1, beta=1); 0; quantile(λ, 0.02:0.02:0.98, sorted=true, alpha=1, beta=1)]
-    quantiles = zeros(50, 99)
-    quantiles2 = zeros(50, 99)
-    quantiles3 = zeros(50, 99)
-    quantiles4 = zeros(50, 99)
-    refquantiles = zeros(50, 99)
-    medians = zeros(50)
-    medians2 = zeros(50)
+    
+    quantiles = Matrix{Float64}(undef, 50, 99)
+    quantiles2 = similar(quantiles)
+    quantiles3 = similar(quantiles)
+    quantiles4 = similar(quantiles)
+    refquantiles = similar(quantiles)
+    medians = Vector{Float64}(undef, 50)
+    medians2 = similar(medians)
+    
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
         predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
@@ -89,57 +89,57 @@ end
         medians[i] = predict(model, pred_[100+i], 0.5)
         medians2[i] = predict(model, [pred_[100+i]], 0.5)
     end
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ refquantiles)
-    @test all(quantiles .≈ quantiles2)
-    @test all(quantiles .≈ quantiles3)
-    @test all(quantiles .≈ quantiles4)
-    @test all(@views(quantiles[:, 50]) .≈ medians)
-    @test all(medians .≈ medians2)
 
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
+    @test quantiles ≈ refquantiles
+    @test @views(quantiles[:, 50]) ≈ medians
+    @test medians ≈ medians2
+
+    # historical simulation (non-absolute errors)
     λ = sort((obs - pred))
-
     model = CP(100, abs=false)
     train(model, reshape(pred, 100, 1), obs) # reshape to test the other train method
 
-    @test all(λ .≈ getscores(model))
+    @test λ ≈ getscores(model)
 
-    pred_ = [pred; rand(50)]
-    obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
+    pf = PointForecasts(copy(pred_), copy(obs_))
     qf = point2prob(pf, :hs, 100, 99, retrain=0)
-
     corrections = quantile(λ, 0.01:0.01:0.99, sorted=true, alpha=1, beta=1)
-    quantiles = zeros(50, 99)
-    refquantiles = zeros(50, 99)
-    medians = zeros(50)
+
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
+        predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
+        quantiles3[i, :] = predict(model, pred_[100+i], 0.01:0.01:0.99)
+        quantiles4[i, :] = predict(model, [pred_[100+i]], 0.01:0.01:0.99)
         refquantiles[i, :] = pred_[100 + i] .+ corrections
         medians[i] = predict(model, pred_[100+i], 0.5)
+        medians2[i] = predict(model, [pred_[100+i]], 0.5)
     end
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ refquantiles)
-    @test all(@views(quantiles[:, 50]) .≈ medians)
+
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
+    @test quantiles ≈ refquantiles
+    @test @views(quantiles[:, 50]) ≈ medians
+    @test medians ≈ medians2
 end
 
 @testset "Isotonic Distributional Regression" begin
     pred = round.(rand(100), digits = 1)
     obs = round.(rand(100), digits = 1)
-    
+
     model = IDR(length(pred), 1)
     train(model, pred, obs)
 
-    quantiles = zeros(9)
-    quantiles2 = zeros(9)
-    predict!(model, quantiles, 1.0, 0.1:0.1:0.9)
-    predict!(model, quantiles2, 1.1, 0.1:0.1:0.9)
-    @test all(quantiles .≈ quantiles2)
-    predict!(model, quantiles, 0.0, 0.1:0.1:0.9)
-    predict!(model, quantiles2, -0.1, 0.1:0.1:0.9)
-    @test all(quantiles .≈ quantiles2)
-    @test all(getx(model) .≈ unique(sort(pred)))
-    @test all(gety(model) .≈ unique(sort(obs)))
+    @test getx(model) ≈ unique(sort(pred))
+    @test gety(model) ≈ unique(sort(obs))
+
+    @test predict(model, maximum(pred), 0.01:0.01:0.99) ≈ predict(model, 1.1, 0.01:0.01:0.99)
+    @test predict(model, minimum(pred), 0.01:0.01:0.99) ≈ predict(model, -0.1, 0.01:0.01:0.99)
 
     pred = 0.01:0.01:1.0
     obs = 0.5*pred
@@ -158,15 +158,15 @@ end
 
     pred_ = [pred; randn(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, :idr, 100, 0.01:0.01:0.99, retrain=0)
+    pf = PointForecasts(copy(pred_), copy(obs_))
+    qf = point2prob(pf, :idr, 100, 99, retrain=0)
 
-    quantiles = zeros(50, 99)
-    quantiles2 = zeros(50, 99)
-    quantiles3 = zeros(50, 99)
-    quantiles4 = zeros(50, 99)
-    medians = zeros(50)
-    medians2 = zeros(50)
+    quantiles = Matrix{Float64}(undef, 50, 99)
+    quantiles2 = similar(quantiles)
+    quantiles3 = similar(quantiles)
+    quantiles4 = similar(quantiles)
+    medians = Vector{Float64}(undef, 50)
+    medians2 = similar(medians)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
@@ -177,12 +177,12 @@ end
         medians2[i] = predict(model, pred_[100+i], 0.5)
     end
 
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ quantiles2)
-    @test all(quantiles .≈ quantiles3)
-    @test all(quantiles .≈ quantiles4)
-    @test all(@view(quantiles[:, 50]) .≈ medians)
-    @test all(medians .≈ medians2)
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
+    @test @views(quantiles[:, 50]) ≈ medians
+    @test medians ≈ medians2
 
     train(model, pred, -obs)
     cdf = getcdf(model)
@@ -202,36 +202,38 @@ end
     model = QR(100, 1, prob)
     train(model, pred, obs)
     
-    @test(quantprob(model) == [0.25, 0.75])
-    @test(nquant(model) == 2)
+    @test quantprob(model) == [0.25, 0.75]
+    @test nquant(model) == 2
 
-    @test all(getweights(model) .≈ W)
-    @test all(predict(model, -1, prob) .≈ [-1.5, -1.5])
-    @test all(predict(model, [-1], prob) .≈ [-1.5, -1.5])
-    @test all(predict(model, -1) .≈ [-1.5, -1.5])
-    @test all(predict(model, [-1]) .≈ [-1.5, -1.5])
+    @test getweights(model) ≈ W
+    @test predict(model, -1, prob) ≈ [-1.5, -1.5]
+    @test predict(model, [-1], prob) ≈ [-1.5, -1.5]
+    @test predict(model, -1) ≈ [-1.5, -1.5]
+    @test predict(model, [-1]) ≈ [-1.5, -1.5]
     @test predict(model, -1, 0.25) ≈ -1.5
     @test predict(model, [-1], 0.25) ≈ -1.5
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
-    qf = point2prob(pf, :qr, 100, 0.5, retrain=0)
+    pf = PointForecasts(copy(pred_), copy(obs_))
+    qf = point2prob(pf, :qr, 100, [0.25, 0.75], retrain=0)
 
-    quantiles = zeros(50,2)
-    quantiles2 = zeros(50,2)
-    quantiles3 = zeros(50,2)
-    quantiles4 = zeros(50,2)
+    quantiles = Matrix{Float64}(undef, 50, 2)
+    quantiles2 = similar(quantiles)
+    quantiles3 = similar(quantiles)
+    quantiles4 = similar(quantiles)
+
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], prob)
         predict!(model, @view(quantiles2[i, :]), pred_[100+i])
         predict!(model, @view(quantiles3[i, :]), [pred_[100+i]], prob)
         predict!(model, @view(quantiles4[i, :]), [pred_[100+i]])
     end
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ quantiles2)
-    @test all(quantiles .≈ quantiles3)
-    @test all(quantiles .≈ quantiles4)
+
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
 
     pred = rand(100, 2)
     obs = pred*[2, 1] .+ 0.5
@@ -240,13 +242,13 @@ end
     model = QR(size(pred)..., 0.5)
     train(model, pred, obs)
 
-    @test all(getweights(model) .≈ W)
+    @test getweights(model) ≈ W
     @test predict(model, [-1, 1], 0.5) ≈ -0.5 
 end
 
 @testset "Normal Model" begin
     pred = rand(100)
-    obs = pred + 0.1.*randn(100)
+    obs = pred + randn(100)
 
     model = Normal()
     train(model, pred, obs)
@@ -256,20 +258,33 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
+    pf = PointForecasts(copy(pred_), copy(obs_))
     qf = point2prob(pf, :normal, 100, 99, retrain=0)
 
-    quantiles = zeros(50, 99)
-    quantiles2 = zeros(50, 99)
+    quantiles = Matrix{Float64}(undef, 50, 99)
+    quantiles2 = similar(quantiles)
+    quantiles3 = similar(quantiles)
+    quantiles4 = similar(quantiles)
+    medians = Vector{Float64}(undef, 50)
+    medians2 = similar(medians)
+
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
-        quantiles2[i, :] = predict(model,  pred_[100+i], 0.01:0.01:0.99)
+        predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
+        quantiles3[i, :] = predict(model, pred_[100+i], 0.01:0.01:0.99)
+        quantiles4[i, :] = predict(model, [pred_[100+i]], 0.01:0.01:0.99)
+        medians[i] = predict(model, pred_[100+i], 0.5)
+        medians2[i] = predict(model, [pred_[100+i]], 0.5)
     end
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ quantiles2)
+
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
+    @test @views(quantiles[:, 50]) ≈ medians
+    @test medians ≈ medians2
 
     model = Normal(zeromean=true)
-    
     train(model, reshape(pred, 100, 1), obs) # reshape to test the other train method
 
     @test all(getmean(model) ≈ 0.0)
@@ -277,51 +292,52 @@ end
 
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
-    pf = PointForecasts(pred_, obs_)
+    pf = PointForecasts(copy(pred_), copy(obs_))
     qf = point2prob(pf, :zeronormal, 100, 99, retrain=0)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
-        quantiles2[i, :] = predict(model,  pred_[100+i], 0.01:0.01:0.99)
+        predict!(model, @view(quantiles2[i, :]), [pred_[100+i]], 0.01:0.01:0.99)
+        quantiles3[i, :] = predict(model, pred_[100+i], 0.01:0.01:0.99)
+        quantiles4[i, :] = predict(model, [pred_[100+i]], 0.01:0.01:0.99)
+        medians[i] = predict(model, pred_[100+i], 0.5)
+        medians2[i] = predict(model, [pred_[100+i]], 0.5)
     end
-    @test all(quantiles .≈ viewpred(qf))
-    @test all(quantiles .≈ quantiles2)
+
+    @test quantiles ≈ viewpred(qf)
+    @test quantiles ≈ quantiles2
+    @test quantiles ≈ quantiles3
+    @test quantiles ≈ quantiles4
+    @test @views(quantiles[:, 50]) ≈ medians
+    @test medians ≈ medians2
 end
 
 @testset "Forecast Averaging" begin    
     pred = rand(100, 3)
     sort!(pred, dims=2)
     obs = rand(100)
-    pf = PointForecasts(pred, obs, Vector(1:100))
+    pf = PointForecasts(copy(pred), copy(obs), Vector(1:100))
     
     pfm = average(pf)
     pfm2 = average(decouple(pf))
-    @test all(viewpred(pfm) .≈ mean(pred, dims = 2)) && all(viewpred(pfm) .≈ viewpred(pfm2)) 
+    @test viewpred(pfm) ≈ mean(pred, dims = 2) && viewpred(pfm) ≈ viewpred(pfm2) 
 
     pfm = average(pf, agg=:median)
     pfm2 = average(decouple(pf), agg=:median)
-    @test all(viewpred(pfm) .≈ @view(pred[:, 2])) && all(viewpred(pfm) .≈ viewpred(pfm2)) 
+    @test viewpred(pfm) ≈ @view(pred[:, 2]) && viewpred(pfm) ≈ viewpred(pfm2) 
 
-    quantiles1 = [-ones(100) zeros(100) ones(100)]
-    quantiles2 = [-ones(100)./2 zeros(100) ones(100)./2]
-
-    qf1 = QuantForecasts(quantiles1, obs, [0.25, 0.5, 0.75])
-    qf2 = QuantForecasts(quantiles2, obs, [0.25, 0.5, 0.75])
+    qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], copy(obs), [0.25, 0.5, 0.75])
+    qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], copy(obs), [0.25, 0.5, 0.75])
     qfp = paverage([qf1, qf2], [0.125, 0.25, 0.5, 0.625, 0.75])
+    qfq = qaverage([qf1, qf2])
     qfpmedian = paverage([qf1, qf2], 0.5)
-    qfpmedian2 = paverage([qf1, qf2], 1)
+    qfpmedian2 = paverage([qf1, qf2], 1) # integer 1 means that one quantile (median) will be calculated
     
     quantiles = [-ones(100) -ones(100)./2 zeros(100) ones(100)./2 ones(100)]
-    @test all(viewpred(qfp) .≈ quantiles) && all(viewpred(qfp, eachindex(qfp), 3) .≈ viewpred(qfpmedian)) &&  all(viewpred(qfpmedian) .≈ viewpred(qfpmedian2))
-
-    quantiles1 += rand(100, 3)
-    quantiles2 += rand(100, 3)./2
-  
-    qf1 = QuantForecasts(quantiles1, obs)
-    qf2 = QuantForecasts(quantiles2, obs)
-    qfq = qaverage([qf1, qf2])
-    
-    @test all(viewpred(qfq) .≈ (quantiles1 + quantiles2)./2)
+    @test viewpred(qfp) ≈ quantiles
+    @test viewpred(qfp, eachindex(qfp), 3) ≈ viewpred(qfpmedian)
+    @test viewpred(qfpmedian) ≈ viewpred(qfpmedian2)
+    @test viewpred(qfq) ≈ [-ones(100).*0.75 zeros(100) ones(100).*0.75]
 end
 
 @testset "Evaluation" begin
@@ -338,8 +354,8 @@ end
     @test rmse(pf)[1] ≈ sqrt(0.0199)
 
     pf = PointForecasts([pred pred3], obs)
-    @test all(mae(pf) .≈ [0.109, 1.09])
-    @test all(rmse(pf) .≈ [sqrt(0.0199), sqrt(1.99)])
+    @test mae(pf) ≈ [0.109, 1.09]
+    @test rmse(pf) ≈ [sqrt(0.0199), sqrt(1.99)]
 
     qf = QuantForecasts(pred, obs, 0.2)
     @test pinball(qf)[1] ≈ 0.109*0.2
@@ -351,26 +367,26 @@ end
     @test pinball(qf)[1] ≈ 1.09*0.2
 
     qf = QuantForecasts([pred pred2 pred3], obs, [0.2, 0.5, 0.8])
-    @test all(pinball(qf) .≈ 0.109.*[0.2, 0.5, 0.2*10])
-    
-    @test all(coverage(qf) .≈ [0.0, 0.5, 1.0])
+    @test pinball(qf) ≈ 0.109.*[0.2, 0.5, 0.2*10]
+
+    @test coverage(qf) ≈ [0.0, 0.5, 1.0]
 end
 
 @testset "Data Loading" begin
     pf = loaddata(:epex1)
     pf2 = loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", "epex_hour1.csv"), colnames = true)
     
-    @test all(viewpred(pf).≈ viewpred(pf2)) && all(viewobs(pf).≈ viewobs(pf2)) && all(viewid(pf).≈ viewid(pf2))
+    @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
 
     pf = loaddata(:pangu0u10)
     pf2 = loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", "pangu_lead0.csv"), predcol = 2, obscol = 7, colnames = true)
     
-    @test all(viewpred(pf).≈ viewpred(pf2)) && all(viewobs(pf).≈ viewobs(pf2)) && all(viewid(pf).≈ viewid(pf2))
+    @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
     
     save(pf, joinpath(@__DIR__, "test"))
     pf2 = loadpointf(joinpath(@__DIR__, "test.pointf"))
     
-    @test all(viewpred(pf).≈ viewpred(pf2)) && all(viewobs(pf).≈ viewobs(pf2)) && all(viewid(pf).≈ viewid(pf2))
+    @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
     
     pred = rand(100)
     qf = QuantForecasts([pred pred.+0.1 pred.+0.2 pred.+0.3], rand(100), [0.2, 0.4, 0.6, 0.8])
@@ -379,7 +395,7 @@ end
     rm(joinpath(@__DIR__, "test.pointf"))
     rm(joinpath(@__DIR__, "test.quantf"))
 
-    @test all(viewpred(qf) .≈ viewpred(qf2)) && all(viewobs(qf) .≈ viewobs(qf2)) && all(viewid(qf) .≈ viewid(qf2)) && all(viewprob(qf) .≈ viewprob(qf2))
+    @test viewpred(qf) ≈ viewpred(qf2) && viewobs(qf) ≈ viewobs(qf2) && viewid(qf) ≈ viewid(qf2) && viewprob(qf) ≈ viewprob(qf2)
 end
 
 @testset "Error Handling" verbose=true begin 
@@ -393,6 +409,7 @@ end
         end
         @test testvar
     end
+
     @testset "Unknown Averaging Scheme" begin
         pf = PointForecasts(zeros(2, 2), zeros(2))
         testvar = false
@@ -408,6 +425,7 @@ end
         end
         @test testvar
     end
+
     @testset "Matching PointForecasts" begin
         pf = PointForecasts(zeros(2, 2), zeros(2))
         pf_ = PointForecasts(ones(2, 2), zeros(2)) # should match pf
@@ -613,6 +631,7 @@ end
         end
         @test testvar
     end
+
     @testset "Loading Datasets" begin
         testvar = false
         try 
