@@ -4,8 +4,8 @@ using Test, PostForecasts
     pred = rand(100)
     obs = rand(100)
     id = Vector(5:5:500)
-    pf = PointForecasts(copy(pred), copy(obs), copy(id))
-    qf = QuantForecasts(copy(pred), copy(obs), copy(id), 0.5)
+    pf = PointForecasts(pred, obs, id)
+    qf = QuantForecasts(pred, obs, id, 0.5)
 
     @test length(pf) == 100 && length(qf) == 100
 
@@ -39,7 +39,7 @@ end
 @testset "Conformalize" begin
     pred = sort(rand(150, 99), dims=2)
     obs = rand(150)
-    qf = QuantForecasts(copy(pred), copy(obs))
+    qf = QuantForecasts(pred, obs)
     qfc = conformalize(qf, 100)
     conformalize!(qf, 100)
     qf = qf[101:end]
@@ -329,7 +329,7 @@ end
     pred = rand(100, 3)
     sort!(pred, dims=2)
     obs = rand(100)
-    pf = PointForecasts(copy(pred), obs, Vector(1:100))
+    pf = PointForecasts(pred, obs, Vector(1:100))
     
     pfm = average(pf)
     pfm2 = average(decouple(pf))
