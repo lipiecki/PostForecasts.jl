@@ -1,8 +1,13 @@
 """
-    point2prob(pf::PointForecasts, modelname::Symbol, window::Integer, prob[; first = window + 1, last = length(pf), retrain = 1])
-Compute probabilistic forecast based on point forecasts `pf`. Probabilistic forecast will be calculated for observations between the index `first` and `last` of `pf`. The model is trained on the last `window` observations, and retrained every `retrain` steps.
+    point2prob(pf, modelname, window, prob[; first, last, retrain])
+Compute probabilistic forecast based on point forecasts `pf::PointForecasts` using model `m::ProbModel`.
 
-Available options for `modelname`:
+Return `QuantForecasts` containing quantile pred at specified probabilities `prob`:
+- `prob::Vector{<:AbstractFloat}`: vector of probabilities, 
+- `prob::AbstractFloat`: a single probability value,
+- `prob::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
+
+## Available options for `modelname`:
 - `:qr` for Quantile Regression Averaging
 - `:cp` for Conformal Prediction with absolute errors
 - `:hs` for Conformal Prediction with non-absolute errors (a.k.a. Historical Simulation)
@@ -10,9 +15,13 @@ Available options for `modelname`:
 - `:normal` for Normal distribution of errors
 - `:zeronormal` for Normal distribution of errors with fixed mean equal to 0.
 
-`QR` supports multiple regressors; `IDR` partially supports multiple regressors - one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions; `CP` and `Normal` do not support multiple regressors.
+## Keyword arguments:
+- `first::Integer = firstindex(pf) + window`: specify the first index of `pf` for which the probabilistic forecast will be caluclated
+- `last::Integer = lastindex(pf)`: specify the last index of `pf` for which the probabilistic forecast will be caluclated
+- `retrain::Integer = 1`: specify how often to retrain the model. If `retrain == 0`, the model will be trained only once, otherwise it will be retrained every `retrain` steps.
 
-Return `QuantForecasts` containing quantile forecasts at specified probabilities `prob` (vector of probabilities `::AbstractVector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
+## Note
+`QR` supports multiple regressors; `IDR` partially supports multiple regressors - one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions; `CP` and `Normal` do not support multiple regressors.
 """
 function point2prob(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
     issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))

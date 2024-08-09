@@ -2,7 +2,9 @@
     average(pf; agg::Symbol=:mean)
 Average the pool of point pred from `pf`. Return `PointForecasts` containing averaged forecasts, keyword argument `agg` specifies whether to average using simple mean (`:mean`) or median (`:median`).
 
-If `pf` is a vector of `PointForecasts`, all individual forecasts from passed PointForecasts are averaged.
+## Argument types
+- `pf::PointForecasts` to average the pool of forecats in `pf`
+- `pf::Vector{PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pf`.
 """
 function average(pf::PointForecasts; agg::Symbol=:mean)
     npred(pf) == 1 && return pf
@@ -45,7 +47,10 @@ end
     paverage(QF::Vector{QuantForecasts}, prob)
 Average probabilistic pred from `QF` by averaging probabilities of the distributions.
 
-Return `ProbcastsSeries` containing quantile pred at specified probabilities `prob` (vector of probabilities `::Vector{<:AbstractFloat}`, single probability value `::AbstractFloat` or the number of equidistant probability values `::Integer`).
+Return `QuantForecasts` containing quantile pred at specified `prob`abilities:
+- `prob::Vector{<:AbstractFloat}`: vector of probabilities
+- `prob::AbstractFloat`: a single probability value
+- `prob::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
 function paverage(QF::Vector{QuantForecasts{F, I}}, prob::Vector{<:F}) where {F, I}
     Base.require_one_based_indexing(prob)
@@ -86,7 +91,7 @@ paverage(QF::Vector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverag
     qaverage(QF::Vector{QuantForecasts})
 Average probabilistic pred from `QF::Vector{QuantForecasts}` by averaging quantiles of the distributions.
 
-Return `ProbcastsSeries` containing quantile pred at the same prob as `QuantForecasts` stored in `QF`.
+Return `QuantForecasts` containing quantile pred at the same prob as `QuantForecasts` stored in `QF`.
 """
 function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
     checkmatch(QF, checkpred=true)
