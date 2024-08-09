@@ -5,7 +5,7 @@ using Test, PostForecasts
     obs = rand(100)
     id = Vector(5:5:500)
     pf = PointForecasts(pred, obs, id)
-    qf = QuantForecasts(pred, obs, id, 0.5)
+    qf = QuantForecasts(pred, obs, id)
 
     @test length(pf) == 100 && length(qf) == 100
 
@@ -625,6 +625,14 @@ end
         testvar = false
         try
             QuantForecasts([0.0 0.0; 0.0 -1.0], zeros(2), [0.25, 0.75])
+        catch e
+            testvar = isa(e, ArgumentError) && e.msg == "quantile `pred` passed to the constructor are decreasing"
+        end
+        @test testvar
+        
+        testvar = false
+        try
+            QuantForecasts(Val(:nocopy), [0.0 0.0; 0.0 -1.0], zeros(2), [0.25, 0.75])
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "quantile `pred` passed to the constructor are decreasing"
         end
