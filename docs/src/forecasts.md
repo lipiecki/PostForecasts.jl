@@ -2,7 +2,7 @@
 To make working with forecasts easy and user-friendy, **PostForecasts.jl** introduces `Forecasts` type, a supertype that spans `PointForecasts` and `QuantForecast` structures.
 
 ## PointForecasts
-`PointForecasts` is a structure designed for storing the series of point `pred`ictions (both single pred and pools of forecasts), along with the `obs`ervations and `id`entifiers (timestamps). The package provides functions for building `PointForecasts` objects from delimited files, calculating error measures (MAE and RMSE) and averaging point pred.
+`PointForecasts` is a structure designed for storing the series of point `pred`ictions (single predictions or prediction pools), along with the `obs`ervations and `id`entifiers (timestamps). The package provides functions for building `PointForecasts` objects from delimited files, calculating error measures (MAE and RMSE) and averaging point pred.
 
 ## QuantForecasts
 `QuantForecasts` is a structure designed for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution corresponding to `prob`ability levels, along with the `obs`ervations and `id`entifiers (timestamps). The package provides functions for computing probabilstic forecasts from `PointForecasts` objects, calculating pinball loss and averaging distributions across quantiles or probabilities.

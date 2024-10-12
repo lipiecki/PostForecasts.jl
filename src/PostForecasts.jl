@@ -1,6 +1,5 @@
 module PostForecasts
 
-abstract type Forecasts{F<:AbstractFloat, I<:Integer} end 
 abstract type PostModel{F<:AbstractFloat} end
 abstract type UniPostModel{F<:AbstractFloat} <: PostModel{F} end
 abstract type MultiPostModel{F<:AbstractFloat} <: PostModel{F} end

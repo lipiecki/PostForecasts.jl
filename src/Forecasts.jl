@@ -1,6 +1,10 @@
+abstract type Forecasts{F<:AbstractFloat, I<:Integer} end
+
 """
     PointForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}[, id::AbstractVector{I}]) where {F<:AbstractFloat, I<:Integer}
 Create `PointForecasts{F, I}` for storing the series of point `pred`ictions, along with the `obs`ervations and `id`entifiers.
+
+The shape of `pred` should be such that `pred[t, i]` is the prediction for time `t` from the forecaster `i`.
 
 If `id` is not provided, it will default to `1:length(obs)`.
 """
@@ -29,6 +33,8 @@ PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}) where {F<:Abstra
 """
     QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}[, id::AbstractVector{I}, prob::Union{F, AbstractVector{F}}]) where {F<:AbstractFloat, I<:Integer}
 Create `QuantForecasts{F, I}` for storing the series of probabilistic `pred`ictions, represented as quantiles of predictive distribution at specfied `prob`abilities, along with the `obs`ervations and `id`entifiers.
+
+The shape of `pred` should be such that `pred[t, i]` is the prediction for time `t` of the `prob[i]`-quantile.
 
 If `id` is not provided, it will default to `1:length(obs)`.
 If `prob` is not provided, it will default to `size(pred, 2)` equidistant quantiles.
