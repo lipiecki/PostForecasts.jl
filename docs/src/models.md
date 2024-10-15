@@ -29,7 +29,7 @@ In the training step, the non-conformity scores $\lambda_i$ are calculated on th
 
 In the prediction step, the $\tau$-th quantile conditional on $\hat{y_t}$ is obtained by shifting the prediction by an appropriate empirical quantile of non-conformity scores:
 
-$\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{1 - 2\tau}(\lambda) + \mathbf{1}_{\{\tau > 0.5\}} Q_{(2\tau - 1)}(\lambda),$
+$\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{1 - 2\tau}(\lambda) + \mathbf{1}_{\{\tau > 0.5\}} Q_{2\tau - 1}(\lambda),$
 
 where $Q_{\alpha}(\lambda)$ is the $\alpha$-th empirical quantile of non-conformity scores from the training window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $\alpha$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
 
