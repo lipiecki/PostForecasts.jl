@@ -25,7 +25,7 @@ getstd
 ## Conformal prediction and historical simulation
 Conformal prediction is a machine learning framework for computing prediction intervals based on the outputs of an arbirary point forecasting model. The implemented version of Conformal Prediction is analogous to the inductive approach used by [Kath and Ziel (2021)](https://doi.org/10.1016/j.ijforecast.2020.09.006). 
 
-In the training step, the non-conformity scores $\lambda_i$ are calculated on the training set $(\hat{y}_i, y_i)_{i\in\text{trainign window}}$ as $\lambda_i := |\hat{y}_i - y_i|$.
+In the training step, the non-conformity scores $\lambda_i$ are calculated on the training set $(\hat{y}_i, y_i)_{i\in\text{training window}}$ as $\lambda_i := |\hat{y}_i - y_i|$.
 
 In the prediction step, the $\tau$-th quantile conditional on $\hat{y_t}$ is obtained by shifting the prediction by an appropriate empirical quantile of non-conformity scores:
 
