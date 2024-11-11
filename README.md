@@ -17,7 +17,7 @@ Currently, the package includes four postprocessing models that differ in terms 
 
 - **Leverages forecaster diversity via averaging**
 
-We believe that following these three principles allowed us to develop a robust tool for computing probabilistic forecasts that combines ease of use, high accuracy, fast results and good interpretability. This makes **PostForecats.jl** an attractive choice for both academic and industrial applications.
+We believe that following these three principles allowed us to develop a robust tool for computing probabilistic forecasts that combines ease of use, high accuracy, fast results and good interpretability. This makes **PostForecasts.jl** an attractive choice for both academic and industrial applications.
 
 ## Dedicated structures
 **PostForecasts.jl** introduces `PointForecasts` and `QuantForecasts` structures for storing time series data along with point and probabilistic forecasts respectively.
