@@ -6,7 +6,7 @@ This example showcases how to prepare probabilistic forecasts of day-ahead elect
 
 First, specify the year (between 2020 and 2023) and the length of the training window (note that data starts at the begining of 2019). Here we use the year 2020 and a half-year training.
 ```julia
-using Probcasts
+using PostForecasts, Statistics
 
 year = 2020
 window = 182
@@ -65,7 +65,7 @@ There are multiple approaches to applying quantile regression to a pool of point
 First, specify the training window, the number of quantiles to be forecasted and the data to be used for postprocessing:
 
 ```
-using Probcasts
+using PostForecasts
 
 window = 182
 nquantiles = 9
@@ -133,7 +133,7 @@ QRQ     |13.606
 ## Conformalizing weather forecasts
 Specify which weather variable to forecast and at which lead time to use.
 ```julia
-using Probcasts
+using PostForecasts
 
 variable = :u10 # u10, c10, t2m, t850 or z500
 leadtime = 24 # between 0 and 186, divisible by 6
