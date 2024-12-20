@@ -2,9 +2,9 @@
 Below You can find some simple examples of what can be achieved with `PostForecasts.jl`
 
 ## Electricity price forecasting
-This example showcases how to prepare probabilistic forecasts of day-ahead electricity prices for all 24 hours, using three different models (IDR, CP and QRA), for a specified calendar year.
+This example showcases how to prepare probabilistic forecasts of day-ahead electricity prices for all 24 hours of the day within a full calendar year, using three different models (IDR, CP and QRA). See [(Lipiecki et al., 2024)](https://doi.org/10.1016/j.eneco.2024.107934) for more details on this forecasting task.
 
-First, specify the year (between 2019 and 2023) and the length of the training window (note that data starts at the begining of 2019). Here we use the year 2021 and a 182-day window.
+First, specify the year (between 2020 and 2023) and the length of the training window (note that 2019 is the first full year of data and we need some prior data for calibration). Here we use the year 2021 and a 182-day window.
 ```julia
 using PostForecasts, Statistics
 
@@ -12,29 +12,23 @@ year = 2021
 window = 182
 models = [:idr, :cp, :qr]
 ```
-
-
 Prepare a dictionary for storing pinball loss values for each model and hour.
 ```julia
 losses = Dict((model => zeros(24) for model in models)...)
 ```
-
-
-Then, for each hour load the point forecasts as `fs::ForecastSeries` and find the indices corresponidng to the first and last day of the specified year. Generate the probabilistic forecasts at 9 equidistant probability levels (fourth argument of `point2quant`) using each model and save their pinball losses.
+Then, for each hour load the point forecasts to the variable `pf` and find the indices corresponidng to the first and last day of the specified year. Generate the probabilistic forecasts for 9 deciles (`nquantiles = 9`) using each model and save their corresponding mean pinball loss to the dictionary.
 ```julia
 Threads.@threads for hour in 1:24
     pf = loaddata(Symbol(:epex, hour))
     first = findindex(pf, year*10_000 + 0101)
     last = findindex(pf, year*10_000 + 1231)
+    nquantiles = 9
     for model in models
-        losses[model][hour] = mean(pinball(point2quant(pf, model, window, 9, first=first, last=last)))
+        losses[model][hour] = mean(pinball(point2quant(pf, model, window, nquantiles, first=first, last=last)))
     end
 end
 ```
-Here, `Threads.@threads` is used to parallelize over available threads. Use `julia --threads=X` to run a Julia instance with `X` threads.
-
-
-Print the results
+Here, `Threads.@threads` is used to parallelize over available threads. Use `julia --threads=X` to run a Julia instance with `X` threads. Finally, we can proceed to printing the results.
 ```julia
 println("Year: $(year)")
 println("Calibration window of $(window) days")
@@ -103,8 +97,7 @@ qfQRF = paverage([point2quant(ipf, :qr, window, nquantiles) for ipf in decouple(
 ```julia
 qfQRQ = qaverage([point2quant(ipf, :qr, window, nquantiles) for ipf in decouple(pf)])
 ```
-
-Print the results of the models
+Then we can print the results of the computed models.
 ```julia
 println("Year $(year), hour $(hour-1):00")
 println("Calibration window of $(window) days")
@@ -117,7 +110,6 @@ println("QRF\t|", round(mean(pinball(qfQRQ)), digits=3))
 println("QRQ\t|", round(mean(pinball(qfQRF)), digits=3))
 println("-"^30)
 ```
-
 The expected output of this script (`examples/quantregs.jl`):
 ```
 Year 2021, hour 14:00
@@ -143,15 +135,11 @@ leadtime = 24 # between 0 and 186, divisible by 6
 pf = loaddata(Symbol(:pangu, leadtime, variable))
 println("$(uppercase(string(variable))) forecasts with lead time of $(leadtime) hours")
 ```
-
-
-Compute the quantile forecasts (9 quantiles at equidistant probabilities) using IDR with a training window of a single year.
+Compute the quantile forecasts for 9 deciles using IDR with a training window of a single year.
 ```julia
 qf = point2quant(fs, :idr, 364, 9)
 ```
-
-
-Print the coverage of `ps`.
+Then print the coverage of `qf`.
 ```julia
 println("\t", "-"^73)
 println("\t| \t\t\t Coverage of α-quantiles \t\t\t|")
@@ -165,14 +153,11 @@ end
 println()
 ```
 
-
 Conformalize the quanitle forecasts `qf`, with 182-day training window. Note that the in-place method `confomalize!` will leave the first 182 unmodified predictions in the `qf`. 
 ```julia
 conformalize!(qf, 182)
 ```
-
-
-Print the coverage of conformalized `qf`.
+Now we can print the coverage of `qf` after conformalization.
 ```julia
 println("-"^81)
 print("CIDR\t|")
@@ -182,7 +167,7 @@ end
 println()
 println("-"^81)
 ```
-The output of this script (`examples/weather.jl`) should be the following
+This script (`examples/weather.jl`) should produce the following output:
 ```
 U10 forecasts with lead time of 24 hours
         -------------------------------------------------------------------------
@@ -221,8 +206,6 @@ last = findindex(fsBUY, lastdate)
 qfBUY = point2quant(fsBUY, :idr, 182, 9, first=first, last=last)
 qfSELL = point2quant(fsSELL, :idr, 182, 9, first=first, last=last)
 ```
-
-
 Let us see what we can learn from the forecasts of median price:
 ```julia
 theme(:dark)
@@ -239,9 +222,7 @@ for i in 1:4
 end
 ```
 ![image](images/trading2.png)
-
 Now we see that on the 3rd day, the upper quantiles of prices at 3:00 significantly overlap the lower quantiles of prices at 19:00. Depending on our risk appetite, we could refrain from trading during this day to avoid possible losses.
-
 
 Finally, let's add the observed prices during this period:
 ```julia
@@ -249,7 +230,6 @@ plot!(viewobs(qfBUY), color = 3, st=:scatter, markerstrokewidth=0, label=nothing
 plot!(viewobs(qfSELL), color = 1, st=:scatter, markerstrokewidth=0, label=nothing)
 ```
 ![image](images/trading3.png)
-
 Indeed, on the 3rd day the decision to avoid traiding would prevent us from incurring a loss. 
 
 This short example was cherry-picked to showcase how probabilistic foreecasts provide us with more information about possible outcomes of decisions. To read about the strategies for battery-based trading on electricity markets and their economic evaluation, see the contributions of [Nitka and Weron (2023)](https://doi.org/10.48550/arXiv.2308.15443) and [Maciejowska et al. (2023)](https://doi.org/10.48550/arXiv.2303.08565).

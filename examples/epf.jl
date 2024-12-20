@@ -10,8 +10,9 @@ Threads.@threads for hour in 1:24
     pf = loaddata(Symbol(:epex, hour))
     first = findindex(pf, year*10_000 + 0101)
     last = findindex(pf, year*10_000 + 1231)
+    nquantiles = 9
     for model in models
-        losses[model][hour] = mean(pinball(point2quant(pf, model, window, 9, first=first, last=last)))
+        losses[model][hour] = mean(pinball(point2quant(pf, model, window, nquantiles, first=first, last=last)))
     end
 end
 
