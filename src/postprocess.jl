@@ -26,7 +26,7 @@ Return `QuantForecasts` containing quantile pred at specified `prob`abilities:
 - `:cp`, `:normal` and `:zeronormal` do not support multiple regressors: if `pf` contains multiple point forecasts, their average will be used for postprocessing
 """
 function point2quant(pf::PointForecasts{F, I}, modelname::Symbol, window::Integer, prob::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
-    window > 0 || throw(ArgumentError("`window` must be greater than 0"))
+    (window > 0 && window < length(pf)) || throw(ArgumentError("`window` must be greater than 0 and smaller than the length of `pf`"))
     retrain >= 0 || throw(ArgumentError("`retrain` must be non-negative"))
     (first >= firstindex(pf)+window && last <= lastindex(pf)) || throw(ArgumentError("`first` cannot be smaller than `firstindex(pf)+window` and `last` cannot be greater than `lastindex(pf)`"))
     prob = Vector{F}(prob)
