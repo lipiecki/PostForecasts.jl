@@ -1,10 +1,49 @@
 # Examples
 Below You can find some simple examples of what can be achieved with `PostForecasts.jl`
 
+## Load and postprocess point forecasts
+In this short example we will show how to load Your own point forecasts and postprocess them using a selected model.
+
+First, we will load the package:
+```julia
+
+using PostForecasts
+```
+Then specify the path where the delimitted file with point forecasts is located, for example:
+```julia
+filepath = "my-data/my-point-forecasts.csv"
+```
+We can load this file using `loaddlmdata()` function, but we first need to know the structure of the data. For the sake of example we will assume the following scheme of the `my-point-forecasts.csv` file:
+```csv
+date,observation,forecast1,forecast2
+0101,53,55,50
+0102,52,54,56
+0103,60,58,59
+...
+Now we can laod it to the variable `pf` with:
+```julia
+pf = loaddlmdata(filepath, delim=',', idcol=1, obscol=2, predcol=[3, 4], colnames=true)
+```
+the arguments specify that the file is delimitted with a comma, the identifiers are stored in the first column, the observations in the second, and the predicitons in the third and fourth one. Additionally, `colnames=true` informs that the column names are present, so the first row will not be parsed into numeric values.
+
+Finally, we can proceed to postprocessing the forecasts and generating predictive distributions. For this we will need to specify the `quantiles` of interest, the length of the training `window`, and the `model`. For example:
+```julia
+model = :qr
+window = 100
+quantiles = [0.9, 0.95, 0.99]
+```
+will calibrate quantile regression on the window of 100 data points to forecast the 90-th, 95-th and 99-th percentile. Running
+```julia
+qf = point2quant(pf, model, window, quantiles)
+```
+will generate the series of quantile forecasts `qf` starting from the `window+1`-th point in the series of point forecasts `pf`. By default, the model is retrained before every prediction using the most recent `window` points. To train the model only once, on the first `window` points in the series, you can use the keyword argument `retrain=0`.
+
+Quantile forecasts `qf` are now ready to be [evaluated](evaluation.md#Evaluation-metrics), [averaged](averaging.md#Forecast-Averaging) with other forecasts, [conformalized](postprocess.md#Conformalizing-probabilistic-forecasts) and [saved](loadsave.md#Loading-and-saving-forecasts).
+
 ## Electricity price forecasting
 This example showcases how to prepare probabilistic forecasts of day-ahead electricity prices for all 24 hours of the day within a full calendar year, using three different models (IDR, CP and QRA). See [(Lipiecki et al., 2024)](https://doi.org/10.1016/j.eneco.2024.107934) for more details on this forecasting task.
 
-First, specify the year (between 2020 and 2023) and the length of the training window (note that 2019 is the first full year of data and we need some prior data for calibration). Here we use the year 2021 and a 182-day window.
+First, specify the year (between 2020 and 2023) and the length of the training window (note that the data starts on December 27, 2018). Here we use the year 2021 and a 182-day window.
 ```julia
 using PostForecasts, Statistics
 
