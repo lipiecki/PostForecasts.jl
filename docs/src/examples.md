@@ -6,7 +6,6 @@ In this short example we will show how to load Your own point forecasts and post
 
 First, we will load the package:
 ```julia
-
 using PostForecasts
 ```
 Then specify the path where the delimitted file with point forecasts is located, for example:
@@ -20,7 +19,8 @@ date,observation,forecast1,forecast2
 0102,52,54,56
 0103,60,58,59
 ...
-Now we can laod it to the variable `pf` with:
+```
+Now we can load it to the variable `pf` with:
 ```julia
 pf = loaddlmdata(filepath, delim=',', idcol=1, obscol=2, predcol=[3, 4], colnames=true)
 ```
