@@ -30,7 +30,7 @@ Create a `PointForecasts` object from delimited file at `filepath`.
 - `predcol=0`: Specifies which columns are used for pred (`0` to use all remaining columns)
 - `colnames=false` If true, omit the first row of the file.
 """
-function loaddlmdata(filepath::String; delim::Char=',', idcol::Integer=1, obscol::Integer=2, predcol::Union{AbstractVector{Integer}, Integer}=0, colnames::Bool=false)
+function loaddlmdata(filepath::String; delim::Char=',', idcol::Integer=1, obscol::Integer=2, predcol::Union{AbstractVector{<:Integer}, Integer}=0, colnames::Bool=false)
     data = readdlm(filepath, delim)[(colnames ? 2 : 1):end, :]
     l, m = size(data)
     predcol = (ndims(predcol) == 0 && predcol == 0) ? [i for i in 1:m if i ∉ [idcol, obscol]] : predcol
