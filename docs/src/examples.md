@@ -14,10 +14,10 @@ filepath = "my-data/my-point-forecasts.csv"
 ```
 We can load this file using `loaddlmdata()` function, but we first need to know the structure of the data. For the sake of example we will assume the following scheme of the `my-point-forecasts.csv` file:
 ```csv
-date,observation,forecast1,forecast2
-0101,53,55,50
-0102,52,54,56
-0103,60,58,59
+timestamp,observation,forecast1,forecast2
+101,52.250,53.775,52.215
+102,55.005,57.450,53.732
+103,58.125,57.728,58.426
 ...
 ```
 Now we can load it to the variable `pf` with:
@@ -36,7 +36,7 @@ will calibrate quantile regression on the window of 100 data points to forecast 
 ```julia
 qf = point2quant(pf, model, window, quantiles)
 ```
-will generate the series of quantile forecasts `qf` starting from the `window+1`-th point in the series of point forecasts `pf`. By default, the model is retrained before every prediction using the most recent `window` points. To train the model only once, on the first `window` points in the series, you can use the keyword argument `retrain=0`.
+will generate the series of quantile forecasts `qf` starting from the `window+1`-th point in the series of point forecasts `pf`. By default, the postprocessing model is retrained before every prediction using the most recent `window` points. For details on alternative configurations, see the documentation of [`point2auqnt`](postprocess.md#From-point-to-probabilistic-forecasts).
 
 Quantile forecasts `qf` are now ready to be [evaluated](evaluation.md#Evaluation-metrics), [averaged](averaging.md#Forecast-Averaging) with other forecasts, [conformalized](postprocess.md#Conformalizing-probabilistic-forecasts) and [saved](loadsave.md#Loading-and-saving-forecasts).
 
