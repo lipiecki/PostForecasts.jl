@@ -32,11 +32,11 @@ model = :qr
 window = 100
 quantiles = [0.9, 0.95, 0.99]
 ```
-will calibrate quantile regression on the window of 100 data points to forecast the 90-th, 95-th and 99-th percentile. Running
+will calibrate quantile regression on the window of 100 data points to forecast the 90-th, 95-th and 99-th percentile. Running the line:
 ```julia
 qf = point2quant(pf, model, window, quantiles)
 ```
-will generate the series of quantile forecasts `qf` starting from the `window+1`-th point in the series of point forecasts `pf`. By default, the postprocessing model is retrained before every prediction using the most recent `window` points. For details on alternative configurations, see the documentation of [`point2auqnt`](postprocess.md#From-point-to-probabilistic-forecasts).
+will generate the series of quantile forecasts `qf` starting from the `window+1`-th point in the series of point forecasts `pf`. By default, the postprocessing model is retrained before every prediction using the most recent `window` points. For details on alternative configurations, see the documentation of [`point2quant`](postprocess.md#From-point-to-probabilistic-forecasts).
 
 Quantile forecasts `qf` are now ready to be [evaluated](evaluation.md#Evaluation-metrics), [averaged](averaging.md#Forecast-Averaging) with other forecasts, [conformalized](postprocess.md#Conformalizing-probabilistic-forecasts) and [saved](loadsave.md#Loading-and-saving-forecasts).
 
