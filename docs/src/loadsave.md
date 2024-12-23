@@ -6,7 +6,8 @@ To make managing files generated with **PostForecasts.jl** easier, HDF5 files co
 ```@docs
 loaddata
 loaddlmdata
-save
+saveforecasts
+loadforecasts
 loadpointf
 loadquantf
 ```

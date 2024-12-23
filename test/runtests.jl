@@ -388,16 +388,16 @@ end
     
     @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
     
-    save(pf, joinpath(@__DIR__, "test"))
-    pf2 = loadpointf(joinpath(@__DIR__, "test"))
+    saveforecasts(pf, joinpath(@__DIR__, "test"))
+    pf2 = loadforecasts(joinpath(@__DIR__, "test"))
     rm(joinpath(@__DIR__, "test.pointf"))
     
     @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
     
     pred = rand(100)
     qf = QuantForecasts([pred pred.+0.1 pred.+0.2 pred.+0.3], rand(100), [0.2, 0.4, 0.6, 0.8])
-    save(qf, joinpath(@__DIR__, "test"))
-    qf2 = loadquantf(joinpath(@__DIR__, "test"))
+    saveforecasts(qf, joinpath(@__DIR__, "test"))
+    qf2 = loadforecasts(joinpath(@__DIR__, "test"))
     rm(joinpath(@__DIR__, "test.quantf"))
 
     @test viewpred(qf) ≈ viewpred(qf2) && viewobs(qf) ≈ viewobs(qf2) && viewid(qf) ≈ viewid(qf2) && viewprob(qf) ≈ viewprob(qf2)
@@ -433,6 +433,14 @@ end
             loaddata(:unknown)
         catch e 
             testvar = isa(e, ArgumentError) && e.msg == "unknown is not a valid dataset name"
+        end
+        @test testvar
+
+        testvar = false
+        try 
+            loadforecasts("filename")
+        catch e 
+            testvar = isa(e, ArgumentError) && e.msg == "`.pointf` or `.quantf` extension required"
         end
         @test testvar
     end

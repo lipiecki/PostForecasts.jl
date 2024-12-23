@@ -21,7 +21,7 @@ function loaddata(dataset::Symbol)
 end
 
 """
-    loaddlmdata(filepath::String; kwargs...)
+    loaddlmdata(filepath::AbstractString; kwargs...)
 Create a `PointForecasts` object from delimited file at `filepath`.
 ## Keyword Arguments
 - `delim=','`: Specifies the delimitter
@@ -30,7 +30,7 @@ Create a `PointForecasts` object from delimited file at `filepath`.
 - `predcol=0`: Specifies which columns are used for pred (`0` to use all remaining columns)
 - `colnames=false` If true, omit the first row of the file.
 """
-function loaddlmdata(filepath::String; delim::Char=',', idcol::Integer=1, obscol::Integer=2, predcol::Union{AbstractVector{<:Integer}, Integer}=0, colnames::Bool=false)
+function loaddlmdata(filepath::AbstractString; delim::Char=',', idcol::Integer=1, obscol::Integer=2, predcol::Union{AbstractVector{<:Integer}, Integer}=0, colnames::Bool=false)
     data = readdlm(filepath, delim)[(colnames ? 2 : 1):end, :]
     l, m = size(data)
     predcol = (ndims(predcol) == 0 && predcol == 0) ? [i for i in 1:m if i ∉ [idcol, obscol]] : predcol
@@ -41,12 +41,12 @@ function loaddlmdata(filepath::String; delim::Char=',', idcol::Integer=1, obscol
 end
 
 """
-    save(f::Forecasts, filepath::String, groupname::String="forecasts")
-Save `f` to a HDF5 file at `filepath` (`.pointf` or `.quantf` extension is added if missing). Optionally specify the name of the group, in which the data will be saved. 
+    saveforecasts(f::Forecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
+Save `f` to a HDF5 file at `filepath` with `.pointf` extension for `PointForecasts` and `.quantf` extension for `QuantForecasts` (extension is added if missing). Optionally specify the name of the group, in which the data will be saved. 
 """
-function save(pf::PointForecasts, filepath::String, groupname::String="forecasts")
+function saveforecasts(pf::PointForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
     ext = filepath[end-6:end] == ".pointf" ? "" : ".pointf"
-    h5open(filepath*ext, "w") do fid
+    h5open(filepath*ext, "cw") do fid
         g = create_group(fid, groupname)
         g["pred"] = pf.pred
         g["obs"] = pf.obs
@@ -54,9 +54,9 @@ function save(pf::PointForecasts, filepath::String, groupname::String="forecasts
     end
 end
 
-function save(qf::QuantForecasts, filepath::String, groupname::String="forecasts")
+function saveforecasts(qf::QuantForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
     ext = filepath[end-6:end] == ".quantf" ? "" : ".quantf"
-    h5open(filepath*ext, "w") do fid
+    h5open(filepath*ext, "cw") do fid
         g = create_group(fid, groupname)
         g["pred"] = qf.pred
         g["obs"] = qf.obs
@@ -66,10 +66,24 @@ function save(qf::QuantForecasts, filepath::String, groupname::String="forecasts
 end
 
 """
-    loadpointf(filepath::String, groupname::String="forecasts")
-Load `PointForecasts` from a HDF5 file at `filepath` (`.pointf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
+    loadforecasts(filepath::AbstractString, groupname::AbstractString="forecasts")::Forecasts
+Load `PointForecasts` or `QuantForecasts` from `filepath` (`.pointf` or `.quantf` extension is required). Optionally specify the name of the group, from which the data will be loaded.
 """
-function loadpointf(filepath::String, groupname::String="forecasts")
+function loadforecasts(filepath::AbstractString, groupname::AbstractString="forecasts")::Forecasts
+    if filepath[end-6:end] == ".pointf"
+        loadpointf(filepath, groupname)
+    elseif filepath[end-6:end] == ".quantf"
+        loadquantf(filepath, groupname)
+    else
+        throw(ArgumentError("`.pointf` or `.quantf` extension required"))
+    end
+end
+
+"""
+    loadpointf(filepath::AbstractString, groupname::AbstractString="forecasts")::PointForecasts
+Load `PointForecasts` from `filepath` (`.pointf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
+"""
+function loadpointf(filepath::AbstractString, groupname::AbstractString="forecasts")::PointForecasts
     ext = filepath[end-6:end] == ".pointf" ? "" : ".pointf"
     h5open(filepath*ext, "r") do fid
         g = fid[groupname]
@@ -81,10 +95,10 @@ function loadpointf(filepath::String, groupname::String="forecasts")
 end
 
 """
-    loadquantf(filepath::String, groupname::String="forecasts")
-Load `QuantForecasts` from a HDF5 file at `filepath` (`.quantf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
+    loadquantf(filepath::AbstractString, groupname::AbstractString="forecasts")::QuantForecasts
+Load `QuantForecasts` from `filepath` (`.quantf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
 """
-function loadquantf(filepath::String, groupname::String="forecasts")
+function loadquantf(filepath::AbstractString, groupname::AbstractString="forecasts")::QuantForecasts
     ext = filepath[end-6:end] == ".quantf" ? "" : ".quantf"
     h5open(filepath*ext, "r") do fid
         g = fid[groupname]
