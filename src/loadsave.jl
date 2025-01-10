@@ -47,7 +47,12 @@ Save `f` to a HDF5 file at `filepath` with `.pointf` extension for `PointForecas
 function saveforecasts(pf::PointForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
     ext = filepath[end-6:end] == ".pointf" ? "" : ".pointf"
     h5open(filepath*ext, "cw") do fid
-        g = create_group(fid, groupname)
+        try create_group(fid, groupname)
+        catch
+            delete_object(fid, groupname)
+            create_group(fid, groupname)
+        end
+        g = fid[groupname]
         g["pred"] = pf.pred
         g["obs"] = pf.obs
         g["id"] = pf.id
@@ -57,7 +62,12 @@ end
 function saveforecasts(qf::QuantForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
     ext = filepath[end-6:end] == ".quantf" ? "" : ".quantf"
     h5open(filepath*ext, "cw") do fid
-        g = create_group(fid, groupname)
+        try create_group(fid, groupname)
+        catch
+            delete_object(fid, groupname)
+            create_group(fid, groupname)
+        end
+        g = fid[groupname]
         g["pred"] = qf.pred
         g["obs"] = qf.obs
         g["id"] = qf.id
