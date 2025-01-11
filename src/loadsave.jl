@@ -56,9 +56,9 @@ end
 function saveforecasts(qf::QuantForecasts, filepath::AbstractString)
     ext = (splitext(filepath)[2] == ".quantf") ? "" : ".quantf"
     h5open(filepath*ext, "w") do fid
-        fid["pred"] = pf.pred
-        fid["obs"] = pf.obs
-        fid["id"] = pf.id
+        fid["pred"] = qf.pred
+        fid["obs"] = qf.obs
+        fid["id"] = qf.id
         fid["prob"] = qf.prob
     end
 end
