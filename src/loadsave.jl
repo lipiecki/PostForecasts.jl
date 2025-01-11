@@ -41,81 +41,68 @@ function loaddlmdata(filepath::AbstractString; delim::Char=',', idcol::Integer=1
 end
 
 """
-    saveforecasts(f::Forecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
-Save `f` to a HDF5 file at `filepath` with `.pointf` extension for `PointForecasts` and `.quantf` extension for `QuantForecasts` (extension is added if missing). Optionally specify the name of the group, in which the data will be saved. 
+    saveforecasts(f::Forecasts, filepath::AbstractString)
+Save `f` to a HDF5 file at `filepath` with `.pointf` extension for `PointForecasts` and `.quantf` extension for `QuantForecasts` (extension is added if missing).
 """
-function saveforecasts(pf::PointForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
-    ext = filepath[end-6:end] == ".pointf" ? "" : ".pointf"
-    h5open(filepath*ext, "cw") do fid
-        try create_group(fid, groupname)
-        catch
-            delete_object(fid, groupname)
-            create_group(fid, groupname)
-        end
-        g = fid[groupname]
-        g["pred"] = pf.pred
-        g["obs"] = pf.obs
-        g["id"] = pf.id
+function saveforecasts(pf::PointForecasts, filepath::AbstractString)
+    ext = (splitext(filepath)[2] == ".pointf") ? "" : ".pointf"
+    h5open(filepath*ext, "w") do fid
+        fid["pred"] = pf.pred
+        fid["obs"] = pf.obs
+        fid["id"] = pf.id
     end
 end
 
-function saveforecasts(qf::QuantForecasts, filepath::AbstractString, groupname::AbstractString="forecasts")
-    ext = filepath[end-6:end] == ".quantf" ? "" : ".quantf"
-    h5open(filepath*ext, "cw") do fid
-        try create_group(fid, groupname)
-        catch
-            delete_object(fid, groupname)
-            create_group(fid, groupname)
-        end
-        g = fid[groupname]
-        g["pred"] = qf.pred
-        g["obs"] = qf.obs
-        g["id"] = qf.id
-        g["levels"] = qf.prob
+function saveforecasts(qf::QuantForecasts, filepath::AbstractString)
+    ext = (splitext(filepath)[2] == ".quantf") ? "" : ".quantf"
+    h5open(filepath*ext, "w") do fid
+        fid["pred"] = pf.pred
+        fid["obs"] = pf.obs
+        fid["id"] = pf.id
+        fid["prob"] = qf.prob
     end
 end
 
 """
-    loadforecasts(filepath::AbstractString, groupname::AbstractString="forecasts")::Forecasts
-Load `PointForecasts` or `QuantForecasts` from `filepath` (`.pointf` or `.quantf` extension is required). Optionally specify the name of the group, from which the data will be loaded.
+    loadforecasts(filepath::AbstractString)::Forecasts
+Load `PointForecasts` or `QuantForecasts` from `filepath` (`.pointf` or `.quantf` extension is required).
 """
-function loadforecasts(filepath::AbstractString, groupname::AbstractString="forecasts")::Forecasts
-    if filepath[end-6:end] == ".pointf"
-        loadpointf(filepath, groupname)
-    elseif filepath[end-6:end] == ".quantf"
-        loadquantf(filepath, groupname)
+function loadforecasts(filepath::AbstractString)::Forecasts
+    ext = splitext(filepath)[2] 
+    if ext == ".pointf"
+        loadpointf(filepath)
+    elseif ext == ".quantf"
+        loadquantf(filepath)
     else
         throw(ArgumentError("`.pointf` or `.quantf` extension required"))
     end
 end
 
 """
-    loadpointf(filepath::AbstractString, groupname::AbstractString="forecasts")::PointForecasts
-Load `PointForecasts` from `filepath` (`.pointf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
+    loadpointf(filepath::AbstractString)::PointForecasts
+Load `PointForecasts` from `filepath` (`.pointf` extension is added if missing).
 """
-function loadpointf(filepath::AbstractString, groupname::AbstractString="forecasts")::PointForecasts
-    ext = filepath[end-6:end] == ".pointf" ? "" : ".pointf"
+function loadpointf(filepath::AbstractString)::PointForecasts
+    ext = (splitext(filepath)[2] == ".pointf") ? "" : ".pointf"
     h5open(filepath*ext, "r") do fid
-        g = fid[groupname]
         PointForecasts(
-            read(g, "pred"),
-            read(g, "obs"),
-            read(g, "id"))
+            fid["pred"],
+            fid["obs"],
+            fid["id"])
     end
 end
 
 """
-    loadquantf(filepath::AbstractString, groupname::AbstractString="forecasts")::QuantForecasts
-Load `QuantForecasts` from `filepath` (`.quantf` extension is added if missing). Optionally specify the name of the group, from which the data will be loaded.
+    loadquantf(filepath::AbstractString)::QuantForecasts
+Load `QuantForecasts` from `filepath` (`.quantf` extension is added if missing).
 """
-function loadquantf(filepath::AbstractString, groupname::AbstractString="forecasts")::QuantForecasts
-    ext = filepath[end-6:end] == ".quantf" ? "" : ".quantf"
+function loadquantf(filepath::AbstractString)::QuantForecasts
+    ext = (splitext(filepath)[2] == ".quantf") ? "" : ".quantf"
     h5open(filepath*ext, "r") do fid
-        g = fid[groupname]
         QuantForecasts(
-            read(g, "pred"),
-            read(g, "obs"),
-            read(g, "id"),
-            read(g, "levels"))
+            fid["pred"],
+            fid["obs"],
+            fid["id"],
+            fid["prob"])
     end
 end
