@@ -86,9 +86,9 @@ function loadpointf(filepath::AbstractString)::PointForecasts
     ext = (splitext(filepath)[2] == ".pointf") ? "" : ".pointf"
     h5open(filepath*ext, "r") do fid
         PointForecasts(
-            fid["pred"],
-            fid["obs"],
-            fid["id"])
+            read(fid, "pred"),
+            read(fid, "obs"),
+            read(fid, "id"))
     end
 end
 
@@ -100,9 +100,9 @@ function loadquantf(filepath::AbstractString)::QuantForecasts
     ext = (splitext(filepath)[2] == ".quantf") ? "" : ".quantf"
     h5open(filepath*ext, "r") do fid
         QuantForecasts(
-            fid["pred"],
-            fid["obs"],
-            fid["id"],
-            fid["prob"])
+            read(fid, "pred"),
+            read(fid, "obs"),
+            read(fid, "id"),
+            read(fid, "prob"))
     end
 end
