@@ -37,7 +37,7 @@ However, it is also possible to use conformal prediction to obtain non-symmetric
 
 $\hat{q}_{\tau|\hat{y}} = \hat{y} + Q_{\tau}(\lambda),$
 
-the method known as historical simulation [(Nowotarski and Weron, 2018)](https://doi.org/10.1016/j.rser.2017.05.234)
+the method known as historical simulation [(Hendricks, 1996)](http://dx.doi.org/10.2139/ssrn.1028807)
 
 ```@docs
 CP
