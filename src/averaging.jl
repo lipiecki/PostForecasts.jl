@@ -52,8 +52,11 @@ Return `QuantForecasts` containing quantile pred at specified `quantiles`:
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
+function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles=99) where {F, I}
+    paverage(QF, quantiles)
+end
+
 function paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
-    Base.require_one_based_indexing(prob)
     checkmatch(QF)
     prob = Vector{F}(quantiles)
     pred = Matrix{F}(undef, length(QF[begin]), length(prob))
@@ -89,9 +92,9 @@ function paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractVector{<:
         Val(false))
 end
 
-paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractFloat) where {F, I} = paverage(QF, quantiles=[quantiles])
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractFloat) where {F, I} = paverage(QF, [quantiles])
 
-paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::Integer=99) where {F, I} = paverage(QF, quantiles=equidistant(quantiles, F))
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::Integer) where {F, I} = paverage(QF, equidistant(quantiles, F))
 
 """
     qaverage(QF::Vector{QuantForecasts})
