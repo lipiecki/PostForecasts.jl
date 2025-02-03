@@ -26,7 +26,11 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `:idr` partially supports multiple regressors: one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions
 - `:cp`, `:normal` and `:zeronormal` do not support multiple regressors: if `pf` contains multiple point forecasts, their average will be used for postprocessing
 """
-function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, quantiles::AbstractVector{<:AbstractFloat}, first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
+function point2quant(pf::PointForecasts{F, I}; method=method, window=window, quantiles=quantiles, kwargs...)
+    return point2quant(pf, method, window, quantiles; kwargs...)
+end
+
+function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
     (window > 0 && window < length(pf)) || throw(ArgumentError("`window` must be greater than 0 and smaller than the length of `pf`"))
     retrain >= 0 || throw(ArgumentError("`retrain` must be non-negative"))
     (first >= firstindex(pf)+window && last <= lastindex(pf)) || throw(ArgumentError("`first` cannot be smaller than `firstindex(pf)+window` and `last` cannot be greater than `lastindex(pf)`"))
@@ -48,12 +52,12 @@ function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, 
         Val(false))
 end
 
-function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, quantiles::AbstractFloat, kwargs...) where {F, I}
-   point2quant(pf; method=method, window=window, quantiles=[quantiles], kwargs...)
+function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::AbstractFloat; kwargs...) where {F, I}
+   point2quant(pf, method, window, quantiles=[quantiles]; kwargs...)
 end
     
-function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, quantiles::Integer, kwargs...) where {F, I}
-    point2quant(pf; method=method, window=window, quantiles=equidistant(quantiles, F), kwargs...)
+function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::Integer; kwargs...) where {F, I}
+    point2quant(pf, method, window, quantiles=equidistant(quantiles, F); kwargs...)
 end
 
 """
