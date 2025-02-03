@@ -26,7 +26,7 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `:idr` partially supports multiple regressors: one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions
 - `:cp`, `:normal` and `:zeronormal` do not support multiple regressors: if `pf` contains multiple point forecasts, their average will be used for postprocessing
 """
-function point2quant(pf::PointForecasts{F, I}; method=method, window=window, quantiles=quantiles, kwargs...) where {F, I}
+function point2quant(pf::PointForecasts{F, I}; method, window, quantiles, kwargs...) where {F, I}
     return point2quant(pf, method, window, quantiles; kwargs...)
 end
 
