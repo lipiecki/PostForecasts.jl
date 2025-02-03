@@ -48,12 +48,12 @@ function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, 
         Val(false))
 end
 
-function point2quant(pf::PointForecasts{F, I}; quantiles::AbstractFloat, kwargs...) where {F, I}
-   point2quant(pf; quantiles=[quantiles], kwargs...)
+function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, quantiles::AbstractFloat, kwargs...) where {F, I}
+   point2quant(pf; method=method, window=window, quantiles=[quantiles], kwargs...)
 end
     
-function point2quant(pf::PointForecasts{F, I}; quantiles::Integer, kwargs...) where {F, I}
-    point2quant(pf; quantiles=equidistant(quantiles, F), kwargs...)
+function point2quant(pf::PointForecasts{F, I}; method::Symbol, window::Integer, quantiles::Integer, kwargs...) where {F, I}
+    point2quant(pf; method=method, window=window, quantiles=equidistant(quantiles, F), kwargs...)
 end
 
 """
