@@ -50,7 +50,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :normal, 100, 99, retrain=0)
+    qf = point2quant(pf, method=:normal, window=100, quantiles=99, retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 99)
     quantiles2 = similar(quantiles)
@@ -84,7 +84,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :zeronormal, 100, 99, retrain=0)
+    qf = point2quant(pf, method=:zeronormal, window=100, quantiles=99, retrain=0)
 
     for i in 1:50
         predict!(model, @view(quantiles[i, :]), pred_[100+i], 0.01:0.01:0.99)
@@ -117,7 +117,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :cp, 100, 99, retrain=0)
+    qf = point2quant(pf, method=:cp, window=100, quantiles=99, retrain=0)
     corrections = [-quantile(λ, 0.98:-0.02:0.02, sorted=true, alpha=1, beta=1); 0.0; quantile(λ, 0.02:0.02:0.98, sorted=true, alpha=1, beta=1)]
     
     quantiles = Matrix{Float64}(undef, 50, 99)
@@ -154,7 +154,7 @@ end
     @test λ ≈ getscores(model)
 
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :hs, 100, 99, retrain=0)
+    qf = point2quant(pf, method=:hs, window=100, quantiles=99, retrain=0)
     corrections = quantile(λ, 0.01:0.01:0.99, sorted=true, alpha=1, beta=1)
 
     for i in 1:50
@@ -208,7 +208,7 @@ end
     pred_ = [pred; randn(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :idr, 100, 99, retrain=0)
+    qf = point2quant(pf, method=:idr, window=100, quantiles=99, retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 99)
     quantiles2 = similar(quantiles)
@@ -256,7 +256,7 @@ end
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :qr, 100, [0.25, 0.75], retrain=0)
+    qf = point2quant(pf, method=:qr, window=100, quantiles=[0.25, 0.75], retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 2)
     quantiles2 = similar(quantiles)
@@ -282,7 +282,7 @@ end
     pred_ = [pred; rand(50, 2)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, :qr, 100, 0.5, retrain=0)
+    qf = point2quant(pf, method=:qr, window=100, quantiles=0.5, retrain=0)
 
     @test getweights(model) ≈ W
     @test getquantprob(model) == [0.5]
@@ -300,8 +300,8 @@ end
     pred = sort(rand(150, 99), dims=2)
     obs = rand(150)
     qf = QuantForecasts(pred, obs)
-    qfc = conformalize(qf, 100)
-    conformalize!(qf, 100)
+    qfc = conformalize(qf, window=100)
+    conformalize!(qf, window=100)
     qf = qf[101:end]
     
     @test all(viewpred(qfc) .≈ viewpred(qf)) && all(viewobs(qfc) .≈ viewobs(qf)) && all(viewid(qfc) .≈ viewid(qf))
@@ -333,10 +333,10 @@ end
 
     qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], obs, [0.25, 0.5, 0.75])
     qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], obs, [0.25, 0.5, 0.75])
-    qfp = paverage([qf1, qf2], [0.125, 0.25, 0.5, 0.625, 0.75])
+    qfp = paverage([qf1, qf2], quantiles=[0.125, 0.25, 0.5, 0.625, 0.75])
     qfq = qaverage([qf1, qf2])
-    qfpmedian = paverage([qf1, qf2], 0.5)
-    qfpmedian2 = paverage([qf1, qf2], 1) # integer 1 means that one quantile (median) will be calculated
+    qfpmedian = paverage([qf1, qf2], quantiles=0.5)
+    qfpmedian2 = paverage([qf1, qf2], quantiles=1) # integer 1 means that one quantile (median) will be calculated
     
     quantiles = [-ones(100) -ones(100)./2 zeros(100) ones(100)./2 ones(100)]
     @test viewpred(qfp) ≈ quantiles
@@ -416,7 +416,7 @@ end
         pf = PointForecasts(rand(100), rand(100))    
         testvar = false
         try 
-            point2quant(pf, :unknown, 10, 99)
+            point2quant(pf, method=:unknown, window=10, quantiles=99)
         catch e
             testvar = isa(e, ArgumentError) && e.msg == "provided model name not recognized"
         end

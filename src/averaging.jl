@@ -44,19 +44,19 @@ function average(PF::Vector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, 
 end
 
 """
-    paverage(QF::Vector{QuantForecasts}, prob)
+    paverage(QF::Vector{QuantForecasts}; quantiles=99)
 Average probabilistic pred from `QF` by averaging probabilities of the distributions.
 
-Return `QuantForecasts` containing quantile pred at specified `prob`abilities:
-- `prob::AbstractVector{<:AbstractFloat}`: vector of probabilities
-- `prob::AbstractFloat`: a single probability value
-- `prob::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
+Return `QuantForecasts` containing quantile pred at specified `quantiles`:
+- `quantiles::AbstractVector{<:AbstractFloat}`: vector of probabilities
+- `quantiles::AbstractFloat`: a single probability value
+- `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
-function paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractVector{<:AbstractFloat}) where {F, I}
+function paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
     Base.require_one_based_indexing(prob)
     checkmatch(QF)
-    prob = Vector{F}(prob)
-    quantiles = Matrix{F}(undef, length(QF[begin]), length(prob))
+    prob = Vector{F}(quantiles)
+    pred = Matrix{F}(undef, length(QF[begin]), length(prob))
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
     pdf = Vector{F}(undef, length(y))
     for t in eachindex(QF[begin])
@@ -74,7 +74,7 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractVector{<:Abstr
         itr = lastindex(prob)
         for i in sortperm(y, rev=true)
             cdf -= pdf[i]
-            quantiles[t, itr] = y[i]
+            pred[t, itr] = y[i]
             if !(cdf >= prob[itr] || cdf ≈ prob[itr])
                 itr -= 1
                 itr == 0 && break
@@ -82,16 +82,16 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractVector{<:Abstr
         end
     end
     return QuantForecasts(
-        quantiles,
+        pred,
         getobs(QF[begin]),
         getid(QF[begin]),
         prob,
         Val(false))
 end
 
-paverage(QF::Vector{QuantForecasts{F, I}}, prob::AbstractFloat) where {F, I} = paverage(QF, [prob])
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::AbstractFloat) where {F, I} = paverage(QF, quantiles=[quantiles])
 
-paverage(QF::Vector{QuantForecasts{F, I}}, prob::Integer) where {F, I} = paverage(QF, equidistant(prob, F))
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles::Integer=99) where {F, I} = paverage(QF, quantiles=equidistant(quantiles, F))
 
 """
     qaverage(QF::Vector{QuantForecasts})
@@ -101,17 +101,17 @@ Return `QuantForecasts` containing quantile pred at the same prob as `QuantForec
 """
 function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
     checkmatch(QF, checkpred=true)
-    quantiles = zeros(F, length(QF[begin]), npred(QF[begin]))
+    pred = zeros(F, length(QF[begin]), npred(QF[begin]))
     for t in eachindex(QF[begin])
         for i in 1:npred(QF[begin])
             for qf in QF
-                quantiles[t, i] += qf.pred[t, i]
+                pred[t, i] += qf.pred[t, i]
             end
         end
     end
-    quantiles /= length(QF)
+    pred /= length(QF)
     return QuantForecasts(
-        quantiles,
+        pred,
         getobs(QF[begin]),
         getid(QF[begin]),
         getprob(QF[begin]), 
