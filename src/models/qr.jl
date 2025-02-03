@@ -100,8 +100,7 @@ end
 function _predict(m::QR{F}, input::AbstractVector{<:Number}, prob::AbstractFloat) where {F<:AbstractFloat}
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
-    output = m.W[end, j] + dot(@view(m.W[:, j]), input)
-    return output
+    return m.W[end, j] + dot(@view(m.W[1:end-1, j]), input)
 end
 
 function _predict(m::QR{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}
@@ -114,15 +113,13 @@ end
 
 function _predict(m::QR{F}, input::AbstractVector{<:Number}) where {F<:AbstractFloat}
     output = Vector{F}(undef, length(m.prob))
-    for j in eachindex(output)
-        output[j] = _predict(m, input, m.prob[j])
-    end
+    _predict!(m, output, input)
     return output
 end
 
 function _predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})::Nothing
     for j in eachindex(output)
-        output[j] = m.W[end, j] + dot(@view(m.W[:, j]), input)
+        output[j] = m.W[end, j] + dot(@view(m.W[1:end-1, j]), input)
     end
     sort!(output)
     return nothing
