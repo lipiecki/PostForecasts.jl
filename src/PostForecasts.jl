@@ -18,6 +18,7 @@ using DelimitedFiles
 using HDF5
 using HiGHS
 using JuMP
+using LinearAlgebra
 using SpecialFunctions: erfinv
 using Statistics: mean, median, quantile
 
