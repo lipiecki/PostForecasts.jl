@@ -30,11 +30,11 @@ end
 
 """
     pinball(qf::QuantForecasts)
-Calculate the Pinball Loss over all quantiles in `qf`. Return the vector of pinball loss corresponding to each quantile.
+Calculate the Pinball Loss over all quantiles in `qf`. Return the vector of Pinball Loss values corresponding to each quantile.
 See [Gneiting 2011](httqf://doi.org/10.1016/j.ijforecast.2009.12.015) for more details about Pinball Loss. 
 
 ## Note
-Average pinball score over equidistant quantiles approximates Continuous Ranked Probability Score.
+Average Pinball Loss over equidistant quantiles approximates Continuous Ranked Probability Score.
 """
 function pinball(qf::QuantForecasts)
     loss = zeros(npred(qf))
@@ -49,6 +49,18 @@ function pinball(qf::QuantForecasts)
     end
     loss /= length(qf)
     return loss
+end
+
+"""
+    crps(qf::QuantForecasts)
+Approximate the Continous Ranked Probability Score using Pinball Loss of quantile forecasts in `qf`, according to `2*mean(pinball(qf))`.
+
+## Note
+Approximating CRPS with an average Pinball Loss requires a dense grid of equidistant quantiles.
+"""
+function crps(qf::QuantForecasts{F, I}) where {F, I}
+    all(equidistant(npred(qf), F) .≈ viewprob(qf)) || @warn "improper CRPS approximation: quantile grid of `qf` is not uniform"
+    return 2*mean(pinball(qf))
 end
 
 """

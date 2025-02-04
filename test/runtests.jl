@@ -360,6 +360,7 @@ end
 
     qf = QuantForecasts([pred pred2 pred3], obs, [0.2, 0.5, 0.8])
     @test pinball(qf) ≈ 0.109.*[0.2, 0.5, 0.2*10]
+    @test crps(qf) ≈ 2*mean(pinball(qf))
     @test coverage(qf) ≈ [0.0, 0.5, 1.0]
 end
 
