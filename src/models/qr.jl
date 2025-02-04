@@ -108,6 +108,7 @@ function _predict(m::QR{F}, input::AbstractVector{<:Number}, prob::AbstractVecto
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
     end
+    sort!(output)
     return output
 end
 
