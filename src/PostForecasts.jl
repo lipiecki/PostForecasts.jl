@@ -105,6 +105,7 @@ export
     mae,
     rmse,
     pinball,
+    crps,
     coverage,
     shapley,
 
