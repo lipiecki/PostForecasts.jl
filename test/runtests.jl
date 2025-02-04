@@ -358,8 +358,8 @@ end
     @test mae(pf) ≈ [0.109, 1.09]
     @test rmse(pf) ≈ [sqrt(0.0199), sqrt(1.99)]
 
-    qf = QuantForecasts([pred pred2 pred3], obs, [0.2, 0.5, 0.8])
-    @test pinball(qf) ≈ 0.109.*[0.2, 0.5, 0.2*10]
+    qf = QuantForecasts([pred pred2 pred3], obs, [0.25, 0.5, 0.75])
+    @test pinball(qf) ≈ 0.109.*[0.25, 0.5, 0.25*10]
     @test crps(qf) ≈ 2*mean(pinball(qf))
     @test coverage(qf) ≈ [0.0, 0.5, 1.0]
 end
