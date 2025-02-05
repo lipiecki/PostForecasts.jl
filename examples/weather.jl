@@ -1,12 +1,12 @@
-using PostForecasts
-
+using PostForecasts, Plots
+#theme(:vibrant)
 variable = :u10 # u10, c10, t2m, t850 or z500
 leadtime = 24 # between 0 and 186, divisible by 6
 
 fs = loaddata(Symbol(:pangu, leadtime, variable))
 println("$(uppercase(string(variable))) forecasts with lead time of $(leadtime) hours")
 
-qf = point2quant(fs, :idr, 364, 9)
+qf = point2quant(fs, method=:idr, window=364, quantiles=9)
 
 println("\t", "-"^73)
 println("\t| \t\t\t Coverage of α-quantiles \t\t\t|")
@@ -18,8 +18,7 @@ for cov in coverage(qf)
     print(" ", round(cov, digits=3), "\t|")
 end
 println()
-
-conformalize!(qf, 182)
+conformalize!(qf, window=182)
 
 println("-"^81)
 print("CIDR\t|")

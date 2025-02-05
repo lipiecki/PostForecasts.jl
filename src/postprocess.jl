@@ -1,5 +1,5 @@
 """
-    point2quant(pf; method, window, quantiles[, first, last, retrain])
+    point2quant(pf; method, window, quantiles[, start, stop, retrain])
 Compute probabilistic forecast based on point forecasts `pf::PointForecasts` using `PostModel` specified by `method::Symbol`.
 
 Return `QuantForecasts` containing forecasts of specified `quantiles`:
@@ -17,8 +17,8 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 
 ## Other keyword arguments:
 - `window::Integer`: the number of past observations used for training the model
-- `first::Integer = firstindex(pf) + window`: specify the first index of `pf` for which the probabilistic forecast will be caluclated
-- `last::Integer = lastindex(pf)`: specify the last index of `pf` for which the probabilistic forecast will be caluclated
+- `start::Integer = pf.id[begin + window]`: specify the `id`entifier in `pf` at which quantile forecasts will start (if not provided, the first available will be used)
+- `stop::Integer = pd.id[end]`: specify the `id`entifier in `pf` at which quantile forecasts will stop (if not provided, the last available will be used)
 - `retrain::Integer = 1`: specify how often to retrain the model. If `retrain == 0`, the model will be trained only once, otherwise it will be retrained every `retrain` steps
 
 ## Note
@@ -26,14 +26,14 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `:idr` partially supports multiple regressors: one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions
 - `:cp`, `:normal` and `:zeronormal` do not support multiple regressors: if `pf` contains multiple point forecasts, their average will be used for postprocessing
 """
-function point2quant(pf::PointForecasts{F, I}; method, window, quantiles, kwargs...) where {F, I}
-    return point2quant(pf, method, window, quantiles; kwargs...)
-end
+point2quant(pf::PointForecasts{F, I}; method, window, quantiles, kwargs...) where {F, I} = point2quant(pf, method, window, quantiles; kwargs...)
 
-function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::AbstractVector{<:AbstractFloat}; first::Integer=window+firstindex(pf), last::Integer=lastindex(pf), retrain::Integer=1) where {F, I}
+function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::AbstractVector{<:AbstractFloat}; start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing, retrain::Integer=1) where {F, I}
     (window > 0 && window < length(pf)) || throw(ArgumentError("`window` must be greater than 0 and smaller than the length of `pf`"))
-    retrain >= 0 || throw(ArgumentError("`retrain` must be non-negative"))
-    (first >= firstindex(pf)+window && last <= lastindex(pf)) || throw(ArgumentError("`first` cannot be smaller than `firstindex(pf)+window` and `last` cannot be greater than `lastindex(pf)`"))
+    retrain >= 1 || throw(ArgumentError("`retrain` must be non-negative"))
+    first = isnothing(start) ? pf.id[begin+window] : findindex(pf, start)
+    last = isnothing(stop) ? pf.id[end] : findindex(pf, stop)
+    first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     prob = Vector{F}(quantiles)
     pred = zeros(F, last-first+1, length(prob))
     model = getmodel(Val(method), window, npred(pf), prob)
@@ -61,15 +61,18 @@ function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, 
 end
 
 """
-    conformalize(qf::QuantForecasts{F, I}; window::Integer[, first::Integer, last::Integer)
+    conformalize(qf::QuantForecasts{F, I}; window::Integer[, start, stop)
 Perform conformalization of quantile forecasts provided in `ps`.
-Conformalized quantiles will be calculated for observations between the index `first` and `last` of `qf`. The model is retrained every step on the last `window` observations.
+Conformalized quantiles will be calculated for observations between the `start` and `stop` `id`entifiers in `qf`. The model is retrained every step on the last `window` observations.
 
 Return `QuantForecasts` with conformalized quantiles.
 """
-function conformalize(qf::QuantForecasts{F, I}; window::Integer, first::Integer=window+firstindex(qf), last::Integer=lastindex(qf)) where {F, I} 
+function conformalize(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I} 
     pred = getpred(qf, first:last)
     model = CP(window, abs=false)
+    first = isnothing(start) ? qf.id[begin+window] : findindex(qf, start)
+    last = isnothing(stop) ? qf.id[end] : findindex(qf, stop)
+    first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     for t in first:last
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
@@ -86,11 +89,14 @@ function conformalize(qf::QuantForecasts{F, I}; window::Integer, first::Integer=
 end
 
 """
-    conformalize!(qf::QuantForecasts{F, I}; window::Integer[, first::Integer, last::Integer)
+    conformalize!(qf::QuantForecasts{F, I}; window::Integer[, start, stop)
 In-place version of conformalize that mutates `qf` instead of creating a new `QuantForecasts`.
 """
-function conformalize!(qf::QuantForecasts{F, I}; window::Integer, first::Integer=window+firstindex(qf), last::Integer=lastindex(qf)) where {F, I}
-    model = CP(window, abs=false) 
+function conformalize!(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I}
+    model = CP(window, abs=false)
+    first = isnothing(start) ? qf.id[begin+window] : findindex(qf, start)
+    last = isnothing(stop) ? qf.id[end] : findindex(qf, stop)
+    first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     for t in last:-1:first
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))

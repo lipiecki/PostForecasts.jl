@@ -1,24 +1,23 @@
 using PostForecasts
 
-using PostForecasts
-pf = loaddata(Symbol(:epex, 15))
-first = findindex(pf, 20210101)
-last = findindex(pf, 20211231)
-pf = pf[first-182:last]
+pf = loaddata(:epex20)
+pf = pf(20200101, 20211231)
 qf = Dict()
 
 # QRA
-qf["QRA"] = point2quant(pf, model=:qr, window=182, quantiles=9)
+qf["QRA"] = point2quant(pf, method=:qr, window=365, quantiles=9)
 
 # QRM
-qf["QRM"] = point2quant(average(pf), model=:qr, window=182, quantiles=9)
+qf["QRM"] = point2quant(average(pf), method=:qr, window=365, quantiles=9)
 
 # QRF
-qf["QRF"] = paverage(point2quant.(decouple(pf), model=:qr, window=182, quantiles=9))
+qf["QRF"] = paverage(point2quant.(decouple(pf), method=:qr, window=365, quantiles=9))
 
 # QRQ
-qf["QRQ"] = qaverage(point2quant.(decouple(pf), model=:qr, window=182, quantiles=9))
+qf["QRQ"] = qaverage(point2quant.(decouple(pf), method=:qr, window=365, quantiles=9))
 
-for key in keys(qfs)
-    println(key, "\t CRPS: ", round(crps(qfs[key]), digits=3))
+println("Method \t| CRPS ")
+println("-"^20)
+for m in ["QRA", "QRM", "QRF", "QRQ"]
+    println(m, " \t| ", round(crps(qf[m]), digits=3))
 end
