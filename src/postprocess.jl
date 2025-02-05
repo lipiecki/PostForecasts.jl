@@ -94,7 +94,7 @@ In-place version of conformalize that mutates `qf` instead of creating a new `Qu
 """
 function conformalize!(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I}
     model = CP(window, abs=false)
-    first = isnothing(start) ? firstindex(qf+window) : findindex(qf, start)
+    first = isnothing(start) ? firstindex(qf)+window : findindex(qf, start)
     last = isnothing(stop) ? lastindex(qf) : findindex(qf, stop)
     first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     for t in last:-1:first
