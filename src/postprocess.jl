@@ -31,8 +31,8 @@ point2quant(pf::PointForecasts{F, I}; method, window, quantiles, kwargs...) wher
 function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, quantiles::AbstractVector{<:AbstractFloat}; start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing, retrain::Integer=1) where {F, I}
     (window > 0 && window < length(pf)) || throw(ArgumentError("`window` must be greater than 0 and smaller than the length of `pf`"))
     retrain >= 0 || throw(ArgumentError("`retrain` must be non-negative"))
-    first = isnothing(start) ? pf.id[begin+window] : findindex(pf, start)
-    last = isnothing(stop) ? pf.id[end] : findindex(pf, stop)
+    first = isnothing(start) ? firstindex(pf)+window : findindex(pf, start)
+    last = isnothing(stop) ? lastindex(pf) : findindex(pf, stop)
     first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     prob = Vector{F}(quantiles)
     pred = zeros(F, last-first+1, length(prob))
@@ -69,8 +69,8 @@ Return `QuantForecasts` with conformalized quantiles.
 """
 function conformalize(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I} 
     model = CP(window, abs=false)
-    first = isnothing(start) ? qf.id[begin+window] : findindex(qf, start)
-    last = isnothing(stop) ? qf.id[end] : findindex(qf, stop)
+    first = isnothing(start) ? firstindex(qf)+window : findindex(qf, start)
+    last = isnothing(stop) ? lastindex(qf) : findindex(qf, stop)
     first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     pred = getpred(qf, first:last)
     for t in first:last
@@ -94,8 +94,8 @@ In-place version of conformalize that mutates `qf` instead of creating a new `Qu
 """
 function conformalize!(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I}
     model = CP(window, abs=false)
-    first = isnothing(start) ? qf.id[begin+window] : findindex(qf, start)
-    last = isnothing(stop) ? qf.id[end] : findindex(qf, stop)
+    first = isnothing(start) ? firstindex(qf+window) : findindex(qf, start)
+    last = isnothing(stop) ? lastindex(qf) : findindex(qf, stop)
     first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
     for t in last:-1:first
         for i in 1:npred(qf)
