@@ -68,11 +68,11 @@ Conformalized quantiles will be calculated for observations between the `start` 
 Return `QuantForecasts` with conformalized quantiles.
 """
 function conformalize(qf::QuantForecasts{F, I}; window::Integer, start::Union{Nothing, Integer}=nothing, stop::Union{Nothing, Integer}=nothing) where {F, I} 
-    pred = getpred(qf, first:last)
     model = CP(window, abs=false)
     first = isnothing(start) ? qf.id[begin+window] : findindex(qf, start)
     last = isnothing(stop) ? qf.id[end] : findindex(qf, stop)
     first > window || throw(ArgumentError("there is less than $(window) timesteps before $(start)"))
+    pred = getpred(qf, first:last)
     for t in first:last
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
