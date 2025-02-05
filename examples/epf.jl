@@ -1,27 +1,24 @@
 using PostForecasts, Statistics
 
-year = 2021
-window = 182
-models = [:idr, :cp, :qr]
+year = 2023
+methods = [:idr, :cp, :qr]
 
-losses = Dict((model => zeros(24) for model in models)...)
+qf = Dict((m => Vector{QuantForecasts}(undef, 24) for m in methods)...)
 
-Threads.@threads for hour in 1:24
-    pf = loaddata(Symbol(:epex, hour))
-    first = findindex(pf, year*10_000 + 0101)
-    last = findindex(pf, year*10_000 + 1231)
-    nquantiles = 9
-    for model in models
-        losses[model][hour] = mean(pinball(point2quant(pf, model, window, nquantiles, first=first, last=last)))
+for h in 1:24
+    pf = loaddata(Symbol(:epex, h))
+    firstday = findindex(pf, year*10_000 + 0101)
+    lastday = findindex(pf, year*10_000 + 1231)
+    for m in methods
+        qf[m][h] = point2quant(pf, method=m, window=182, quantiles=9, first=firstday, last=lastday)
     end
 end
 
-println("Year $(year)")
-println("Calibration window of $(window) days")
-println("-"^30)
-println("Model\t| Average Pinball Loss")
-println("-"^30)
-for model in models
-    println(uppercase(string(model)), "\t|", round(mean(losses[model]), digits=3))
+qf[:average] = Vector{QuantForecasts}(undef, 24)
+for h in 1:24
+    qf[:average] = paverage([qf[m][h] for m in methods], quantiles=99)
 end
-println("-"^30)
+
+for key in keys(qf)
+    println(key, "\t CRPS: ", round(sum(crps.(qf[key]))/24, digits=3))
+end

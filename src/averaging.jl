@@ -61,27 +61,30 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:
     prob = Vector{F}(quantiles)
     pred = Matrix{F}(undef, length(QF[begin]), length(prob))
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
-    pdf = Vector{F}(undef, length(y))
+    Δcdf = Vector{F}(undef, length(y))
     for t in eachindex(QF[begin])
-        cdf::F = 0.0
         itr = 0
         for qf in QF
             for i in 1:npred(qf)
                 y[itr += 1] = getpred(qf, t, i)
-                pdf[itr] = getprob(qf, i) - ((i > 1) ? getprob(qf, i-1) : 0.0)
-                cdf += pdf[itr]
+                Δcdf[itr] = getprob(qf, i) - ((i > 1) ? getprob(qf, i-1) : 0.0)
             end
         end
-        cdf /= length(QF)
-        pdf /= length(QF)
-        itr = lastindex(prob)
-        for i in sortperm(y, rev=true)
-            cdf -= pdf[i]
-            pred[t, itr] = y[i]
-            if !(cdf >= prob[itr] || cdf ≈ prob[itr])
-                itr -= 1
-                itr == 0 && break
+        Δcdf /= length(QF)
+        itr = 1
+        cdf::F = 0
+        ỹ = -Inf
+        for i in sortperm(y)
+            cdf += Δcdf[i]
+            ỹ = y[i]
+            if cdf >= prob[itr] || cdf ≈ prob[itr]
+                pred[t, itr] = ỹ
+                itr += 1
+                itr == lastindex(prob) && break
             end
+        end
+        if itr != lastindex(prob)
+            pred[t, itr:end] .= ỹ
         end
     end
     return QuantForecasts(
