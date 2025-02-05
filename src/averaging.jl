@@ -52,9 +52,7 @@ Return `QuantForecasts` containing quantile pred at specified `quantiles`:
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
-paverage(QF::Vector{QuantForecasts{F, I}}) where{F, I} = paverage(QF, getprob(QF[begin]))
-
-paverage(QF::Vector{QuantForecasts{F, I}}; quantiles) where {F, I} = paverage(QF, quantiles)
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles=getprob(QF[begin])) where {F, I} = paverage(QF, quantiles)
 
 function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
     checkmatch(QF)
