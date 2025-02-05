@@ -1,4 +1,4 @@
-using PostForecasts, Statistics
+using PostForecasts
 
 year = 2023
 methods = [:idr, :cp, :qr]
@@ -14,11 +14,11 @@ for h in 1:24
     end
 end
 
-qf[:average] = Vector{QuantForecasts}(undef, 24)
+qf[:ave] = Vector{QuantForecasts}(undef, 24)
 for h in 1:24
-    qf[:average] = paverage([qf[m][h] for m in methods], quantiles=99)
+    qf[:ave][h] = paverage([qf[m][h] for m in methods])
 end
 
-for key in keys(qf)
-    println(key, "\t CRPS: ", round(sum(crps.(qf[key]))/24, digits=3))
+for m in [methods..., :ave]
+    println(m, "\t CRPS: ", round(sum(crps.(qf[m]))/24, digits=3))
 end

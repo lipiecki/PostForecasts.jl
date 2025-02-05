@@ -44,7 +44,7 @@ function average(PF::Vector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, 
 end
 
 """
-    paverage(QF::Vector{QuantForecasts}; quantiles=99)
+    paverage(QF::Vector{QuantForecasts} [; quantiles])
 Average probabilistic pred from `QF` by averaging probabilities of the distributions.
 
 Return `QuantForecasts` containing quantile pred at specified `quantiles`:
@@ -52,9 +52,9 @@ Return `QuantForecasts` containing quantile pred at specified `quantiles`:
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
-function paverage(QF::Vector{QuantForecasts{F, I}}; quantiles=99) where {F, I}
-    paverage(QF, quantiles)
-end
+paverage(QF::Vector{QuantForecasts{F, I}}) where{F, I} = paverage(QF, getprob(QF[begin]))
+
+paverage(QF::Vector{QuantForecasts{F, I}}; quantiles) where {F, I} = paverage(QF, quantiles)
 
 function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
     checkmatch(QF)
