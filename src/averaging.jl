@@ -58,6 +58,8 @@ end
 
 function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
     checkmatch(QF)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
     prob = Vector{F}(quantiles)
     pred = Matrix{F}(undef, length(QF[begin]), length(prob))
     y = Vector{F}(undef, sum(npred(qf) for qf in QF))
@@ -73,14 +75,14 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:
         Δcdf /= length(QF)
         itr = 1
         cdf::F = 0
-        ỹ = -Inf
+        ỹ::F = -Inf
         for i in sortperm(y)
             cdf += Δcdf[i]
             ỹ = y[i]
             if cdf >= prob[itr] || cdf ≈ prob[itr]
                 pred[t, itr] = ỹ
-                itr += 1
                 itr == lastindex(prob) && break
+                itr += 1
             end
         end
         if itr != lastindex(prob)
