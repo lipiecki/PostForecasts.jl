@@ -230,7 +230,7 @@ end
 function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
     _setpredstate(m, input)
     for j in 1:m.domainsize[end]
-        if m.predstate[j] >= prob || m.predstate[j] ≈ prob
+        if m.predstate[j] > prob - 1e-9
             return m.domain[j, end]
         end
     end
@@ -242,7 +242,7 @@ function _predict(m::IDR{F}, input::AbstractVector{<:Number}, prob::AbstractVect
     itr = 1
     for i in eachindex(output)
         for j in itr:m.domainsize[end]
-            if m.predstate[j] >= prob[i] || m.predstate[j] ≈ prob[i]
+            if m.predstate[j] > prob[i] - 1e-9
                 output[i] = m.domain[j, end]
                 itr = j
                 break
@@ -257,7 +257,7 @@ function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::Abstr
     itr = 1
     for i in eachindex(output)
         for j in itr:m.domainsize[end]
-            if m.predstate[j] >= prob[i] || m.predstate[j] ≈ prob[i]
+            if m.predstate[j] > prob[i] - 1e-9
                 output[i] = m.domain[j, end]
                 itr = j
                 break
