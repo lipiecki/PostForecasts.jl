@@ -66,7 +66,7 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:
         itr = 0
         for qf in QF
             for i in 1:npred(qf)
-                y[itr+=1] = getpred(qf, t, i)
+                y[itr += 1] = getpred(qf, t, i)
                 Δcdf[itr] = getprob(qf, i) - ((i > 1) ? getprob(qf, i-1) : 0.0)
             end
         end
@@ -77,15 +77,14 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:
         for i in sortperm(y)
             cdf += Δcdf[i]
             ỹ = y[i]
-            while cdf > prob[itr] - 1e-9
+            while cdf >= prob[itr] || cdf ≈ prob[itr]
                 pred[t, itr] = ỹ
-                itr == lastindex(prob) && break
+                itr == lastindex(prob) && @goto loopend
                 itr += 1
             end
         end
-        if itr != lastindex(prob)
-            pred[t, itr:end] .= ỹ
-        end
+        pred[t, itr:end] .= ỹ
+        @label loopend
     end
     return QuantForecasts(
         pred,

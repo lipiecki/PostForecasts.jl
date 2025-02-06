@@ -333,10 +333,10 @@ end
 
     qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], obs, [0.25, 0.5, 0.75])
     qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], obs, [0.25, 0.5, 0.75])
-    qfp = paverage([qf1, qf2], quantiles=[0.125, 0.25, 0.5, 0.75, 0.875])
+    qfp = paverage([qf1, qf2], quantiles=[0.125, 0.25, 0.5, 0.625, 0.75])
     qfq = qaverage([qf1, qf2])
     qfpmedian = paverage([qf1, qf2], quantiles=0.5)
-    qfpmedian2 = paverage([qf1, qf2], quantiles=1)
+    qfpmedian2 = paverage([qf1, qf2], quantiles=1) # integer 1 means that one quantile (median) will be calculated
     
     quantiles = [-ones(100) -ones(100)./2 zeros(100) ones(100)./2 ones(100)]
     @test viewpred(qfp) ≈ quantiles
