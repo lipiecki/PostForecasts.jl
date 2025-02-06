@@ -5,5 +5,6 @@ To evaluate the peformance of both point and probabilistic forecasts, **PostFore
 mae
 rmse
 pinball
+crps
 coverage
 ```

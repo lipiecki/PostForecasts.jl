@@ -7,7 +7,7 @@ qfBUY = point2quant(fsBUY, method=:idr, window=182, quantiles=9, start=20230408,
 qfSELL = point2quant(fsSELL, method=:idr, window=182, quantiles=9, start=20230408, stop=20230421)
 
 #theme(:dark)
-plot(legend = :bottom, xlabel = "Day", ylabel = "Price (€/MWh)", xticks = 1:14, framestyle = :box)
+plot(legend = :bottom, xlabel = "Day", ylabel = "Price (€/MWh)", xticks = 1:14, framestyle = :grid)
 plot!(viewpred(qfSELL, eachindex(qfBUY), 5), linealpha = 0.5, color=colorant"#FE4365", lw=3, label="Sell price")
 plot!(viewpred(qfBUY, eachindex(qfBUY), 5), linealpha = 0.5, color=colorant"#3f9778", lw=3, label="Buy price")
 
