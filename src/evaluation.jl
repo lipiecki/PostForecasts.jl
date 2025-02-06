@@ -53,14 +53,14 @@ end
 
 """
     crps(qf::QuantForecasts)
-Approximate the Continous Ranked Probability Score using Pinball Loss of quantile forecasts in `qf`, according to `2*mean(pinball(qf))`.
+Approximate the Continous Ranked Probability Score using the Pinball Loss of quantile forecasts in `qf`, with `2mean(pinball(qf))`.
 
 ## Note
-Approximating CRPS with an average Pinball Loss requires a dense grid of equidistant quantiles.
+Approximating CRPS with the average Pinball Loss requires a dense grid of equidistant quantiles.
 """
 function crps(qf::QuantForecasts{F, I}) where {F, I}
     all(equidistant(npred(qf), F) .≈ viewprob(qf)) || @warn "improper CRPS approximation: quantile grid of `qf` is not uniform"
-    return 2*mean(pinball(qf))
+    return 2mean(pinball(qf))
 end
 
 """

@@ -77,7 +77,7 @@ function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:
         for i in sortperm(y)
             cdf += Δcdf[i]
             ỹ = y[i]
-            if cdf >= prob[itr] || cdf ≈ prob[itr]
+            while cdf >= prob[itr] || cdf ≈ prob[itr]
                 pred[t, itr] = ỹ
                 itr == lastindex(prob) && break
                 itr += 1
