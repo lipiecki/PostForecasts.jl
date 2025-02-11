@@ -17,7 +17,7 @@ end
     mape(pf::PointForecasts; abstol=1e-9)
 Calculate Mean Absolute Percentage Error of pred from `pf`. Return the vector of MAPE corresponding to each forecaster.
 """
-function mae(pf::PointForecasts; abstol::AbstractFloat=1e-9)
+function mape(pf::PointForecasts; abstol::AbstractFloat=1e-9)
     loss = zeros(npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
@@ -32,7 +32,7 @@ end
     smape(pf::PointForecasts; abstol=1e-9)
 Calculate Symmetric Mean Absolute Percentage Error of pred from `pf`. Return the vector of SMAPE corresponding to each forecaster.
 """
-function mae(pf::PointForecasts; abstol::AbstractFloat=1e-9)
+function smape(pf::PointForecasts; abstol::AbstractFloat=1e-9)
     loss = zeros(npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
@@ -56,7 +56,7 @@ function mse(pf::PointForecasts)
         end
     end
     loss /= length(pf)
-    return sqrt.(loss)
+    return loss
 end
 
 """
