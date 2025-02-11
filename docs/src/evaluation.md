@@ -3,7 +3,9 @@ To evaluate the peformance of both point and probabilistic forecasts, **PostFore
 
 ```@docs
 mae
-rmse
+mape
+smape
+mse
 pinball
 crps
 coverage

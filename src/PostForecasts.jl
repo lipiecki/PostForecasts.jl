@@ -103,7 +103,9 @@ export
 
     #Evaluation
     mae,
-    rmse,
+    mape,
+    smape,
+    mse,
     pinball,
     crps,
     coverage,

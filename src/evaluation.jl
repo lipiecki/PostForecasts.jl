@@ -6,7 +6,7 @@ function mae(pf::PointForecasts)
     loss = zeros(npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
-            loss[i] += abs(getobs(pf, t) -  getpred(pf, t, i))
+            loss[i] += abs(getobs(pf, t) - getpred(pf, t, i))
         end
     end
     loss /= length(pf)
@@ -14,10 +14,41 @@ function mae(pf::PointForecasts)
 end
 
 """
-    rmse(pf::PointForecasts)
-Calculate Root Mean Squared Error of pred from `pf`. Return the vector of RMSE corresponding to each forecaster.
+    mape(pf::PointForecasts; abstol=1e-9)
+Calculate Mean Absolute Percentage Error of pred from `pf`. Return the vector of MAPE corresponding to each forecaster.
 """
-function rmse(pf::PointForecasts)
+function mae(pf::PointForecasts; abstol::AbstractFloat=1e-9)
+    loss = zeros(npred(pf))
+    for i in 1:npred(pf)
+        for t in eachindex(pf)
+            loss[i] += abs(getobs(pf, t) - getpred(pf, t, i))/max(abs(getobs(pf, t)), abstol)
+        end
+    end
+    loss *= 100.0/length(pf)
+    return loss
+end
+
+"""
+    smape(pf::PointForecasts; abstol=1e-9)
+Calculate Symmetric Mean Absolute Percentage Error of pred from `pf`. Return the vector of SMAPE corresponding to each forecaster.
+"""
+function mae(pf::PointForecasts; abstol::AbstractFloat=1e-9)
+    loss = zeros(npred(pf))
+    for i in 1:npred(pf)
+        for t in eachindex(pf)
+            loss[i] += 2abs(getobs(pf, t) - getpred(pf, t, i))/(max(abs(getobs(pf, t)), abstol) + max(abs(getpred(pf, t, i)), abstol))
+        end
+    end
+    loss *= 100.0/length(pf)
+    return loss
+end
+
+
+"""
+    mse(pf::PointForecasts)
+Calculate Mean Squared Error of pred from `pf`. Return the vector of MSE corresponding to each forecaster.
+"""
+function mse(pf::PointForecasts)
     loss = zeros(npred(pf))
     for i in 1:npred(pf)
         for t in eachindex(pf)
@@ -30,8 +61,8 @@ end
 
 """
     pinball(qf::QuantForecasts)
-Calculate the Pinball Loss over all quantiles in `qf`. Return the vector of Pinball Loss values corresponding to each quantile.
-See [Gneiting 2011](httqf://doi.org/10.1016/j.ijforecast.2009.12.015) for more details about Pinball Loss. 
+Calculate Pinball Loss over all quantiles in `qf`. Return the vector of Pinball Loss values corresponding to each quantile.
+See [Gneiting 2011](https://doi.org/10.1016/j.ijforecast.2009.12.015) for more details about Pinball Loss. 
 
 ## Note
 Average Pinball Loss over equidistant quantiles approximates Continuous Ranked Probability Score.
@@ -53,7 +84,7 @@ end
 
 """
     crps(qf::QuantForecasts)
-Approximate the Continous Ranked Probability Score using the Pinball Loss of quantile forecasts in `qf`, with `2mean(pinball(qf))`.
+Approximate Continous Ranked Probability Score using the Pinball Loss of quantile forecasts in `qf`, with `2mean(pinball(qf))`.
 
 ## Note
 Approximating CRPS with the average Pinball Loss requires a dense grid of equidistant quantiles.
