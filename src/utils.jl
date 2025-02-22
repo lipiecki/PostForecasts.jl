@@ -30,31 +30,33 @@ Return `true` if `window` matches the specification of model `m`, otherwise retu
 matchwindow(::PostModel, ::Integer) = true
 
 """
-    chechmatch(S::AbstractVector{<:ForecastSeries}; checkpred::Bool=false)
-Check if PointForecasts or QuantForecasts provided in vector `S` match, i.e.:
+    checkmatch(fs:; checkpred::Bool=false)
+Check if Forecasts in `fs` correspond to the same tiemseries, i.e.:
 - all their `id`entifiers match
-- all their `obs`ervations match
-- their number of forecasts match (if `checkpred=true`)
-- their `prob`abilities match (for QuantForecasts if `checkpred=true`).
+- all their `obs`ervations match.
 
-Return nothing, throw an `ArgumentError` if any of the requirements above is not met.
+Additionally, provided that `checkpred=true`, check if:
+- their number of forecasts match
+- their `prob`abilities match.
+
+Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
 """
-function checkmatch(S::AbstractVector{PointForecasts{F, I}}; checkpred::Bool=false) where {F, I}
-    first, state = iterate(S, firstindex(S))
-    nextstatepair = iterate(S, state)
+function checkmatch(fs::AbstractVector{<:PointForecasts}; checkpred::Bool=false)
+    first, state = iterate(fs, firstindex(fs))
+    nextstatepair = iterate(fs, state)
     while !isnothing(nextstatepair)
         next, state = nextstatepair
         length(first) == length(next) || throw(ArgumentError("`PointForecasts` have different lengths"))
         (!checkpred || npred(first) == npred(next)) || throw(ArgumentError("`PointForecasts` have different sizes of forecast pools"))
         all(first.obs .≈ next.obs) || throw(ArgumentError("`PointForecasts` observations (elements of `obs` field) do not match"))
         all(first.id .≈ next.id) || throw(ArgumentError("`PointForecasts` identifiers (elements of `id` field) do not match"))
-        nextstatepair = iterate(S, state)
+        nextstatepair = iterate(fs, state)
     end
 end
 
-function checkmatch(S::AbstractVector{QuantForecasts{F, I}}; checkpred::Bool=false) where {F, I}
-    first, state = iterate(S, firstindex(S))
-    nextstatepair = iterate(S, state)
+function checkmatch(fs::AbstractVector{<:QuantForecasts}; checkpred::Bool=false)
+    first, state = iterate(fs, firstindex(fs))
+    nextstatepair = iterate(fs, state)
     while !isnothing(nextstatepair)
         next, state = nextstatepair
         length(first) == length(next) || throw(ArgumentError("`QuantForecasts` have different lengths"))
@@ -64,6 +66,12 @@ function checkmatch(S::AbstractVector{QuantForecasts{F, I}}; checkpred::Bool=fal
         end
         all(first.obs .≈ next.obs) || throw(ArgumentError("`QuantForecasts` observations (elements of `obs` field) do not match"))
         all(first.id .≈ next.id) || throw(ArgumentError("`QuantForecasts` identifiers (elements of `id` field) do not match"))
-        nextstatepair = iterate(S, state)
+        nextstatepair = iterate(fs, state)
     end
+end
+
+function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
+    v = Vector{T}(undef, N)
+    v .= fs
+    checkmatch(v; checkpred=checkpred)
 end

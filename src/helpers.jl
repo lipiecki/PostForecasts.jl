@@ -1,10 +1,10 @@
 # helper functions that are not exported with the package, inteded for internal use, lack argument validation
 
 """
-    equidistant(n::Integer, f::Type{F}) where {F<:AbstractFloat}
+    equidistant(n::Integer, f::Type{F}=Float64) where {F<:AbstractFloat}
 Return a `Vector{F}` of `n` equidistant probabilitiy values.
 """
-function equidistant(n::Integer, type::Type{F}) where {F<:AbstractFloat}
+function equidistant(n::Integer, type::Type{F}=Float64) where {F<:AbstractFloat}
     res = Vector{F}(undef, n)
     for i in 1:n
         res[i] = i/(n+1)

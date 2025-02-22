@@ -4,7 +4,8 @@ Average the pool of point pred from `pf`. Return `PointForecasts` containing ave
 
 ## Argument types
 - `pf::PointForecasts` to average the pool of forecats in `pf`
-- `pf::Vector{PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pf`.
+- `pf::PointForecasts...` to average all individual forecasts from every `PointForecasts` in `pf`.
+- `pf::AbstractVector{<:PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pf`.
 """
 function average(pf::PointForecasts; agg::Symbol=:mean)
     npred(pf) == 1 && return pf
@@ -21,104 +22,123 @@ function average(pf::PointForecasts; agg::Symbol=:mean)
         getid(pf))
 end
 
-function average(PF::Vector{PointForecasts{F, I}}; agg::Symbol=:mean) where {F, I}
-    checkmatch(PF)
-    m = sum(npred(pf) for pf in PF) 
-    m > 1 || return PF[begin]
+function average(pfs::AbstractVector{<:PointForecasts}; agg::Symbol=:mean)
+    checkmatch(pfs)
+    m = sum(npred.(pfs)) 
+    m > 1 || return pfs[begin]
     (agg == :mean || agg == :median) || throw(ArgumentError("$(agg) is not a viable aggregation scheme"))
-    avergedpred = Vector{F}(undef, length(PF[begin]))
-    auxiliary = Vector{F}(undef, m)
-    for t in eachindex(PF[begin])
-        f = 0
-        for pf in PF
-            for i in 1:npred(pf)
-                auxiliary[f+=1] = getpred(pf, t, i)
+    avepred = Vector{Float64}(undef, length(pfs[begin]))
+    auxiliary = Vector{Float64}(undef, m)
+    for t in eachindex(pfs[begin])
+        i = 0
+        for pf in pfs
+            for j in 1:npred(pf)
+                auxiliary[i+=1] = getpred(pf, t, j)
             end
         end
-        avergedpred[t] = agg == :mean ? mean(auxiliary) : median(auxiliary)
+        avepred[t] = agg == :mean ? mean(auxiliary) : median(auxiliary)
     end
     return PointForecasts(
-        avergedpred,
-        getobs(PF[begin]),
-        getid(PF[begin]))
+        avepred,
+        getobs(pfs[begin]),
+        getid(pfs[begin]))
+end
+
+function average(pfs::Vararg{PointForecasts, N}; agg::Symbol=:mean) where N
+    v = Vector{PointForecasts}(undef, N)
+    v .= pfs
+    average(v; agg=agg)
 end
 
 """
-    paverage(QF::Vector{QuantForecasts} [; quantiles])
-Average probabilistic pred from `QF` by averaging probabilities of the distributions.
+    paverage(qfs[; quantiles])
+Average probabilistic predictions from a collection `qfs` by averaging the distributions across probability.
 
-Return `QuantForecasts` containing quantile pred at specified `quantiles`:
+Return `QuantForecasts` containing predictions of specified `quantiles`:
 - `quantiles::AbstractVector{<:AbstractFloat}`: vector of probabilities
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
 """
-paverage(QF::Vector{QuantForecasts{F, I}}; quantiles=getprob(QF[begin])) where {F, I} = paverage(QF, quantiles)
+paverage(qfs::AbstractVector{<:QuantForecasts}; quantiles) = paverage(qfs, quantiles)
 
-function paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractVector{<:AbstractFloat}) where {F, I}
-    checkmatch(QF)
+function paverage(qfs::Vararg{QuantForecasts, N}; quantiles) where N
+    v = Vector{QuantForecasts}(undef, N)
+    v .= qfs
+    paverage(v, quantiles) 
+end
+
+function paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractVector{<:AbstractFloat})
+    checkmatch(qfs)
     issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
     (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
-    prob = Vector{F}(quantiles)
-    pred = Matrix{F}(undef, length(QF[begin]), length(prob))
-    y = Vector{F}(undef, sum(npred(qf) for qf in QF))
-    Δcdf = Vector{F}(undef, length(y))
-    for t in eachindex(QF[begin])
-        itr = 0
-        for qf in QF
-            for i in 1:npred(qf)
-                y[itr += 1] = getpred(qf, t, i)
-                Δcdf[itr] = getprob(qf, i) - ((i > 1) ? getprob(qf, i-1) : 0.0)
+    prob = Vector{Float64}(quantiles)
+    pred = Matrix{Float64}(undef, length(qfs[begin]), length(prob))
+    y = Vector{Float64}(undef, sum(npred(qf) for qf in qfs))
+    Δcdf = Vector{Float64}(undef, length(y))
+    for t in eachindex(qfs[begin])
+        i = 1
+        for qf in qfs
+            for j in 1:npred(qf)
+                y[i] = getpred(qf, t, j)
+                Δcdf[i] = getprob(qf, j) - ((j > 1) ? getprob(qf, j-1) : 0.0)
+                i += 1
             end
         end
-        Δcdf /= length(QF)
-        itr = 1
-        cdf::F = 0
-        ỹ::F = -Inf
-        for i in sortperm(y)
-            cdf += Δcdf[i]
-            ỹ = y[i]
-            while cdf >= prob[itr] || cdf ≈ prob[itr]
-                pred[t, itr] = ỹ
-                itr == lastindex(prob) && @goto loopend
-                itr += 1
+        Δcdf /= length(qfs)
+        i = 1
+        cdf = 0.0
+        ỹ = -Inf
+        for j in sortperm(y)
+            cdf += Δcdf[j]
+            ỹ = y[j]
+            while cdf >= prob[i] || cdf ≈ prob[i]
+                pred[t, i] = ỹ
+                i == lastindex(prob) && @goto loopend
+                i += 1
             end
         end
-        pred[t, itr:end] .= ỹ
+        pred[t, i:end] .= ỹ
         @label loopend
     end
     return QuantForecasts(
         pred,
-        getobs(QF[begin]),
-        getid(QF[begin]),
+        getobs(qfs[begin]),
+        getid(qfs[begin]),
         prob,
         Val(false))
 end
 
-paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::AbstractFloat) where {F, I} = paverage(QF, [quantiles])
+paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractFloat) = paverage(qfs, [quantiles])
 
-paverage(QF::Vector{QuantForecasts{F, I}}, quantiles::Integer) where {F, I} = paverage(QF, equidistant(quantiles, F))
+paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::Integer) = paverage(qfs, equidistant(quantiles))
 
 """
-    qaverage(QF::Vector{QuantForecasts})
-Average probabilistic pred from `QF::Vector{QuantForecasts}` by averaging quantiles of the distributions.
+    qaverage(qfs)
+Average probabilistic predictions from a collection `qfs` by averaging the quantiles.
 
-Return `QuantForecasts` containing quantile pred at the same prob as `QuantForecasts` stored in `QF`.
+Return `QuantForecasts` containing quantile predictions at the same quantile levels as `QuantForecasts` in `qfs`.
 """
-function qaverage(QF::Vector{QuantForecasts{F, I}}) where {F, I}
-    checkmatch(QF, checkpred=true)
-    pred = zeros(F, length(QF[begin]), npred(QF[begin]))
-    for t in eachindex(QF[begin])
-        for i in 1:npred(QF[begin])
-            for qf in QF
-                pred[t, i] += qf.pred[t, i]
+function qaverage(qfs::AbstractVector{<:QuantForecasts})
+    checkmatch(qfs; checkpred=true)
+    pred = zeros(length(qfs[begin]), npred(qfs[begin]))
+    for t in eachindex(qfs[begin])
+        for i in 1:npred(qfs[begin])
+            for qf in qfs
+                pred[t, i] += getpred(qf, t, i)
             end
         end
     end
-    pred /= length(QF)
+    pred /= length(qfs)
     return QuantForecasts(
         pred,
-        getobs(QF[begin]),
-        getid(QF[begin]),
-        getprob(QF[begin]), 
+        getobs(qfs[begin]),
+        getid(qfs[begin]),
+        getprob(qfs[begin]), 
         Val(false))
+end
+
+function qaverage(qfs::Vararg{QuantForecasts, N}) where N
+    v = Vector{QuantForecasts}(undef, N)
+    v .= qfs
+    qaverage(v)
 end
