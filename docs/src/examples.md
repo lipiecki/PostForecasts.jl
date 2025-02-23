@@ -58,10 +58,10 @@ which should generate the following output:
 ```
 Method 	| CRPS 
 --------------------
-IDR 	| CRPS: 9.752
-CP 	    | CRPS: 9.822
-QR 	    | CRPS: 9.986
-AVE 	| CRPS: 9.248
+IDR     | CRPS: 9.752
+CP      | CRPS: 9.822
+QR      | CRPS: 9.986
+AVE     | CRPS: 9.248
 ```
 Note that the computations can take some time. While IDR and CP are almost instantaneous, QRA is more time-consuming and can take up to a few minutes.
 
