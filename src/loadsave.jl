@@ -1,20 +1,21 @@
 """
     loaddata(dataset::Symbol)
 Create a `PointForecasts` object from the `dataset` provided with the package, availabe options include:
-- `:epexH`, where `H` is an integer between 1 and 24
-- `:pangu'H'u10`, where `H` is an integer between 0 and 186, divisible by 6.
-- `:pangu'H'v10`, where `H` is an integer between 0 and 186, divisible by 6.
-- `:pangu'H't2m`, where `H` is an integer between 0 and 186, divisible by 6.
-- `:pangu'H't850`, where `H` is an integer between 0 and 186, divisible by 6.
-- `:pangu'H'z500`, where `H` is an integer between 0 and 186, divisible by 6.
+- `epexH`, where `H` is an integer between 1 and 24
+- `pangu'H'u10`, where `H` is an integer between 0 and 186, divisible by 6.
+- `pangu'H'v10`, where `H` is an integer between 0 and 186, divisible by 6.
+- `pangu'H't2m`, where `H` is an integer between 0 and 186, divisible by 6.
+- `pangu'H't850`, where `H` is an integer between 0 and 186, divisible by 6.
+- `pangu'H'z500`, where `H` is an integer between 0 and 186, divisible by 6.
 
 Details of the datasets are avaiable in documentation.
 """
-function loaddata(dataset::Symbol)
-    if dataset ∈ keys(PANGU)
-        loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", PANGU[dataset][1]), predcol = PANGU[dataset][2], obscol = PANGU[dataset][3], colnames=true)
-    elseif dataset ∈ keys(EPEX)
-        loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", EPEX[dataset]), colnames=true)
+function loaddata(dataset::AbstractString)
+    key = Symbol(dataset)
+    if key ∈ keys(PANGU)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", PANGU[key][1]), predcol = PANGU[key][2], obscol = PANGU[key][3], colnames=true)
+    elseif key ∈ keys(EPEX)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", EPEX[key]), colnames=true)
     else
         throw(ArgumentError("$(dataset) is not a valid dataset name"))
     end
