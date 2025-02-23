@@ -1,8 +1,8 @@
 """
-    shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function[, null_payoff::AbstractFloat])
+    shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function[, ∅::AbstractFloat])
 Calculate Shapley values of forecasters in `fs`, using specified `agg`regation function and `payoff` function.
 
-Optional argument `null_payoff` is the payoff value for an empty coalition. If not provided, empty coalition is excluded from calculations.
+Optional argument `∅` is the payoff value for an empty coalition. If not provided, empty coalition is excluded from calculations.
 
 Return a vector of Shapley values correspinding to each forecaster in `fs`.
 """
@@ -23,11 +23,11 @@ function shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function)
     return vals
 end
 
-function shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function, null_payoff::AbstractFloat)
+function shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function, ∅::AbstractFloat)
     m = length(fs)
     vals = zeros(m)
     for i in 1:m
-        vals[i] += (payoff(fs[i]) - null_payoff)/binomial(m-1, 0)
+        vals[i] += (payoff(fs[i]) - ∅)/binomial(m-1, 0)
     end
     for s in 1:m-1
         for coalition in combinations(1:m, s)

@@ -1,7 +1,6 @@
 using PostForecasts
 
 methods = [:idr, :cp, :qr]
-
 qf = Dict((m => Vector{QuantForecasts}(undef, 24) for m in methods)...)
 
 for h in 1:24

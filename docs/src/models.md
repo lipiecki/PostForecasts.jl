@@ -1,7 +1,7 @@
 # Models
-**PostForecasts.jl** provides four models for postprocessing point predictions for probabilistic forecasts: 
+**PostForecasts.jl** provides four models for postprocessing point predictions into probabilistic forecasts: 
 - Normal error distribution
-- Conformal prediction
+- Conformal prediction and historical simulation
 - Isotonic distributional regression
 - Quantile regression
 
@@ -60,7 +60,7 @@ $\hat{q}_{\tau|\hat{y}} = \min\{z : \hat{F}(z|\hat{y}) \geq \tau\}.$
 
 The multivariate version of IDR is not supported, but ForecastSeries containing multiple forecasts can be used as input for computing ProbcastSeries. In such a case, multiple univariate IDR models are estimated and the resulting distributions functions $\hat{F}(z)$ are averaged. Since $z$ is limited to true values of the timeseries in training window, the distributions resulting from estimated IDRs are defined at the exact same points, which allows to efficiently and precisely compute the average across probability. 
 
-The implemented IDR estimation uses abridged pool-adjacent-violators algorithm introduced by [Henzi et al. (2022)](https://doi.org/10.1007/s11009-022-09937-2)
+The implemented IDR estimation uses abridged pool-adjacent-violators algorithm introduced by [Henzi et al. (2022)](https://doi.org/10.1007/s11009-022-09937-2).
 
 ```@docs
 IDR
@@ -76,7 +76,7 @@ $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\
 
 The coefficients $\beta^{(\tau)}_{0...m}$ are selected to minimize the pinball loss on the training window and estimated by solving a linear programming problem. For this task, Probcasts.jl employs [JuMP.jl](https://jump.dev/JuMP.jl/stable/) and HiGHS.jl packages. Different LP solvers compatible with JuMP can be used, but the constructor defaults to an open source [HiGHS](https://highs.dev).
 
-Apart from the standard QRA introduced by [Nowotarski and Weron (2014)](https://doi.org/10.1007/s00180-014-0523-0), **PostForecasts.jl** allows to readily compute Quantile Regression Machine [(QRM; Marcjasz et al., 2020)](https://doi.org/10.1016/j.ijforecast.2019.07.002) and Quantile Regression with probability (F) or Quantile averaging [(QRF or QRQ; Uniejewski et al., 2019)][https://doi.org/10.1016/j.eneco.2018.02.007]. See [*Different flavors of quantile regression*](https://lipiecki.github.io/PostForecasts.jl/dev/examples/#Different-flavors-of-quantile-regression) for details.
+Apart from the standard QRA introduced by [Nowotarski and Weron (2014)](https://doi.org/10.1007/s00180-014-0523-0), **PostForecasts.jl** allows to readily compute Quantile Regression Machine [(QRM; Marcjasz et al., 2020)](https://doi.org/10.1016/j.ijforecast.2019.07.002) and Quantile Regression with probability or quantile averaging [(Uniejewski et al., 2019)](https://doi.org/10.1016/j.eneco.2018.02.007). See [*Different flavors of quantile regression*](https://lipiecki.github.io/PostForecasts.jl/dev/examples/#Different-flavors-of-quantile-regression) for details.
 
 ```@docs
 QR

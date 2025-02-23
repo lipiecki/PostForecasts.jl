@@ -8,8 +8,8 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Structures" => "forecasts.md",
-        "Models" => "models.md",
         "Postprocessing" => "postprocess.md",
+        "Models" => "models.md",
         "Loading and saving forecasts" => "loadsave.md",
         "Averaging forecasts" => "averaging.md",
         "Evaluation metrics" => "evaluation.md",

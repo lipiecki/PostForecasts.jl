@@ -1,7 +1,7 @@
 # Datasets
 **PostForecasts.jl** ships with several datasets for evaluating probabilistic forecasts, the detailed description along with the source is provided below.
 
-## EPEX - prices on the German day-ahead energy market 
+## EPEX
 
 ### Data
 The EPEX dataset consists of point forecasts for 24 time series of electricity prices on the German day-ahead energy market. Each time series corresponds to different hour of the day. The forecasts span a 5-year period starting from 2019. Electricy prices and data used for generating point forecats are sourced from [ENTSO-E](https://transparency.entsoe.eu) transparency platform.
@@ -26,7 +26,7 @@ date,price,lear56,lear84,lear1092,lear1456
 ...
 ```
 
-## PANGU - weather forecasts for Wrocław, Poland
+## PANGU
 Forecasts from the Pangu-Weather model, computed by [Bülte et al. (2024)](https://arxiv.org/abs/2403.13458). The model is trained on 39 years of ERA5 reanalysis data from 1979–2017. The dataset consists of 5 weather variables (listed below) for Wrocław, Poland between 2018 and 2022.
 - **U10**: u-component of 10-m wind speed
 - **V10**: v-component of 10-m wind speed
