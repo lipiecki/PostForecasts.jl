@@ -37,7 +37,7 @@ using Test, PostForecasts, Statistics
     @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\nQuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
 end
 
-@testset "Normal error distribution" begin
+@testset "Normal" begin
     pred = rand(100)
     obs = pred + randn(100)
 
@@ -103,7 +103,7 @@ end
     @test medians ≈ medians2
 end
 
-@testset "Conformal prediction" begin
+@testset "CP" begin
     pred = rand(100)
     obs = rand(100)
     
@@ -176,7 +176,7 @@ end
     @test medians ≈ medians2
 end
 
-@testset "Isotonic distributional regression" begin
+@testset "IDR" begin
     model = IDR(4, 2)
     train(model, [1.5 0.5; 2.0 3.0; 3.5 0.5; 4.5 3.5], [1.0, 2.5, 2.0, 4.0])
 
@@ -234,7 +234,7 @@ end
     @test medians ≈ medians2
 end
 
-@testset "Quantile regression" begin
+@testset "QR" begin
     pred = rand(100)
     obs = pred.*2 .+ 0.5
     W = [2. 2.; 0.5 0.5]

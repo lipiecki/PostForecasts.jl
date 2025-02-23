@@ -1,6 +1,6 @@
 """
-    loaddata(dataset)
-Create a `PointForecasts` object from the `dataset` (Symbol or String) provided with the package, availabe options include:
+    loaddata(dataset::Union{Symbol, AbstractString})
+Create a `PointForecasts` object from the `dataset` provided with the package, availabe options include:
 - `epexH`, where `H` is an integer between 1 and 24
 - `pangu'H'u10`, where `H` is an integer between 0 and 186, divisible by 6.
 - `pangu'H'v10`, where `H` is an integer between 0 and 186, divisible by 6.

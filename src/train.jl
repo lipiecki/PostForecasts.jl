@@ -1,5 +1,5 @@
 """
-    train(m, X, Y)
+    train(m, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number})
 Calibrate the model `m` on the covariates `X` and responses `Y`.
 
 In general, `X` should be a matrix, which columns correspond to respective regressors.
