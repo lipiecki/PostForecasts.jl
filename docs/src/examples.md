@@ -128,12 +128,12 @@ In this example we show how to conformalize quantile forecasts to improve the co
 
 We will first load the dataset (select the forecasted variable and the lead time of point predictions) and initialize the plot:
 ```julia
-using PostForecasts
+using PostForecasts, Plots
 
 variable = :u10 # u10, c10, t2m, t850 or z500
 leadtime = 24 # between 0 and 186, divisible by 6
 
-pf = loaddata("pangu$(leadttime)$(variable)")
+pf = loaddata("pangu$(leadtime)$(variable)")
 plot(xlabel="Quantile level (%)", ylabel="Miscoverage (%)", framestyle=:grid, xticks = 10:10:90)
 ```
 Then, using the `point2quant` function, we compute the quantile forecasts `qf` for 9 deciles using the IDR with a training window of 365 days and plot their miscoverage:

@@ -1,9 +1,9 @@
-using PostForecasts
+using PostForecasts, Plots
 
 variable = :u10 # u10, c10, t2m, t850 or z500
 leadtime = 24 # between 0 and 186, divisible by 6
 
-pf = loaddata("pangu$(leadttime)$(variable)")
+pf = loaddata("pangu$(leadtime)$(variable)")
 plot(xlabel="Quantile level (%)", ylabel="Miscoverage (%)", framestyle=:grid, xticks = 10:10:90)
 
 qf = point2quant(pf, method=:idr, window=365, quantiles=9)
