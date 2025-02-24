@@ -8,7 +8,7 @@ Create a `PointForecasts` object from the `dataset` provided with the package, a
 - `pangu'H't850`, where `H` is an integer between 0 and 186, divisible by 6.
 - `pangu'H'z500`, where `H` is an integer between 0 and 186, divisible by 6.
 
-Details of the datasets are avaiable in documentation.
+Details of the datasets are available in documentation.
 """
 function loaddata(dataset::Symbol)
     if dataset ∈ keys(PANGU)
@@ -27,19 +27,18 @@ loaddata(dataset::AbstractString) = loaddata(Symbol(dataset))
 Create a `PointForecasts` object from delimited file at `filepath`.
 ## Keyword Arguments
 - `delim=','`: Specifies the delimitter
-- `idcol=1`: Specifies which column is used for timestamps (`0` to generate timestamps automatically)
+- `idcol=1`: Specifies which column is used for timestamps (omit to generate timestamps automatically)
 - `obscol=2`: Specifies which column is used for observations
-- `predcol=0`: Specifies which columns are used for pred (`0` to use all remaining columns)
+- `predcol=0`: Specifies which columns are used for pred (omit to use all remaining columns)
 - `colnames=false` If true, omit the first row of the file.
 """
-function loaddlmdata(filepath::AbstractString; delim::Char=',', idcol::Integer=1, obscol::Integer=2, predcol::Union{AbstractVector{<:Integer}, Integer}=0, colnames::Bool=false)
+function loaddlmdata(filepath::AbstractString; delim::Char=',', idcol::Union{Nothing, Integer}=nothing, obscol::Integer=2, predcol::Union{Nothing, Integer, AbstractVector{<:Integer}}=nothing, colnames::Bool=false)
     data = readdlm(filepath, delim)[(colnames ? 2 : 1):end, :]
     l, m = size(data)
-    predcol = (ndims(predcol) == 0 && predcol == 0) ? [i for i in 1:m if i ∉ [idcol, obscol]] : predcol
     return PointForecasts(
-        collect(Float64, data[:, predcol]),
+        collect(Float64, data[:, (isnothing(predcol) ? [i for i in 1:m if i ∉ [idcol, obscol]] : predcol)]),
         collect(Float64, data[:, obscol]),
-        idcol == 0 ? Int.(1:l) : Int.(data[:, idcol]))
+        isnothing(idcol) ? Int.(1:l) : Int.(data[:, idcol]))
 end
 
 """
