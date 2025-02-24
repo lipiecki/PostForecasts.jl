@@ -3,7 +3,7 @@
 Average the pool of point pred from `pf`. Return `PointForecasts` containing averaged forecasts, keyword argument `agg` specifies whether to average using simple mean (`:mean`) or median (`:median`).
 
 ## Argument types
-- `pf::PointForecasts` to average the pool of forecats in `pf`
+- `pf::PointForecasts` to average the pool of forecasts in `pf`
 - `pf::PointForecasts...` to average all individual forecasts from every `PointForecasts` in `pf`.
 - `pf::AbstractVector{<:PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pf`.
 """
