@@ -49,7 +49,7 @@ matchwindow(m::IDR, window::Integer) = size(m.cdf, 1) == window
 
 """
     getx(m::IDR [, r])
-Return a vector of regressor values from model `m` on which cumulative dsitribution function is defined. Optional argument `r::Integer = 1` corresponds to the regressor index.
+Return a vector of regressor values from model `m` on which cumulative distribution function is defined. Optional argument `r::Integer = 1` corresponds to the regressor index.
 """
 function getx(m::IDR, r::Integer = 1)
     (r < 1 || r >= length(m.domainsize)) && throwDomainError("`r` must be between 1 and $(m.domainsize-1)")
@@ -58,7 +58,7 @@ end
 
 """
     gety(m::IDR)
-Return a vector of response values from model `m` on which cumulative dsitribution function is defined.
+Return a vector of response values from model `m` on which cumulative distribution function is defined.
 """
 function gety(m::IDR)
     return m.domain[1:m.domainsize[end], end]

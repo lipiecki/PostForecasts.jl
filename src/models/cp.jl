@@ -1,6 +1,6 @@
 """
     CP([type::Type{F}=Float64,] n::Integer[; abs::Bool=true]) where {F<:AbstractFloat}
-Creates a `CP{F}<:UniPostModel{F}<:PostModel{F}` model for conformal prediction that stores the non-conformity scores of `n` observations. Optional keyword argument `abs` specifies wheter to use absolute errors.
+Creates a `CP{F}<:UniPostModel{F}<:PostModel{F}` model for conformal prediction that stores the non-conformity scores of `n` observations. Optional keyword argument `abs` specifies whether to use absolute errors.
 """
 struct CP{F<:AbstractFloat} <: UniPostModel{F}
     scores::Vector{F}

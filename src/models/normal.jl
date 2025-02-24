@@ -1,6 +1,6 @@
 """
     Normal([type::Type{F}=Float64]; zeromean::Bool=false) where {F<:AbstractFloat}
-Creates a `Normal{F}<:UniPostModel{F}<:PostModel{F}` model for normal error distribution. Optional keyword argument `zeromean` specifies wheter to assume a zero mean.
+Creates a `Normal{F}<:UniPostModel{F}<:PostModel{F}` model for normal error distribution. Optional keyword argument `zeromean` specifies whether to assume a zero mean.
 """
 struct Normal{F<:AbstractFloat} <: UniPostModel{F}
     μ::Base.RefValue{F}

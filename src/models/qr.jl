@@ -1,6 +1,6 @@
 """
     QR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}) where {F<:AbstractFloat}
-Creates a `QR{F}<:MultiPostModel{F}<:PostModel{F}` model for quantile regression to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilties specified by `prob`.
+Creates a `QR{F}<:MultiPostModel{F}<:PostModel{F}` model for quantile regression to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
 """
 struct QR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
