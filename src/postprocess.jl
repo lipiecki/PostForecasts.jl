@@ -22,6 +22,7 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `retrain::Integer = 1`: specify how often to retrain the model. If `retrain == 0`, the model will be trained only once, otherwise it will be retrained every `retrain` steps
 
 ## Note
+- the function can also be called with `method`, `window` and `quantiles` as positional arguments
 - `:qr` supports multiple regressors
 - `:idr` partially supports multiple regressors: one isotonic regression is fitted to each forecast and the final predictive distribution is an average of individual distributions
 - `:cp`, `:normal` and `:zeronormal` do not support multiple regressors: if `pf` contains multiple point forecasts, their average will be used for postprocessing
@@ -62,7 +63,7 @@ end
 
 """
     conformalize(qf::QuantForecasts{F, I}; window::Integer[, start, stop)
-Perform conformalization of quantile forecasts provided in `ps`.
+Perform conformalization of quantile forecasts provided in `qf`.
 Conformalized quantiles will be calculated for observations between the `start` and `stop` `id`entifiers in `qf`. The model is retrained every step on the last `window` observations.
 
 Return `QuantForecasts` with conformalized quantiles.
