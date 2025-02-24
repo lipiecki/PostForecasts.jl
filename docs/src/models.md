@@ -1,7 +1,7 @@
 # Models
 **PostForecasts.jl** provides four models for postprocessing point predictions into probabilistic forecasts: 
 - Normal error distribution
-- Conformal prediction and historical simulation
+- Conformal prediction (and Historical Simulation)
 - Isotonic distributional regression
 - Quantile regression
 
@@ -27,17 +27,17 @@ Conformal prediction is a machine learning framework for computing prediction in
 
 In the training step, the non-conformity scores $\lambda_i$ are calculated on the training set $(\hat{y}_i, y_i)_{i\in\text{training window}}$ as $\lambda_i := |\hat{y}_i - y_i|$.
 
-In the prediction step, the $\tau$-th quantile conditional on $\hat{y_t}$ is obtained by shifting the prediction by an appropriate empirical quantile of non-conformity scores:
+In the prediction step, the $\tau$-th quantile conditional on $\hat{y_t}$ is obtained by shifting the prediction by an appropriate sample quantile of non-conformity scores:
 
 $\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{1 - 2\tau}(\lambda) + \mathbf{1}_{\{\tau > 0.5\}} Q_{2\tau - 1}(\lambda),$
 
-where $Q_{\alpha}(\lambda)$ is the $\alpha$-th empirical quantile of non-conformity scores from the training window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $\alpha$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
+where $Q_{\alpha}(\lambda)$ is the $\alpha$-th sample quantile of non-conformity scores from the training window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $\alpha$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
 
 However, it is also possible to use conformal prediction to obtain non-symmetric distributions, by using non-absolute errors $\lambda_i := \hat{y}_i - y_i$. Then, in the predcition step $\tau$-th quantile conditional on $\hat{y_t}$ is computed as:
 
 $\hat{q}_{\tau|\hat{y}} = \hat{y} + Q_{\tau}(\lambda),$
 
-the method known as historical simulation [(Hendricks, 1996)](http://dx.doi.org/10.2139/ssrn.1028807)
+the method known as Historical Simulation [(Hendricks, 1996)](http://dx.doi.org/10.2139/ssrn.1028807)
 
 ```@docs
 CP
@@ -45,7 +45,7 @@ getscores
 ```
 
 ## Isotonic distributional regression
-Isotonic Distributional Regression [(IDR; Henzi et al., 2021)](https://doi.org/10.1111/rssb.12450) has been recently introduced as a nonparametric method for estimating distributions that are isotonic in the regressed variable, which means that the quantiles of such distributions are non-decreasing w.r.t the regressor. In the training step, $n$ observations $(\hat{y}_i, y_i)_{i \in \text{training window}}$ are first sorted to be ascending in $\hat{y}_i$. Then, $n$ conditional distributions $\hat{F_i}(z) = \hat{F}(z|x_i)$ are obtained by solving the following min-max problem via abridged pool-adjacent-violators algorithm:
+Isotonic Distributional Regression [(IDR; Henzi et al., 2021)](https://doi.org/10.1111/rssb.12450) has been recently introduced as a novel nonparametric method for estimating distributions that are isotonic in the regressed variable, which means that the quantiles of such distributions are non-decreasing w.r.t the regressor. In the training step, $n$ observations $(\hat{y}_i, y_i)_{i \in \text{training window}}$ are first sorted to be ascending in $\hat{y}_i$. Then, $n$ conditional distributions $\hat{F_i}(z) = \hat{F}(z|x_i)$ are obtained by solving the following min-max problem via abridged pool-adjacent-violators algorithm:
  
 $\hat{F}_i(z) = \min_{k=1,...,i} \max_{j=k,..,n} \frac{1}{j-k+1}\sum_{l=k}^{j} \mathbb{1}\{y_{l} < z\},$
 

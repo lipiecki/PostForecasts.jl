@@ -1,26 +1,26 @@
 # Examples
-Below You can find some simple examples of what can be achieved with `PostForecasts.jl`
+Below you can find some simple examples of what can be achieved with **PostForecasts.jl**
 
 ## Load and postprocess point forecasts
-In the first example we show how to load point forecasts from a delimited file and postprocess them using a selected model in \textit{PostForecasts.jl}. Assume that the file named \textit{my-point-forecasts.csv} has the following structure: 
+In the first example, we show how to load point forecasts from a delimited file and postprocess them using a selected model in PostForecasts.jl. Assume that the file named `my-point-forecasts.csv` has the following structure: 
 ```csv
 timestamp,observation,forecast1,forecast2
 0,52.250,53.775,52.215
 1,55.005,57.450,53.732
 2,58.125,57.728,58.426
 ```
-To load and postprocess it we only need two function calls:
+To load and postprocess it, we only need two function calls:
 ```julia
 using PostForecasts
 pf = loaddlmdata("my-point-forecasts.csv", delim=',', idcol=1, obscol=2, predcol=[3, 4], colnames=true)
 ```
-First, the `loaddlmdata` function reads the file, where the arguments specify that the file is comma delimited, the identifiers are stored in the first column, the observations in the second, and the predictions in the third and fourth. The last argument informs that the column names are present in the file, so the first row is not parsed into numeric values.
+First, the `loaddlmdata` function reads the file. The arguments specify that the file is comma-delimited, the identifiers are stored in the first column, the observations in the second, and the predictions in the third and fourth. The last argument informs that the column names are present in the file, so the first row is not parsed into numeric values.
 ```julia
 qf = point2quant(pf, method=:qr, window=100, quantiles=[0.9, 0.95, 0.99])
 ```
 Next, the `point2quant` function postprocesses the forecasts stored in `pf`, computes quantile predictions and stores them in `qf`. In the above snippet, the arguments specify that Quantile Regression Averaging is used for postprocessing, calibration window size is 100 data points, and that the 90th, 95th and 99th percentiles are predicted. By default, the postprocessing model is retrained before every prediction using a calibration window of most recent data points. For details on alternative configurations, see the documentation of the [`point2quant`](postprocess.md#From-point-to-probabilistic-forecasts) function.
 
-Quantile forecasts `qf` are now ready to be [evaluated](evaluation.md#Evaluation-metrics), [averaged](averaging.md#Forecast-Averaging) with other forecasts, [conformalized](postprocess.md#Conformalizing-probabilistic-forecasts) and [saved](loadsave.md#Loading-and-saving-forecasts).
+Quantile forecasts `qf` are now ready to be [evaluated](evaluation.md#Evaluation-metrics), [averaged](averaging.md#Forecast-Averaging) with other forecasts, [conformalized](postprocess.md#Conformalizing-probabilistic-forecasts), and [saved](loadsave.md#Loading-and-saving-forecasts).
 
 ## Probabilistic forecasting of day-ahead electricity prices
 Let us now show how to compute probabilistic forecasts of day-ahead electricity prices from point forecasts stored in the [EPEX dataset](datasets.md#EPEX) for all hours of the year 2023, using three different postprocessing schemes - IDR, CP and QRA. See [(Lipiecki et al., 2024)](https://doi.org/10.1016/j.eneco.2024.107934) for more details on this forecasting task.
@@ -81,7 +81,7 @@ qf = Dict()
 ```
 
 ### QRA
-**Q**uantile **R**egression **A**veraging - each point forecast is treated as a seperate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
+**Q**uantile **R**egression **A**veraging - each point forecast is treated as a separate regressor in a multivariate quantile regression - $\hat{q}_{\tau|\hat{y}^{(1)}, ..., \hat{y}^{(m)}} = \beta^{(\tau)}_0 + \beta^{(\tau)}_1\hat{y}^{(1)} + ... + \beta^{(\tau)}_m\hat{y}^{(m)}$
 ```julia
 qf["QRA"] = point2quant(pf, method=:qr, window=365, quantiles=9)
 ```
@@ -154,7 +154,7 @@ The resulting plots shows that the conformalization helped to significantly decr
 The script corresponding to this example can be found in `examples/conformalize-pangu.jl`.
 
 ## Supporting decision making on energy markets
-To highlight the significance and utility of probabilsitic forecasts, let us present a short scenario of trading on day-ahead electricity market.
+To highlight the significance and utility of probabilistic forecasts, let us present a short scenario of trading on day-ahead electricity market.
 
 Consider an energy company that owns a battery and trades in the day-ahead market. Every morning it faces the decision about whether to submit a buy order to charge the battery and a sell order to discharge it at a later hour of the next day, or avoid trading due to adverse market conditions.
 
@@ -189,6 +189,6 @@ plot!(viewobs(qfSELL), color=1, st=:scatter, markerstrokewidth=0, label=nothing)
 
 Clearly, on the third day the upper quantiles of prices for 3am significantly overlap the lower quantiles of prices for 7pm. This indicates that the buy price is quite likely to be higher than the sell price, so the trading strategy carries substantial risk. Indeed, the actual price at 7pm (red dot) was lower than at 3am (green dot) for that day, so trading would lead to incurring a loss. 
 
-This short example showcases how probabilistic foreecasts can provide us with more information about possible outcomes of our decisions. To read about the strategies for battery-based trading on electricity markets and their economic evaluation, see the contributions of [Nitka and Weron (2023)](https://doi.org/10.48550/arXiv.2308.15443) and [Maciejowska et al. (2023)](https://doi.org/10.48550/arXiv.2303.08565).
+This short example showcases how probabilistic forecasts can provide us with more information about possible outcomes of our decisions. To read about the strategies for battery-based trading on electricity markets and their economic evaluation, see the contributions of [Nitka and Weron (2023)](https://doi.org/10.48550/arXiv.2308.15443) and [Maciejowska et al. (2023)](https://doi.org/10.48550/arXiv.2303.08565).
 
 The script corresponding to this example can be found in `examples/trading.jl`.

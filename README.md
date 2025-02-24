@@ -23,7 +23,7 @@ We believe that following these three principles allowed us to develop a robust 
 ## Variety of models
 The package provides interface to four selected models for probabilistic forecasting:
 - `Normal`:  Normal error distribution
-- `CP`: Conformal Prediction
+- `CP`: Conformal Prediction (and Historical Simulation)
 - `IDR`: Isotonic Distributional Regression
 - `QR`: Quantile Regression
 
