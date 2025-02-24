@@ -9,7 +9,7 @@ const PANGU_U10 = Dict(Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) fo
 const PANGU_V10 = Dict(Symbol("pangu$(H)v10") => ("pangu_lead$(H).csv", 3, 8) for H in 0:6:186)
 const PANGU_T2M = Dict(Symbol("pangu$(H)t2m") => ("pangu_lead$(H).csv", 4, 9) for H in 0:6:186)
 const PANGU_T850 = Dict(Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)
-const PANGU_Z500 = Dict(Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)
+const PANGU_Z500 = Dict(Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)
 const PANGU = Dict(PANGU_U10..., PANGU_V10..., PANGU_T2M..., PANGU_T850..., PANGU_Z500...)
 
 import Base: getindex, firstindex, lastindex, eachindex, length, show
@@ -38,7 +38,7 @@ include("shapley.jl")
 include("loadsave.jl")
 
 export
-    #Forecasts API
+    # Forecasts API
     PointForecasts,
     QuantForecasts,
     Forecasts, 
@@ -61,12 +61,12 @@ export
     viewid,
     viewprob,
 
-    #Averaging
+    # Averaging
     average,
     qaverage,
     paverage,
 
-    #PostModel
+    # PostModel
     PostModel,
     UniPostModel,
     MultiPostModel,
@@ -74,34 +74,33 @@ export
     predict,
     predict!,
     nregs,
-    getmodel,
 
-    #Conformal Prediction
+    # Conformal Prediction
     CP,
     getscores,
 
-    #Isotonic Distributional Regression
+    # Isotonic Distributional Regression
     IDR,
     getx,
     gety,
     getcdf,
 
-    #Normal
+    # Normal
     Normal,
     getmean,
     getstd,
     
-    #Quantile Regression
+    # Quantile Regression
     QR,
     getweights,
     getquantprob,
 
-    #Postprocessing
+    # Postprocessing
     point2quant,
     conformalize,
     conformalize!,
 
-    #Evaluation
+    # Evaluation
     mae,
     mape,
     smape,
@@ -111,13 +110,13 @@ export
     coverage,
     shapley,
 
-    #Utilities
+    # Utilities
     getmodel,
     nreg,
     matchwindow,
     checkmatch,
 
-    #Data
+    # Data
     loaddata,
     loaddlmdata,
     saveforecasts,
