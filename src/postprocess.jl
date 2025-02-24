@@ -1,6 +1,6 @@
 """
     point2quant(pf; method, window, quantiles[, start, stop, retrain])
-Compute probabilistic forecast based on point forecasts `pf::PointForecasts` using `PostModel` specified by `method::Symbol`.
+Compute probabilistic forecast based on `pf::PointForecasts` using `PostModel` specified by `method::Symbol`.
 
 Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `quantiles::AbstractVector{<:AbstractFloat}`: vector of probabilities
@@ -18,7 +18,7 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 ## Other keyword arguments:
 - `window::Integer`: the number of past observations used for training the model
 - `start::Integer = pf.id[begin + window]`: specify the `id`entifier in `pf` at which quantile forecasts will start (if not provided, the first available will be used)
-- `stop::Integer = pd.id[end]`: specify the `id`entifier in `pf` at which quantile forecasts will stop (if not provided, the last available will be used)
+- `stop::Integer = pf.id[end]`: specify the `id`entifier in `pf` at which quantile forecasts will stop (if not provided, the last available will be used)
 - `retrain::Integer = 1`: specify how often to retrain the model. If `retrain == 0`, the model will be trained only once, otherwise it will be retrained every `retrain` steps
 
 ## Note
