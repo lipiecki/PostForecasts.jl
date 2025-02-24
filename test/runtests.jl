@@ -470,7 +470,7 @@ end
         try
             checkmatch(pf, pf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` identifiers (elements of `id` field) do not match"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have incompatible `id`entifiers"
         end
         @test testvar
 
@@ -479,7 +479,7 @@ end
         try
             checkmatch(pf, pf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` observations (elements of `obs` field) do not match"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have incompatible `obs`ervations"
         end
         @test testvar
 
@@ -488,7 +488,7 @@ end
         try
             checkmatch(pf, pf_, checkpred=true)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` have different sizes of forecast pools"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have different sizes of forecast pools"
         end
         @test testvar
 
@@ -497,7 +497,7 @@ end
         try
             checkmatch(pf, pf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`PointForecasts` have different lengths"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have different lengths"
         end
         @test testvar
     end
@@ -519,7 +519,7 @@ end
         try
             checkmatch(qf, qf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` identifiers (elements of `id` field) do not match"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have incompatible `id`entifiers"
         end
         @test testvar
 
@@ -528,7 +528,7 @@ end
         try
             checkmatch(qf, qf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` observations (elements of `obs` field) do not match"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have incompatible `obs`ervations"
         end
         @test testvar
 
@@ -537,7 +537,7 @@ end
         try
             checkmatch(qf, qf_, checkpred=true)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different number of quantiles"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have different quantile levels"
         end
         @test testvar
 
@@ -546,7 +546,7 @@ end
         try
             checkmatch(qf, qf_, checkpred=true)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different quantile levels"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have different quantile levels"
         end
         @test testvar
 
@@ -555,7 +555,7 @@ end
         try
             checkmatch(qf, qf_)
         catch e
-            testvar = isa(e, ArgumentError) && e.msg == "`QuantForecasts` have different lengths"
+            testvar = isa(e, ArgumentError) && e.msg == "Forecasts objects have different lengths"
         end
         @test testvar
     end

@@ -31,7 +31,7 @@ matchwindow(::PostModel, ::Integer) = true
 
 """
     checkmatch(fs:; checkpred::Bool=false)
-Check if Forecasts in `fs` correspond to the same tiemseries, i.e.:
+Check if Forecasts in `fs` correspond to the same timeseries, i.e.:
 - all their `id`entifiers match
 - all their `obs`ervations match.
 
@@ -41,31 +41,21 @@ Additionally, provided that `checkpred=true`, check if:
 
 Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
 """
-function checkmatch(fs::AbstractVector{<:PointForecasts}; checkpred::Bool=false)
+function checkmatch(fs::AbstractVector{T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
     first, state = iterate(fs, firstindex(fs))
     nextstatepair = iterate(fs, state)
     while !isnothing(nextstatepair)
         next, state = nextstatepair
-        length(first) == length(next) || throw(ArgumentError("`PointForecasts` have different lengths"))
-        (!checkpred || npred(first) == npred(next)) || throw(ArgumentError("`PointForecasts` have different sizes of forecast pools"))
-        all(first.obs .≈ next.obs) || throw(ArgumentError("`PointForecasts` observations (elements of `obs` field) do not match"))
-        all(first.id .≈ next.id) || throw(ArgumentError("`PointForecasts` identifiers (elements of `id` field) do not match"))
-        nextstatepair = iterate(fs, state)
-    end
-end
-
-function checkmatch(fs::AbstractVector{<:QuantForecasts}; checkpred::Bool=false)
-    first, state = iterate(fs, firstindex(fs))
-    nextstatepair = iterate(fs, state)
-    while !isnothing(nextstatepair)
-        next, state = nextstatepair
-        length(first) == length(next) || throw(ArgumentError("`QuantForecasts` have different lengths"))
+        length(first) == length(next) || throw(ArgumentError("Forecasts objects have different lengths"))
         if checkpred
-            npred(first) == npred(next) || throw(ArgumentError("`QuantForecasts` have different number of quantiles"))
-            all(first.prob .≈ next.prob) || throw(ArgumentError("`QuantForecasts` have different quantile levels"))
+            if T <: QuantForecasts
+                (npred(first) == npred(next) && all(first.prob .≈ next.prob)) || throw(ArgumentError("Forecasts objects have different quantile levels"))
+            else
+                npred(first) == npred(next) || throw(ArgumentError("Forecasts objects have different sizes of forecast pools"))
+            end
         end
-        all(first.obs .≈ next.obs) || throw(ArgumentError("`QuantForecasts` observations (elements of `obs` field) do not match"))
-        all(first.id .≈ next.id) || throw(ArgumentError("`QuantForecasts` identifiers (elements of `id` field) do not match"))
+        all(first.obs .≈ next.obs) || throw(ArgumentError("Forecasts objects have incompatible `obs`ervations"))
+        all(first.id .≈ next.id) || throw(ArgumentError("Forecasts objects have incompatible `id`entifiers"))
         nextstatepair = iterate(fs, state)
     end
 end
