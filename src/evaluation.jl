@@ -1,6 +1,6 @@
 """
     mae(pf::PointForecasts)
-Calculate Mean Absolute Error of pred from `pf`. Return the vector of MAE corresponding to each forecaster.
+Calculate Mean Absolute Error of predictions from `pf`. Return the vector of MAE corresponding to each forecaster.
 """
 function mae(pf::PointForecasts)
     loss = zeros(npred(pf))
@@ -15,7 +15,7 @@ end
 
 """
     mape(pf::PointForecasts; eps=1e-9)
-Calculate Mean Absolute Percentage Error of pred from `pf`. Return the vector of MAPE corresponding to each forecaster.
+Calculate Mean Absolute Percentage Error of predictions from `pf`. Return the vector of MAPE corresponding to each forecaster.
 """
 function mape(pf::PointForecasts; eps::AbstractFloat=1e-9)
     loss = zeros(npred(pf))
@@ -30,7 +30,7 @@ end
 
 """
     smape(pf::PointForecasts; eps=1e-9)
-Calculate Symmetric Mean Absolute Percentage Error of pred from `pf`. Return the vector of SMAPE corresponding to each forecaster.
+Calculate Symmetric Mean Absolute Percentage Error of predictions from `pf`. Return the vector of SMAPE corresponding to each forecaster.
 """
 function smape(pf::PointForecasts; eps::AbstractFloat=1e-9)
     loss = zeros(npred(pf))
@@ -46,7 +46,7 @@ end
 
 """
     mse(pf::PointForecasts)
-Calculate Mean Squared Error of pred from `pf`. Return the vector of MSE corresponding to each forecaster.
+Calculate Mean Squared Error of predictions from `pf`. Return the vector of MSE corresponding to each forecaster.
 """
 function mse(pf::PointForecasts)
     loss = zeros(npred(pf))
@@ -84,7 +84,7 @@ end
 
 """
     crps(qf::QuantForecasts)
-Approximate Continous Ranked Probability Score using the Pinball Loss of quantile forecasts in `qf`, with `2mean(pinball(qf))`.
+Approximate Continuous Ranked Probability Score using the Pinball Loss of quantile forecasts in `qf`, with `2mean(pinball(qf))`.
 
 ## Note
 Approximating CRPS with the average Pinball Loss requires a dense grid of equidistant quantiles.
@@ -96,7 +96,7 @@ end
 
 """
     coverage(qf::QuantForecasts)
-Calculate empirical coverage of quantile pred in `qf`. Return the vector of coverage corresponding to each quantile. 
+Calculate empirical coverage of quantile predictions in `qf`. Return the vector of coverage corresponding to each quantile. 
 """
 function coverage(qf::QuantForecasts)
     cover = zeros(UInt, npred(qf))
