@@ -343,17 +343,23 @@ end
     @test viewpred(qfp, eachindex(qfp), 3) ≈ viewpred(qfpmedian)
     @test viewpred(qfpmedian) ≈ viewpred(qfpmedian2)
     @test viewpred(qfq) ≈ [-ones(100).*0.75 zeros(100) ones(100).*0.75]
+    @test viewpred(qfq) ≈ viewpred(qaverage(qf1, qf2))
+    @test viewpred(qfpmedian) ≈ viewpred(paverage(qf1, qf2, quantiles=0.5))
 end
 
 @testset "Evaluation" begin
-    obs = rand(100)
+    obs = randn(100)
     pred = obs .- 0.1
     pred[1] -= 0.9
     pred2 = obs + [0.1*ones(50); -0.1*ones(50)]
     pred2[1] += 0.9
     pred3 = obs .+ 1.0
     pred3[1] += 9.0
-    
+
+    pf = PointForecasts([0.5 1.5; 1.0 3.0; 2.0 6.0], [1.0 2.0 4.0])
+    @test mape(pf) ≈ [50.0, 50.0]
+    @test smape(pf) ≈ [200/3, 40.0]
+
     pf = PointForecasts([pred pred3], obs)
     @test mae(pf) ≈ [0.109, 1.09]
     @test mse(pf) ≈ [0.0199, 1.99]
