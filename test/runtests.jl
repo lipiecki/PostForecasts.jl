@@ -326,10 +326,12 @@ end
     pfm = average(pf)
     pfm2 = average(decouple(pf))
     @test viewpred(pfm) ≈ mean(pred, dims = 2) && viewpred(pfm) ≈ viewpred(pfm2) 
+    @test viewpred(pfm2) ≈ average(decouple(pf)...)
 
     pfm = average(pf, agg=:median)
     pfm2 = average(decouple(pf), agg=:median)
-    @test viewpred(pfm) ≈ @view(pred[:, 2]) && viewpred(pfm) ≈ viewpred(pfm2) 
+    @test viewpred(pfm) ≈ @view(pred[:, 2]) && viewpred(pfm) ≈ viewpred(pfm2)
+    @test viewpred(pfm2) ≈ average(decouple(pf)..., agg=:median)
 
     qf1 = QuantForecasts( [-ones(100) zeros(100) ones(100)], obs, [0.25, 0.5, 0.75])
     qf2 = QuantForecasts([-ones(100)./2 zeros(100) ones(100)./2], obs, [0.25, 0.5, 0.75])
@@ -345,6 +347,7 @@ end
     @test viewpred(qfq) ≈ [-ones(100).*0.75 zeros(100) ones(100).*0.75]
     @test viewpred(qfq) ≈ viewpred(qaverage(qf1, qf2))
     @test viewpred(qfpmedian) ≈ viewpred(paverage(qf1, qf2, quantiles=0.5))
+    @test paverage(qf1, qf2, quantiles=0.8) ≈ paverage(qf1, qf2, quantiles=0.75)
 end
 
 @testset "Evaluation" begin
