@@ -1,6 +1,6 @@
 """
     predict(m, input, prob)
-Predict quantiles at specified `prob`abilbities using model `m::PostModel{F}` with `input`.
+Predict quantiles at specified `prob`ability with model `m::PostModel{F}` conditional on `input`.
 
 ## Argument types 
 - `input` can be of type `Number` or `AbstractVector{<:Number}`
