@@ -356,7 +356,7 @@ end
     pred3 = obs .+ 1.0
     pred3[1] += 9.0
 
-    pf = PointForecasts([0.5 1.5; 1.0 3.0; 2.0 6.0], [1.0 2.0 4.0])
+    pf = PointForecasts([0.5 1.5; 1.0 3.0; 2.0 6.0], [1.0, 2.0, 4.0])
     @test mape(pf) ≈ [50.0, 50.0]
     @test smape(pf) ≈ [200/3, 40.0]
 
