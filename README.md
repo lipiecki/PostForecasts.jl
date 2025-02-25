@@ -17,24 +17,26 @@
 
 We believe that following these three principles allowed us to develop a robust tool for computing probabilistic forecasts that combines ease of use, high accuracy, fast results and good interpretability. This makes **PostForecasts.jl** an attractive choice for both academic and industrial applications.
 
-## Dedicated structures
-**PostForecasts.jl** introduces `PointForecasts` and `QuantForecasts` structures for storing time series data along with point and probabilistic forecasts respectively.
+## Quick start
 
-## Variety of models
+### Dedicated types
+**PostForecasts.jl** introduces `PointForecasts` and `QuantForecasts` types for storing time series data along with point and probabilistic forecasts respectively.
+
+### Postprocessing models
 The package provides interface to four selected models for probabilistic forecasting:
 - `Normal`:  Normal error distribution
-- `CP`: Conformal Prediction (and Historical Simulation)
+- `CP`: Conformal Prediction
 - `IDR`: Isotonic Distributional Regression
 - `QR`: Quantile Regression
 
-The models belong to the `PostModel` type, they have corresponding `train` methods for calibrating the model to the provided data and `predict`/`predict!` methods yielding quantiles of predictive distribution based on point forecast(s).
+The models belong to the `PostModel` type, they have corresponding `train` methods for calibrating the model to the provided data and `predict`/`predict!` methods yielding quantiles of predictive distribution.
 
-## Easy postprocessing
+### Easy postprocessing
 The core functionality of **PostForecasts.jl** is building probabilistic forecasts from point predictions. For easy postprocessing, use `point2quant` function to turn `PointForecasts` into `QuantForecasts` with one of the implemented models.
 
 In addition to methods for postprocessing point forecasts, the package provides `conformalize` function, allowing to correct quantile forecasts using historical errors.
 
-## Installation
+### Installation
 To install PostForecasts.jl package, enter Julia REPL and call `Pkg.add`:
 
 ```julia
