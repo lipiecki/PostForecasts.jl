@@ -12,9 +12,9 @@ Details of the datasets are available in documentation.
 """
 function loaddata(dataset::Symbol)
     if dataset ∈ keys(PANGU)
-        loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", PANGU[dataset][1]), predcol = PANGU[dataset][2], obscol = PANGU[dataset][3], colnames=true)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", PANGU[dataset][1]), idcol=1, predcol = PANGU[dataset][2], obscol = PANGU[dataset][3], colnames=true)
     elseif dataset ∈ keys(EPEX)
-        loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", EPEX[dataset]), colnames=true)
+        loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", EPEX[dataset]), idcol=1, obscol=2, colnames=true)
     else
         throw(ArgumentError("$(dataset) is not a valid dataset name"))
     end
@@ -27,12 +27,12 @@ loaddata(dataset::AbstractString) = loaddata(Symbol(dataset))
 Create a `PointForecasts` object from delimited file at `filepath`.
 ## Keyword Arguments
 - `delim=','`: Specifies the delimitter
-- `idcol=1`: Specifies which column is used for timestamps (omit to generate timestamps automatically)
-- `obscol=2`: Specifies which column is used for observations
-- `predcol=0`: Specifies which columns are used for pred (omit to use all remaining columns)
+- `obscol=1: Specifies which column is used for observations
+- `predcol=nothing`: Specifies which columns are used for pred (omit to use all remaining columns)
+- `idcol=nothing`: Specifies which column is used for timestamps (omit to generate timestamps automatically)
 - `colnames=false` If true, omit the first row of the file.
 """
-function loaddlmdata(filepath::AbstractString; delim::Char=',', idcol::Union{Nothing, Integer}=nothing, obscol::Integer=2, predcol::Union{Nothing, Integer, AbstractVector{<:Integer}}=nothing, colnames::Bool=false)
+function loaddlmdata(filepath::AbstractString; delim::Char=',', obscol::Integer=1, idcol::Union{Nothing, Integer}=nothing,  predcol::Union{Nothing, Integer, AbstractVector{<:Integer}}=nothing, colnames::Bool=false)
     data = readdlm(filepath, delim)[(colnames ? 2 : 1):end, :]
     l, m = size(data)
     return PointForecasts(
