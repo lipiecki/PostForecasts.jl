@@ -1,7 +1,7 @@
 # Postprocessing
 
 ## From point to probabilistic forecasts
-Building probabilistic forecasts from point predictions is the core functionality of **PostForecasts.jl**. The function `point2quant` turns `PointForecasts` into `QuantForecasts`, allowing to easily postprocess point predictions using a selected model, length of the training window and retraining frequency.
+Building probabilistic forecasts from point predictions is the core functionality of **PostForecasts.jl**. The function `point2quant` turns `PointForecasts` into `QuantForecasts`, allowing to easily postprocess point predictions using a selected method, length of the training window and retraining frequency. See [Models](models.md#Models) for details on the available postprocessing methods.
 
 ```@docs
 point2quant

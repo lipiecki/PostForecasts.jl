@@ -1,14 +1,14 @@
 # Models
-**PostForecasts.jl** provides four models for postprocessing point predictions into probabilistic forecasts: 
+**PostForecasts.jl** currently provides four models for handling postprocessing of point predictions into probabilistic forecasts: 
 - Normal error distribution
-- Conformal prediction (and Historical Simulation)
-- Isotonic distributional regression
-- Quantile regression
+- Conformal Prediction (and Historical Simulation)
+- Isotonic Distributional Regression
+- Quantile Regression
 
 Every model belongs to the `PostModel` supertype. Models that work exclusively with a single point forecast as a regressor are of type `UniPostModel`, while models that support multiple regressors are of type `MultiPostModel`.
 
 ## Normal error distribution
-The naive model for probabilistic forecasting, which assumes normally distributed errors of point forecasts. 
+The naive model for probabilistic forecasting, which assumes normally distributed errors of point forecasts.
 
 The predictive distribution conditional on point forecast $\hat{y}$ is a Gaussian $\mathcal{N}(\hat{y} + \mu, \sigma)$, where $\mu$ and $\sigma$ are mean and sample standard deviation of errors in the training window.
 
@@ -23,7 +23,7 @@ getstd
 ```
 
 ## Conformal prediction and historical simulation
-Conformal prediction is a machine learning framework for computing prediction intervals based on the outputs of an arbirary point forecasting model. The implemented version of Conformal Prediction is analogous to the inductive approach used by [Kath and Ziel (2021)](https://doi.org/10.1016/j.ijforecast.2020.09.006). 
+Conformal Prediction (CP) is a machine learning framework for computing prediction intervals based on the outputs of an arbitrary point forecasting model. The implemented method corresponds to inductive conformal prediction [(Papadopoulos et al., 2002)](https://doi.org/10.1007/3-540-36755-1_29) and is analogous to the approach of [Kath and Ziel (2021)](https://doi.org/10.1016/j.ijforecast.2020.09.006). 
 
 In the training step, the non-conformity scores $\lambda_i$ are calculated on the training set $(\hat{y}_i, y_i)_{i\in\text{training window}}$ as $\lambda_i := |\hat{y}_i - y_i|$.
 
@@ -33,11 +33,11 @@ $\hat{q}_{\tau|\hat{y}} = \hat{y} - \mathbf{1}_{\{\tau < 0.5\}} Q_{1 - 2\tau}(\l
 
 where $Q_{\alpha}(\lambda)$ is the $\alpha$-th sample quantile of non-conformity scores from the training window. Although the intervals in the form of $[\hat{y} - Q_{\alpha}(\lambda), \hat{y} +Q_{\alpha}(\lambda)]$ are valid $\alpha$ prediction intervals without any requirements on the underlying distribution, translating them into quantiles requires the assumption of symmetrically distributed errors.
 
-However, it is also possible to use conformal prediction to obtain non-symmetric distributions, by using non-absolute errors $\lambda_i := \hat{y}_i - y_i$. Then, in the predcition step $\tau$-th quantile conditional on $\hat{y_t}$ is computed as:
+However, it is also possible to use conformal prediction to obtain non-symmetric distributions, by using non-absolute errors $\lambda_i := \hat{y}_i - y_i$. Then, in the prediction step $\tau$-th quantile conditional on $\hat{y_t}$ is computed as:
 
 $\hat{q}_{\tau|\hat{y}} = \hat{y} + Q_{\tau}(\lambda),$
 
-the method known as Historical Simulation [(Hendricks, 1996)](http://dx.doi.org/10.2139/ssrn.1028807)
+the method that predates conformal prediction and is widely known as Historical Simulation (HS) [(Hendricks, 1996)](http://dx.doi.org/10.2139/ssrn.1028807).
 
 ```@docs
 CP

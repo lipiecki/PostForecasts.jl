@@ -22,7 +22,7 @@ We believe that following these three principles allowed us to develop a robust 
 ### Postprocessing models
 The package provides interface to four selected models for probabilistic forecasting:
 - `Normal`:  Normal error distribution
-- `CP`: Conformal Prediction
+- `CP`: Conformal Prediction (and Historical Simulation)
 - `IDR`: Isotonic Distributional Regression
 - `QR`: Quantile Regression
 
@@ -34,9 +34,9 @@ The core functionality of **PostForecasts.jl** is building probabilistic forecas
 In addition to methods for postprocessing point forecasts, the package provides `conformalize` function, allowing to correct quantile forecasts using historical errors.
 
 ### Installation
-To install PostForecasts.jl package, enter Julia REPL and call `Pkg.add`:
+**PostForecasts.jl** is a registered Julia package, run the following lines to install it in your Julia environment:
 
 ```julia
 julia> using Pkg
-julia> Pkg.add(url = "https://github.com/lipiecki/PostForecasts.jl")
+julia> Pkg.add("PostForecasts.jl")
 ```
