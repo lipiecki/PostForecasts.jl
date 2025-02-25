@@ -12,7 +12,7 @@ end
 
 qf[:ave] = Vector{QuantForecasts}(undef, 24)
 for h in 1:24
-    qf[:ave][h] = paverage([qf[m][h] for m in methods])
+    qf[:ave][h] = paverage([qf[m][h] for m in methods], quantiles=9)
 end
 
 println("Method \t| CRPS ")

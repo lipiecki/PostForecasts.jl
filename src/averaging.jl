@@ -58,8 +58,10 @@ Return `QuantForecasts` containing predictions of specified `quantiles`:
 - `quantiles::AbstractVector{<:AbstractFloat}`: vector of probabilities
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
+
+If `quantiles` argument is not provided, the function will default to the quantiles of the first `QuantForecasts` in `qfs`.
 """
-paverage(qfs::AbstractVector{<:QuantForecasts}; quantiles) = paverage(qfs, quantiles)
+paverage(qfs::AbstractVector{<:QuantForecasts}; quantiles=getprob(first(qfs))) = paverage(qfs, quantiles)
 
 function paverage(qfs::Vararg{QuantForecasts, N}; quantiles) where N
     v = Vector{QuantForecasts}(undef, N)
