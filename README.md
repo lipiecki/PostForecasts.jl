@@ -29,7 +29,7 @@ The package provides interface to four selected models for probabilistic forecas
 - `IDR`: Isotonic Distributional Regression
 - `QR`: Quantile Regression
 
-The models belong to the `PostModel` type, they have corresponding `train` methods for calibrating the model to the provided data and `predict`/`predict!` methods yielding quantiles of predictive distribution.
+The models belong to the `PostModel` type, they have corresponding `train` methods for calibrating the model to the provided data and `predict` methods yielding quantiles of predictive distribution.
 
 ### Easy postprocessing
 The core functionality of **PostForecasts.jl** is building probabilistic forecasts from point predictions. For easy postprocessing, use `point2quant` function to turn `PointForecasts` into `QuantForecasts` with one of the implemented models.
