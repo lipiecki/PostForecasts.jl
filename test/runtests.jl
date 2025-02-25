@@ -389,12 +389,12 @@ end
 
 @testset "Data loading" begin
     pf = loaddata("epex1")
-    pf2 = loaddlmdata(joinpath(@__DIR__, "..", "data", "epex", "epex_hour1.csv"), colnames = true)
+    pf2 = loaddlm(joinpath(@__DIR__, "..", "data", "epex", "epex_hour1.csv"), idcol=1, obscol=2, colnames=true)
     
     @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
 
     pf = loaddata("pangu0u10")
-    pf2 = loaddlmdata(joinpath(@__DIR__, "..", "data", "pangu", "pangu_lead0.csv"), predcol = 2, obscol = 7, colnames = true)
+    pf2 = loaddlm(joinpath(@__DIR__, "..", "data", "pangu", "pangu_lead0.csv"), idcol=1, predcol = 2, obscol = 7, colnames=true)
     
     @test viewpred(pf) ≈ viewpred(pf2) && viewobs(pf) ≈ viewobs(pf2) && viewid(pf) ≈ viewid(pf2)
     

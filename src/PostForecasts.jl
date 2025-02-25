@@ -118,7 +118,7 @@ export
 
     # Data
     loaddata,
-    loaddlmdata,
+    loaddlm,
     saveforecasts,
     loadforecasts,
     loadpointf,

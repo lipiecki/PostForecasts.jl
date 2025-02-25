@@ -12,9 +12,9 @@ timestamp,observation,forecast1,forecast2
 To load and postprocess it, we only need two function calls:
 ```julia
 using PostForecasts
-pf = loaddlmdata("my-point-forecasts.csv", delim=',', idcol=1, obscol=2, predcol=[3, 4], colnames=true)
+pf = loaddlm("my-point-forecasts.csv", delim=',', idcol=1, obscol=2, predcol=[3, 4], colnames=true)
 ```
-First, the `loaddlmdata` function reads the file. The arguments specify that the file is comma-delimited, the identifiers are stored in the first column, the observations in the second, and the predictions in the third and fourth. The last argument informs that the column names are present in the file, so the first row is not parsed into numeric values.
+First, the `loaddlm` function reads the file. The arguments specify that the file is comma-delimited, the identifiers are stored in the first column, the observations in the second, and the predictions in the third and fourth. The last argument informs that the column names are present in the file, so the first row is not parsed into numeric values.
 ```julia
 qf = point2quant(pf, method=:qr, window=100, quantiles=[0.9, 0.95, 0.99])
 ```
