@@ -37,9 +37,14 @@ The core functionality of **PostForecasts.jl** is building probabilistic forecas
 In addition to methods for postprocessing point forecasts, the package provides `conformalize` function, allowing to correct quantile forecasts using historical errors.
 
 ### Installation
-**PostForecasts.jl** is a registered Julia package, run the following lines to install it in your Julia environment:
+**PostForecasts.jl** is a registered Julia package, to install it just run the following lines in the Julia REPL:
 
 ```julia
 julia> using Pkg
-julia> Pkg.add("PostForecasts.jl")
+julia> Pkg.add("PostForecasts")
+```
+
+Alternatively, you can use the Pkg REPL mode:
+```julia
+pkg> add PostForecasts
 ```
