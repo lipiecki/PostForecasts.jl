@@ -39,7 +39,7 @@ Additionally, provided that `checkpred=true`, check if:
 - their number of forecasts match
 - their `prob`abilities match.
 
-The function `checkmatch` can be called with `fs` as a vector of `PointForecasts` or `QuantForecasts` objects, or by passing multiple objects as consecutive arguments, e.g. `checkmatch(f1, f2, f3)` is equivalent to `checkmatch([f1, f2, f3])`.
+The function `checkmatch` can also be called by passing `PointForecasts` or `QuantForecasts` objects as consecutive arguments, e.g. `checkmatch(f1, f2, f3)` is equivalent to `checkmatch([f1, f2, f3])`.
 
 Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
 """

@@ -2,10 +2,10 @@
     average(pf; agg::Symbol=:mean)
 Average the pool of point pred from `pf`. Return `PointForecasts` containing averaged forecasts, keyword argument `agg` specifies whether to average using simple mean (`:mean`) or median (`:median`).
 
-## Argument types
-- `pf::PointForecasts` to average the pool of forecasts in `pf`
-- `pf::PointForecasts...` to average all individual forecasts from every `PointForecasts` in `pf`.
-- `pf::AbstractVector{<:PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pf`.
+## Methods
+- `average(pf::PointForecasts)` to average the pool of forecasts in `pf`
+- `average(pfs::AbstractVector{<:PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pfs`
+- calling with multiple `PointForecasts` objects as consecutive arguments, e.g. `average(pf1, pf2, pf3)`, is equivalent to `average([pf1, pf2, pf3])`
 """
 function average(pf::PointForecasts; agg::Symbol=:mean)
     npred(pf) == 1 && return pf
@@ -51,13 +51,15 @@ function average(pfs::Vararg{PointForecasts, N}; agg::Symbol=:mean) where N
 end
 
 """
-    paverage(qfs[; quantiles])
-Average probabilistic predictions from a collection `qfs` by averaging the distributions across probability.
+    paverage(qfs::AbstractVector{<:QuantForecasts}[; quantiles])
+Average probabilistic predictions from `qfs` by averaging the distributions across probability.
 
 Return `QuantForecasts` containing predictions of specified `quantiles`:
 - `quantiles::AbstractVector{<:AbstractFloat}`: vector of probabilities
 - `quantiles::AbstractFloat`: a single probability value
 - `quantiles::Integer`: number of equidistant probability values (e.g. 99 for percentiles).
+
+The function `paverage` can also be called by passing `QuantForecasts` objects as consecutive arguments, e.g. `paverage(qf1, qf2, qf3)` is equivalent to `paverage([qf1, qf2, qf3])`.
 
 If `quantiles` argument is not provided, the function will default to the quantiles of the first `QuantForecasts` in `qfs`.
 """
@@ -115,8 +117,10 @@ paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractFloat) = pave
 paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::Integer) = paverage(qfs, equidistant(quantiles))
 
 """
-    qaverage(qfs)
-Average probabilistic predictions from a collection `qfs` by averaging the quantiles.
+    qaverage(qfs::AbstractVector{<:QuantForecasts})
+Average probabilistic predictions from `qfs` by averaging the quantiles.
+
+The function `qaverage` can also be called by passing `QuantForecasts` objects as consecutive arguments, e.g. `qaverage(qf1, qf2, qf3)` is equivalent to `qaverage([qf1, qf2, qf3])`.
 
 Return `QuantForecasts` containing quantile predictions at the same quantile levels as `QuantForecasts` in `qfs`.
 """
