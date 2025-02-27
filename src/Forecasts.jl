@@ -92,10 +92,10 @@ QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, id::AbstractVe
 QuantForecasts(pred::AbstractVecOrMat{F}, obs::Vector{F}, prob::F) where {F<:AbstractFloat} =
     QuantForecasts(pred, obs, 1:length(obs), prob)
 
-Base.show(io::IO, fs::Forecasts) = println(io, typeof(fs), " with a pool of ", npred(fs),  " forecast(s) at ", length(fs), " timesteps, between ", fs.id[begin], " and ", fs.id[end])
+Base.show(io::IO, f::Forecasts) = println(io, typeof(f), " with a pool of ", npred(f),  " forecast(s) at ", length(f), " timesteps, between ", f.id[begin], " and ", f.id[end])
 
-function Base.length(fs::Forecasts)
-    return length(fs.obs)
+function Base.length(f::Forecasts)
+    return length(f.obs)
 end
 
 function Base.getindex(pf::PointForecasts, t::Integer)
@@ -126,38 +126,38 @@ function Base.getindex(qf::QuantForecasts, T::AbstractVector{<:Integer})
             qf.prob)
 end
 
-function Base.firstindex(fs::Forecasts)
-    return firstindex(fs.obs)
+function Base.firstindex(f::Forecasts)
+    return firstindex(f.obs)
 end
 
-function Base.lastindex(fs::Forecasts)
-    return lastindex(fs.obs)
+function Base.lastindex(f::Forecasts)
+    return lastindex(f.obs)
 end
 
-function Base.eachindex(fs::Forecasts)
-    return eachindex(fs.obs)
+function Base.eachindex(f::Forecasts)
+    return eachindex(f.obs)
 end
 
 """
-    findindex(fs::Forecasts, i::Integer)
-Return the index of `fs`, for which the element of field `id` equals `i`.
+    findindex(f::Forecasts, i::Integer)
+Return the index of `f`, for which the element of field `id` equals `i`.
 """
-function findindex(fs::Forecasts, i::Integer)
-    t = findfirst(fs.id .== i) 
+function findindex(f::Forecasts, i::Integer)
+    t = findfirst(f.id .== i) 
     isnothing(t) && throw(error("field `id` of the provided series does not contain '$(i)'"))
     return t
 end
 
-function (fs::Forecasts)(i::Integer) 
-    fs[findindex(fs, i)]
+function (f::Forecasts)(i::Integer) 
+    f[findindex(f, i)]
 end
 
-function (fs::Forecasts)(i::Integer, j::Integer) 
-    fs[findindex(fs, i):findindex(fs, j)]
+function (f::Forecasts)(i::Integer, j::Integer) 
+    f[findindex(f, i):findindex(f, j)]
 end
 
-function (fs::Forecasts)(I::AbstractVector{<:Integer})  
-    fs[[findindex(fs, i) for i in I]]
+function (f::Forecasts)(I::AbstractVector{<:Integer})  
+    f[[findindex(f, i) for i in I]]
 end
 
 """
@@ -169,67 +169,67 @@ function decouple(pf::PointForecasts)
 end
 
 """
-    npred(fs::Forecasts)
-Return the number of point forecasts in `fs::PointForecasts` or the number of forecasted quantiles in `fs::QuantForecasts`.
+    npred(f::Forecasts)
+Return the number of point forecasts in `f::PointForecasts` or the number of forecasted quantiles in `f::QuantForecasts`.
 """
-function npred(fs::Forecasts)
-    return size(fs.pred, 2)
+function npred(f::Forecasts)
+    return size(f.pred, 2)
 end
 
 """
-    setpred(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
-Set the element of field `fs.pred` at indices `t, i` to `val`.
+    setpred(f::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
+Set the element of field `f.pred` at indices `t, i` to `val`.
 """
-function setpred(fs::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
-    fs.pred[t, i] = val
+function setpred(f::Forecasts, t::Integer, i::Integer, val::AbstractFloat)
+    f.pred[t, i] = val
 end
 
 """
-    getpred(fs::Forecasts[, T, I])
-Return the copy of `pred`ictions from `fs`. 
+    getpred(f::Forecasts[, T, I])
+Return the copy of `pred`ictions from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `pred`ictions at specified time indices.
 
 Additionally, provide `I::Union{Integer, AbstractVector{<:Integer}}` to get `pred`icitons at specified forecast indices.
 """
-function getpred(fs::Forecasts)
-    return copy(fs.pred)
+function getpred(f::Forecasts)
+    return copy(f.pred)
 end
 
-function getpred(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return fs.pred[T, :]
+function getpred(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return f.pred[T, :]
 end
 
-function getpred(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}}, I::Union{Integer, AbstractVector{<:Integer}})
-    return fs.pred[T, I]
+function getpred(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}}, I::Union{Integer, AbstractVector{<:Integer}})
+    return f.pred[T, I]
 end
 
 """
-    getobs(fs::Forecasts[, T])
-Return the copy of `obs`ervations from `fs`. 
+    getobs(f::Forecasts[, T])
+Return the copy of `obs`ervations from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `obs`ervations at specified time indices.
 """
-function getobs(fs::Forecasts)
-    return copy(fs.obs)
+function getobs(f::Forecasts)
+    return copy(f.obs)
 end
 
-function getobs(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return fs.obs[T]
+function getobs(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return f.obs[T]
 end
 
 """
-    getid(fs::Forecasts[, T])
-Return the copy of `id`entifiers from `fs`. 
+    getid(f::Forecasts[, T])
+Return the copy of `id`entifiers from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `id`entifiers at specified time indices.
 """
-function getid(fs::Forecasts)
-    return copy(fs.id)
+function getid(f::Forecasts)
+    return copy(f.id)
 end
 
-function getid(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return fs.id[T]
+function getid(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return f.id[T]
 end
 
 """
@@ -247,51 +247,51 @@ function getprob(qf::QuantForecasts, I::Union{Integer, AbstractVector{<:Integer}
 end
 
 """
-    viewpred(fs::Forecasts[, T, I])
-Return the view of `pred`ictions from `fs`. 
+    viewpred(f::Forecasts[, T, I])
+Return the view of `pred`ictions from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `pred`ictions at specified time indices.
 
 Additionally, provide `I::Union{Integer, AbstractVector{<:Integer}}` to get `pred`icitons at specified forecast indices.
 """
-function viewpred(fs::Forecasts)
-    return @view(fs.pred[:, :])
+function viewpred(f::Forecasts)
+    return @view(f.pred[:, :])
 end
 
-function viewpred(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return @view(fs.pred[T, :])
+function viewpred(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return @view(f.pred[T, :])
 end
 
-function viewpred(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}}, I::Union{Integer, AbstractVector{<:Integer}})
-    return @view(fs.pred[T, I])
+function viewpred(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}}, I::Union{Integer, AbstractVector{<:Integer}})
+    return @view(f.pred[T, I])
 end
 
 """
-    viewobs(fs::Forecasts[, T])
-Return the view of `obs`ervations from `fs`. 
+    viewobs(f::Forecasts[, T])
+Return the view of `obs`ervations from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `obs`ervations at specified time indices.
 """
-function viewobs(fs::Forecasts)
-    return @view(fs.obs[:])
+function viewobs(f::Forecasts)
+    return @view(f.obs[:])
 end
 
-function viewobs(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return @view(fs.obs[T])
+function viewobs(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return @view(f.obs[T])
 end
 
 """
-    viewid(fs::Forecasts[, T])
-Return the view of `id`entifiers from `fs`. 
+    viewid(f::Forecasts[, T])
+Return the view of `id`entifiers from `f`. 
 
 Provide optional argument `T::Union{Integer, AbstractVector{<:Integer}}` to get `id`entifiers at specified time indices.
 """
-function viewid(fs::Forecasts)
-    return @view(fs.id[:])
+function viewid(f::Forecasts)
+    return @view(f.id[:])
 end
 
-function viewid(fs::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
-    return @view(fs.id[T])
+function viewid(f::Forecasts, T::Union{Integer, AbstractVector{<:Integer}})
+    return @view(f.id[T])
 end
 
 """

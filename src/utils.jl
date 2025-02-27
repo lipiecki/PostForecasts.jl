@@ -30,7 +30,7 @@ Return `true` if `window` matches the specification of model `m`, otherwise retu
 matchwindow(::PostModel, ::Integer) = true
 
 """
-    checkmatch(fs:; checkpred::Bool=false)
+    checkmatch(fs::AbstractVector{T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
 Check if Forecasts in `fs` correspond to the same timeseries, i.e.:
 - all their `id`entifiers match
 - all their `obs`ervations match.
@@ -38,6 +38,8 @@ Check if Forecasts in `fs` correspond to the same timeseries, i.e.:
 Additionally, provided that `checkpred=true`, check if:
 - their number of forecasts match
 - their `prob`abilities match.
+
+The function `checkmatch` can be called with `fs` as a vector of `PointForecasts` or `QuantForecasts` objects, or by passing multiple objects as consecutive arguments, e.g. `checkmatch(f1, f2, f3)` is equivalent to `checkmatch([f1, f2, f3])`.
 
 Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
 """
