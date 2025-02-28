@@ -27,7 +27,7 @@ loaddata(dataset::AbstractString) = loaddata(Symbol(dataset))
 Create a `PointForecasts` object from delimited file at `filepath`.
 ## Keyword Arguments
 - `delim=','`: Specifies the delimitter
-- `obscol=1: Specifies which column is used for observations
+- `obscol=1`: Specifies which column is used for observations
 - `predcol=nothing`: Specifies which columns are used for pred (omit to use all remaining columns)
 - `idcol=nothing`: Specifies which column is used for timestamps (omit to generate timestamps automatically)
 - `colnames=false` If true, omit the first row of the file.
