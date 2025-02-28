@@ -53,7 +53,7 @@ end
 
 """
    getquantprob(m::QR)
-Return a vector of probabilities corresponding to the quantiles from model `m`.
+Return a copy of the vector of probabilities corresponding to the quantiles from model `m`.
 """
 function getquantprob(m::QR)
     return copy(m.prob)

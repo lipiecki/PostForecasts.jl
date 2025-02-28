@@ -63,7 +63,7 @@ end
 
 function _predict!(m::CP, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Nothing
     for j in eachindex(output)
-        output[j] = _predict(m, input[1], prob[j])
+        output[j] = _predict(m, input[begin], prob[j])
     end
     return nothing
 end

@@ -1,70 +1,70 @@
 """
-    predict(m, input, prob)
-Predict quantiles at specified `prob`ability with model `m::PostModel{F}` conditional on `input`.
+    predict(m, input, quantiles)
+Predict the specified `quantiles` of the predictive distribution from model `m::PostModel{F}` conditional on `input`.
 
 ## Argument types 
 - `input` can be of type `Number` or `AbstractVector{<:Number}`
-- `prob` can be of type `AbstractFloat` (to return `F`) or `AbstractVector{<:AbstractFloat}` (to return `Vector{F}`)
+- `quantiles` can be of type `AbstractFloat` (to return a single prediction) or `AbstractVector{<:AbstractFloat}` (to return a vector of predictions)
 
 ## Note
-For `m::QR`, `prob` argument can be ommited in the function call to return all quantiles specified in model `m`.
+For `m::QR`, the `quantiles` argument can be ommited in the function call to return all quantiles specified in model `m`.
 """
-function predict(m::UniPostModel{F}, input::Number, prob::AbstractFloat)::F where {F<:AbstractFloat}
-    Base.require_one_based_indexing(prob)
-    (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
-    _predict(m, input, prob)
+function predict(m::UniPostModel{F}, input::Number, quantiles::AbstractFloat)::F where {F<:AbstractFloat}
+    Base.require_one_based_indexing(quantiles)
+    (quantiles > 0.0 && quantiles < 1.0) || throw(ArgumentError("`quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input, quantiles)
 end
 
-function predict(m::UniPostModel{F}, input::Number, prob::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
-    Base.require_one_based_indexing(prob)
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict(m, input, prob)
+function predict(m::UniPostModel{F}, input::Number, quantiles::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
+    Base.require_one_based_indexing(quantiles)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input, quantiles)
 end
 
-function predict(m::UniPostModel{F}, input::AbstractVector{<:Number}, prob::AbstractFloat)::F where {F<:AbstractFloat}
+function predict(m::UniPostModel{F}, input::AbstractVector{<:Number}, quantiles::AbstractFloat)::F where {F<:AbstractFloat}
     Base.require_one_based_indexing(input)
     length(input) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(length(input)) were provided"))
-    (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
-    _predict(m, input[1], prob)
+    (quantiles > 0.0 && quantiles < 1.0) || throw(ArgumentError("`quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input[1], quantiles)
 end
 
-function predict(m::UniPostModel{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
-    Base.require_one_based_indexing(input, prob)
+function predict(m::UniPostModel{F}, input::AbstractVector{<:Number}, quantiles::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
+    Base.require_one_based_indexing(input, quantiles)
     length(input) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(length(input)) were provided"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict(m, input[1], prob)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input[1], quantiles)
 end
 
-function predict(m::MultiPostModel{F}, input::AbstractVector{<:Number}, prob::AbstractFloat)::F where {F<:AbstractFloat}
+function predict(m::MultiPostModel{F}, input::AbstractVector{<:Number}, quantiles::AbstractFloat)::F where {F<:AbstractFloat}
     Base.require_one_based_indexing(input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
-    (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
-    _predict(m, input, prob)
+    (quantiles > 0.0 && quantiles < 1.0) || throw(ArgumentError("`quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input, quantiles)
 end
 
-function predict(m::MultiPostModel{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
-    Base.require_one_based_indexing(input, prob)
+function predict(m::MultiPostModel{F}, input::AbstractVector{<:Number}, quantiles::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
+    Base.require_one_based_indexing(input, quantiles)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict(m, input, prob)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, input, quantiles)
 end
 
-function predict(m::MultiPostModel{F}, input::Number, prob::AbstractFloat)::F where {F<:AbstractFloat}
+function predict(m::MultiPostModel{F}, input::Number, quantiles::AbstractFloat)::F where {F<:AbstractFloat}
     Base.require_one_based_indexing(input)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
-    (prob > 0.0 && prob < 1.0) || throw(ArgumentError("`prob` must belong to an open (0, 1) interval"))
-    _predict(m, [input], prob)
+    (quantiles > 0.0 && quantiles < 1.0) || throw(ArgumentError("`quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, [input], quantiles)
 end
 
-function predict(m::MultiPostModel{F}, input::Number, prob::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
-    Base.require_one_based_indexing(input, prob)
+function predict(m::MultiPostModel{F}, input::Number, quantiles::AbstractVector{<:AbstractFloat})::Vector{F} where {F<:AbstractFloat}
+    Base.require_one_based_indexing(input, quantiles)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict(m, [input], prob)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict(m, [input], quantiles)
 end
 
 function predict(m::QR{F}, input::AbstractVector{<:Number})::Vector{F} where {F<:AbstractFloat}
@@ -79,62 +79,62 @@ function predict(m::QR{F}, input::Number)::Vector{F} where {F<:AbstractFloat}
 end
 
 """
-    predict!(m, output, input, prob)
+    predict!(m, output, input, quantiles)
 In-place version of `predict` that stores the results in the `output::AbstractVector{<:AbstractFloat}` vector.
 
 ## Argument types 
 - `input` can be of type `Number` or `AbstractVector{<:Number}`
-- `prob` needs to be of type `AbstractVector{<:AbstractFloat}`
+- `quantiles` needs to be of type `AbstractVector{<:AbstractFloat}`
 
 ## Note
-For `m::QR`, `prob` argument will be ignored and can be ommited in the function call.
+For `m::QR`, `quantiles` argument will be ignored and can be ommited in the function call.
 """
-function predict!(m::UniPostModel, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})::Nothing
-    Base.require_one_based_indexing(output, prob)
-    length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict!(m, output, input, prob)
+function predict!(m::UniPostModel, output::AbstractVector{<:AbstractFloat}, input::Number, quantiles::AbstractVector{<:AbstractFloat})::Nothing
+    Base.require_one_based_indexing(output, quantiles)
+    length(output) == length(quantiles) || throw(ArgumentError("length of `quantiles` ($(length(output))) does not match the length of `output` ($(length(output)))"))
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict!(m, output, input, quantiles)
 end
 
-function predict!(m::UniPostModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Nothing
-    Base.require_one_based_indexing(output, input, prob)
-    length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
+function predict!(m::UniPostModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, quantiles::AbstractVector{<:AbstractFloat})::Nothing
+    Base.require_one_based_indexing(output, input, quantiles)
+    length(output) == length(quantiles) || throw(ArgumentError("length of `quantiles` ($(length(output))) does not match the length of `output` ($(length(output)))"))
     length(input) == 1 || throw(ArgumentError("model `m` requires a single regressor, but $(length(input)) were provided"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict!(m, output, input, prob)
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict!(m, output, input, quantiles)
 end
 
-function predict!(m::MultiPostModel, output::AbstractVector{<:AbstractFloat}, input::Number, prob::AbstractVector{<:AbstractFloat})::Nothing
-    Base.require_one_based_indexing(output, prob)
+function predict!(m::MultiPostModel, output::AbstractVector{<:AbstractFloat}, input::Number, quantiles::AbstractVector{<:AbstractFloat})::Nothing
+    Base.require_one_based_indexing(output, quantiles)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
-    length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict!(m, output, [input], prob)
+    length(output) == length(quantiles) || throw(ArgumentError("length of `quantiles` ($(length(output))) does not match the length of `output` ($(length(output)))"))
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict!(m, output, [input], quantiles)
 end
 
-function predict!(m::MultiPostModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Nothing
-    Base.require_one_based_indexing(output, prob)
+function predict!(m::MultiPostModel, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, quantiles::AbstractVector{<:AbstractFloat})::Nothing
+    Base.require_one_based_indexing(output, quantiles)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
-    length(output) == length(prob) || throw(ArgumentError("length of `prob` ($(length(output))) does not match the length of `output` ($(length(output)))"))
-    issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
-    (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
-    _predict!(m, output, input, prob)
+    length(output) == length(quantiles) || throw(ArgumentError("length of `quantiles` ($(length(output))) does not match the length of `output` ($(length(output)))"))
+    issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
+    (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
+    _predict!(m, output, input, quantiles)
 end
 
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})::Nothing
     Base.require_one_based_indexing(output, input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
-    length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output))) does not match the model specification ($(nquant(m)))"))
+    length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output))) does not match the model specification ($(length(m.prob)))"))
     _predict!(m, output, input)
 end
 
 function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)::Nothing
     Base.require_one_based_indexing(output)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
-    length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output)) does not match the model specification ($(nquant(m)))"))
+    length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output)) does not match the model specification ($(length(m.prob)))"))
     _predict!(m, output, [input])
 end
 
