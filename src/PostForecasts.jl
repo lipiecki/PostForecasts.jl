@@ -20,12 +20,13 @@ using HiGHS
 using JuMP
 using LinearAlgebra
 using SpecialFunctions: erfinv
-using Statistics: mean, median, quantile
+using Statistics: mean, median, quantile, std
 
 include(joinpath("models", "cp.jl"))
 include(joinpath("models", "idr.jl"))
 include(joinpath("models", "normal.jl"))
 include(joinpath("models", "qr.jl"))
+include(joinpath("models", "lassoqr.jl"))
 include("Forecasts.jl")
 include("helpers.jl")
 include("utils.jl")
@@ -93,6 +94,7 @@ export
     # Quantile Regression
     QR,
     iQR,
+    LassoQR,
     getweights,
     getquantprob,
 

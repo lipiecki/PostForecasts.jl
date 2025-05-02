@@ -74,6 +74,8 @@ function _train(m::QR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number
     for (p, α) in enumerate(m.prob)
         empty!(m.lpmodel)  
         fill!(H, 0.0)
+        fill!(h, 0.0)
+        
         for i in 1:n
             H[i, d] = 1.0
             H[i, d+i] = 1.0
@@ -83,9 +85,8 @@ function _train(m::QR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number
             end
         end
         
-        h[1:d] .= 0.0
         h[d+1:d+n] .= α
-        h[d+n+1:end] .= 1.0 - α
+        h[d+n+1:d+2n] .= 1.0 - α
     
         @variable(m.lpmodel, x[i=axes(H, 2)] >= m.bounds[i])
         @objective(m.lpmodel, Min, sum(h[i]*x[i] for i in axes(H, 2)))
