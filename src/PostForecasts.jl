@@ -92,6 +92,7 @@ export
     
     # Quantile Regression
     QR,
+    iQR,
     getweights,
     getquantprob,
 
