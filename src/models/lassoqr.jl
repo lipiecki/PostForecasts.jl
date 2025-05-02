@@ -4,7 +4,7 @@ Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso quantile
 
 If `lambda` is a vector, the optimal regularization strength will be selected using the Bayesian Information Criterion (BIC) during every training, separately for each quantile.
 
-By default, `lambda` is a grid of 20 values ranging from 0.01 to 10 in logarithmic scale. The inputs and outputs of the model are standardized with a z-score transformation during training.
+By default, `lambda` is a grid of 20 values ranging from 0.01 to 10 in logarithmic scale.
 """
 struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
@@ -98,12 +98,12 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
             @objective(m.lpmodel, Min, sum(h[i]*x[i] for i in axes(H, 2)))
             @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
             JuMP.optimize!(m.lpmodel)
-            current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*sum(JuMP.value(x[i]) .> eps(F) for i in 1:2d)*log(n)/(2n)
+            current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*sum(JuMP.value(x[i]) > eps(F) for i in 1:2d)*log(n)/(2n)
             if current_bic < bic
                 bic = current_bic
                 for i in 1:d
                     m.W[i, p] = JuMP.value(x[i] - x[d+i])
-                end 
+                end
             end
         end
     end
