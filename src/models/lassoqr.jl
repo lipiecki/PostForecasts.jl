@@ -97,7 +97,7 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
         
             @variable(m.lpmodel, x[axes(H, 2)] >= 0)
             @objective(m.lpmodel, Min, sum(h.*x))
-            @constraint(m.lpmodel, H*x == (Y.-m.zmean[end])./m.zstd[end])
+            @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
             JuMP.optimize!(m.lpmodel)
             current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*sum(JuMP.value(x[i]) > eps(F) for i in 1:2d)*log(n)/(2n)
             if current_bic < bic

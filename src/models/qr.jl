@@ -90,7 +90,7 @@ function _train(m::QR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number
     
         @variable(m.lpmodel, x[i=axes(H, 2)] >= m.bounds[i])
         @objective(m.lpmodel, Min, sum(h.*x))
-        @constraint(m.lpmodel, H*x == Y)
+        @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == Y[j])
         JuMP.optimize!(m.lpmodel)
         for i in 1:d
             m.W[i, p] = JuMP.value(x[i])
