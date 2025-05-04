@@ -20,7 +20,7 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     zmean::Vector{F}
     zstd::Vector{F}
 
-    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::AbstractVector{<:AbstractFloat}=10.0.^range(-2, 1, 20)) where {F<:AbstractFloat}
+    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::AbstractVector{<:AbstractFloat}=LAMBDA) where {F<:AbstractFloat}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
@@ -43,6 +43,13 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     LassoQR(::Type{F}, n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}, lambda::AbstractFloat) where {F<:AbstractFloat} = LassoQR(F, n, r, prob, [lambda])
 
     LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}) = LassoQR(Float64, n, r, prob)
+end
+
+function set_lambda(lambda::AbstractVector{<:AbstractFloat})
+    empty!(LAMBDA)
+    for λ in lambda
+        push!(LAMBDA, λ)
+    end
 end
 
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])

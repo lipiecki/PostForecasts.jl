@@ -11,6 +11,7 @@ const PANGU_T2M = Dict(Symbol("pangu$(H)t2m") => ("pangu_lead$(H).csv", 4, 9) fo
 const PANGU_T850 = Dict(Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)
 const PANGU_Z500 = Dict(Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)
 const PANGU = Dict(PANGU_U10..., PANGU_V10..., PANGU_T2M..., PANGU_T850..., PANGU_Z500...)
+const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
 
 import Base: getindex, firstindex, lastindex, eachindex, length, show
 using Combinatorics: combinations
@@ -97,6 +98,7 @@ export
     LassoQR,
     getweights,
     getquantprob,
+    set_lambda,
 
     # Postprocessing
     point2quant,
