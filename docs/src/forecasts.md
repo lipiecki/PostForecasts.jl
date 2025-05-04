@@ -38,6 +38,7 @@ firstweek2 = pf(20190101, 20190107) # same as `firstweek`
 ## Methods
 ```@docs
 findindex
+couple
 decouple
 npred
 setpred

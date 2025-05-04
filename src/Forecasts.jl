@@ -161,6 +161,17 @@ function (f::Forecasts)(I::AbstractVector{<:Integer})
 end
 
 """
+    couple(pfs::Vector{PointForecasts}) 
+Merge elements of `pfs` into a single `PointForecasts` object.
+"""
+function couple(pfs::AbstractVector{<:PointForecasts})
+    checkmatch(pfs)
+    PointForecasts(
+        hcat(getpred.(pfs)...),
+        getobs(pfs[begin]),
+        getid(pfs[begin]))
+end
+"""
     decouple(pf::PointForecasts) 
 Return `::Vector{PointForecasts}`, where each element contains an individual forecast series from `pf`.
 """

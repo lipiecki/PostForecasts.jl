@@ -51,6 +51,7 @@ export
     lastindex,
     eachindex,
     findindex,
+    couple,
     decouple,
     npred,
     setpred,
