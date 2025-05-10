@@ -45,12 +45,14 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}) = LassoQR(Float64, n, r, prob)
 end
 
-function set_lambda(lambda::AbstractVector{<:AbstractFloat})
+function setlambda(lambda::AbstractVector{<:AbstractFloat})
     empty!(LAMBDA)
     for λ in lambda
         push!(LAMBDA, λ)
     end
 end
+
+getlambda() = copy(LAMBDA)
 
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])
 
@@ -129,6 +131,7 @@ function _predict(m::LassoQR{F}, input::AbstractVector{<:Number}, prob::Abstract
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
     end
+    sort!(output)
     return output
 end
 

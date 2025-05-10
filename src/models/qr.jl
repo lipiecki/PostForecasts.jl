@@ -56,7 +56,7 @@ function getweights(m::QR)
 end
 
 """
-   getquantprob(m::QR)
+    getquantprob(m::QR)
 Return a copy of the vector of probabilities corresponding to the quantiles from model `m`.
 """
 function getquantprob(m::QR)
@@ -110,6 +110,7 @@ function _predict(m::QR{F}, input::AbstractVector{<:Number}, prob::AbstractVecto
     for j in eachindex(output)
         output[j] = _predict(m, input, prob[j])
     end
+    sort!(output)
     return output
 end
 

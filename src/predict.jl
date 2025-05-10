@@ -7,7 +7,7 @@ Predict the specified `quantiles` of the predictive distribution from model `m::
 - `quantiles` can be of type `AbstractFloat` (to return a single prediction) or `AbstractVector{<:AbstractFloat}` (to return a vector of predictions)
 
 ## Note
-For `m::QR`, the `quantiles` argument can be ommited in the function call to return all quantiles specified in model `m`.
+For `m::QR`, omitting `quantiles` argument defaults to using all levels specified in model `m`, which is recommended. Calling `predict(m::QR, input, quantiles)` will first match each quantile to the levels specified in `m`, leading to worse performance. The quantile predictions from `QR` are sorted to avoid crossing (sorting only includes the levels for which `predict` was called).
 """
 function predict(m::UniPostModel{F}, input::Number, quantiles::AbstractFloat)::F where {F<:AbstractFloat}
     Base.require_one_based_indexing(quantiles)
@@ -87,7 +87,7 @@ In-place version of `predict` that stores the results in the `output::AbstractVe
 - `quantiles` needs to be of type `AbstractVector{<:AbstractFloat}`
 
 ## Note
-For `m::QR`, `quantiles` argument will be ignored and can be ommited in the function call.
+For `m::QR`, `quantiles` argument is **ignored** and can be ommited in the function call. The quantile predictions from `QR` are automatically sorted to avoid crossing.
 """
 function predict!(m::UniPostModel, output::AbstractVector{<:AbstractFloat}, input::Number, quantiles::AbstractVector{<:AbstractFloat})::Nothing
     Base.require_one_based_indexing(output, quantiles)
