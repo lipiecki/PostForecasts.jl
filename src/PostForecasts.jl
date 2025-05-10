@@ -99,7 +99,8 @@ export
     LassoQR,
     getweights,
     getquantprob,
-    set_lambda,
+    setlambda,
+    getlambda,
 
     # Postprocessing
     point2quant,
