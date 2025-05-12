@@ -4,13 +4,15 @@ abstract type PostModel{F<:AbstractFloat} end
 abstract type UniPostModel{F<:AbstractFloat} <: PostModel{F} end
 abstract type MultiPostModel{F<:AbstractFloat} <: PostModel{F} end
 
+# constants for dataset handling
 const EPEX = Dict(Symbol("epex$(H)") => "epex_hour$(H).csv" for H in 1:24)
-const PANGU_U10 = Dict(Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H in 0:6:186)
-const PANGU_V10 = Dict(Symbol("pangu$(H)v10") => ("pangu_lead$(H).csv", 3, 8) for H in 0:6:186)
-const PANGU_T2M = Dict(Symbol("pangu$(H)t2m") => ("pangu_lead$(H).csv", 4, 9) for H in 0:6:186)
-const PANGU_T850 = Dict(Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)
-const PANGU_Z500 = Dict(Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)
-const PANGU = Dict(PANGU_U10..., PANGU_V10..., PANGU_T2M..., PANGU_T850..., PANGU_Z500...)
+const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H in 0:6:186)...,
+    (Symbol("pangu$(H)v10") => ("pangu_lead$(H).csv", 3, 8) for H in 0:6:186)...,
+    (Symbol("pangu$(H)t2m") => ("pangu_lead$(H).csv", 4, 9) for H in 0:6:186)...,
+    (Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)...,
+    (Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)...)
+
+# constant for lasso quantile regression
 const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
 
 import Base: getindex, firstindex, lastindex, eachindex, length, show
@@ -43,7 +45,7 @@ export
     # Forecasts API
     PointForecasts,
     QuantForecasts,
-    Forecasts, 
+    Forecasts,
     show,
     length,
     getindex,
@@ -92,7 +94,7 @@ export
     Normal,
     getmean,
     getstd,
-    
+
     # Quantile Regression
     QR,
     iQR,
