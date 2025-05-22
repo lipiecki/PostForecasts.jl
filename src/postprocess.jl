@@ -77,7 +77,7 @@ function conformalize(qf::QuantForecasts{F, I}; window::Integer, start::Union{No
     for t in first:last
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
-            pred[t-first+1, i] = _predict(model, getpred(qf, t, i), 1-getprob(qf, i))
+            pred[t-first+1, i] = _predict(model, getpred(qf, t, i), getprob(qf, i))
         end
     end
     sort!(pred, dims = 2)
@@ -101,7 +101,7 @@ function conformalize!(qf::QuantForecasts{F, I}; window::Integer, start::Union{N
     for t in last:-1:first
         for i in 1:npred(qf)
             train(model, viewpred(qf, t-window:t-1, i), viewobs(qf, t-window:t-1))
-            setpred(qf, t, i, _predict(model, getpred(qf, t, i), 1-getprob(qf, i)))
+            setpred(qf, t, i, _predict(model, getpred(qf, t, i), getprob(qf, i)))
         end
         sort!(viewpred(qf, t))
     end
