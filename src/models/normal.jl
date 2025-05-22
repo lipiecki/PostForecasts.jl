@@ -38,7 +38,7 @@ function _train(m::Normal, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Nu
         m.μ[] = 0
         m.σ[] = sqrt(sum(abs2, Y .- @view(X[:]))/n)
     else
-        m.μ[] = sum(Y)/n - sum(@view(X[:]))/n
+        m.μ[] = sum(Y)/n - sum(X)/n
         m.σ[] = sqrt(sum(abs2, Y .- @view(X[:]) .- m.μ)/(n - 1))
     end
     return nothing
