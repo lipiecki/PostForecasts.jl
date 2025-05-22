@@ -201,6 +201,8 @@ plot_quantile!(plt, qfbuy, 5, color=3)
 plot_obs!(plt, qfsell, color=1, label="Sell price")
 plot_obs!(plt, qfbuy, color=3, label="Buy price")
 ```
+![image](images/trading.png)
+
 Clearly, on the third day the upper quantiles of prices for 3am significantly overlap the lower quantiles of prices for 7pm. This indicates that the buy price is quite likely to be higher than the sell price, so the trading strategy carries substantial risk. Indeed, the actual price at 7pm ($\rightarrow$ red dot) was lower than at 3am ($\rightarrow$ green dot) for that day, so trading would lead to incurring a loss. 
 
 This short example showcases how probabilistic forecasts can aid decision making with richer information about possible outcomes. To read about the strategies for battery-based trading on electricity markets and their economic evaluation, see the contributions of [Nitka and Weron (2023)](https://doi.org/10.48550/arXiv.2308.15443) and [Maciejowska et al. (2023)](https://doi.org/10.48550/arXiv.2303.08565).
