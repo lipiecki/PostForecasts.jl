@@ -80,7 +80,7 @@ function conformalize(qf::QuantForecasts{F, I}; window::Integer, start::Union{No
             pred[t-first+1, i] = _predict(model, getpred(qf, t, i), getprob(qf, i))
         end
     end
-    sort!(pred, dims = 2)
+    sort!(pred, dims=2)
     return QuantForecasts(
         pred,
         getobs(qf, first:last),
