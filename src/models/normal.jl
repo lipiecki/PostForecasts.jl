@@ -35,11 +35,11 @@ end
 function _train(m::Normal, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number})::Nothing
     n = length(Y)
     if m.zeromean
-        m.μ[] = 0.0
-        m.σ[] = sqrt(sum(abs2, Y - X)/n)
+        m.μ[] = 0
+        m.σ[] = sqrt(sum(abs2, Y .- @view(X[:]))/n)
     else
-        m.μ[] = mean(Y) - mean(X)
-        m.σ[] = sqrt(sum(abs2, Y - X .- getmean(m))/(n - 1))
+        m.μ[] = sum(Y)/n - sum(@view(X[:]))/n
+        m.σ[] = sqrt(sum(abs2, Y .- @view(X[:]) .- m.μ)/(n - 1))
     end
     return nothing
 end

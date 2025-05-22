@@ -23,7 +23,7 @@ using HiGHS
 using JuMP
 using LinearAlgebra
 using SpecialFunctions: erfinv
-using Statistics: mean, median, quantile, std
+using Statistics: mean, median, quantile
 
 include(joinpath("models", "cp.jl"))
 include(joinpath("models", "idr.jl"))
