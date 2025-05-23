@@ -41,7 +41,7 @@ Additionally, provided that `checkpred=true`, check if:
 
 The function `checkmatch` can also be called by passing `PointForecasts` or `QuantForecasts` objects as consecutive arguments, e.g. `checkmatch(f1, f2, f3)` is equivalent to `checkmatch([f1, f2, f3])`.
 
-Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
+Return `true` or throw an `ArgumentError` if any of the requirements above is not met.
 """
 function checkmatch(fs::AbstractVector{<:T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
     first, state = iterate(fs, firstindex(fs))
@@ -60,10 +60,12 @@ function checkmatch(fs::AbstractVector{<:T}; checkpred::Bool=false) where T<:Uni
         all(first.id .≈ next.id) || throw(ArgumentError("Forecasts objects have incompatible `id`entifiers"))
         nextstatepair = iterate(fs, state)
     end
+    return true
 end
 
 function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
     v = Vector{T}(undef, N)
     v .= fs
     checkmatch(v; checkpred=checkpred)
+    return true
 end
