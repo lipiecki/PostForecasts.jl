@@ -29,7 +29,7 @@
         viewobs(pf(id[1], id[10])) ≈ @view(obs[1:10]) &&
         viewobs(pf[I]) ≈ @view(obs[I])
 
-    @test couple(decouple(pf)) ≈ pf && couple(decouple(qf)) ≈ qf
+    @test checkmatch(couple(decouple(pf)), pf, checkpred=true) && checkmatch(couple(decouple(qf)), qf, checkpred=true)
     
     io = IOBuffer()
     show(io, pf)
