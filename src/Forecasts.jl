@@ -161,22 +161,36 @@ function (f::Forecasts)(I::AbstractVector{<:Integer})
 end
 
 """
-    couple(pfs::Vector{PointForecasts}) 
-Merge elements of `pfs` into a single `PointForecasts` object.
+    couple(fs::Vector{T}) where T<:Union{PointForecasts, QuantForecasts}
+Merge elements of `fs` into a single `Forecasts` object.
 """
-function couple(pfs::AbstractVector{PointForecasts})
-    checkmatch(pfs)
+function couple(fs::AbstractVector{PointForecasts})
+    checkmatch(fs)
     PointForecasts(
-        hcat(getpred.(pfs)...),
-        getobs(pfs[begin]),
-        getid(pfs[begin]))
+        hcat(getpred.(fs)...),
+        getobs(fs[begin]),
+        getid(fs[begin]))
 end
+
+function couple(fs::AbstractVector{QuantForecasts})
+    checkmatch(fs)
+    PointForecasts(
+        hcat(getpred.(fs)...),
+        getobs(fs[begin]),
+        getid(fs[begin]),
+        hcat(getprob.(fs)...))
+end
+
 """
-    decouple(pf::PointForecasts) 
-Return `::Vector{PointForecasts}`, where each element contains an individual forecast series from `pf`.
+    decouple(f:<Forecasts})
+Return a vector of `PointForecasts` or `QuantForecasts` objects, where each element contains an individual forecast series from `f`.
 """
-function decouple(pf::PointForecasts) 
-    return [PointForecasts(@view(pf.pred[:, i]), pf.obs, pf.id) for i in 1:npred(pf)]
+function decouple(f::PointForecasts) 
+    return [PointForecasts(@view(f.pred[:, i]), f.obs, f.id) for i in 1:npred(f)]
+end
+
+function decouple(f::QuantForecasts) 
+    return [PointForecasts(@view(f.pred[:, i]), f.obs, f.id, f.prob[i]) for i in 1:npred(f)]
 end
 
 """

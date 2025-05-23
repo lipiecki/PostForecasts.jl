@@ -179,14 +179,11 @@ pfsell = loaddata(Symbol(:epex, 20))    # point forecasts for 7pm
 qfbuy = point2quant(pfbuy, method=:idr, window=182, quantiles=9, start=20230408, stop=20230421)
 qfsell = point2quant(pfsell, method=:idr, window=182, quantiles=9, start=20230408, stop=20230421)
 ```
-From the decile forecasts we can construct four prediction intervals (PI) centered around the median, i.e., the 5th decile, with confidence levels of 20%, 40%, 60% and 80%. For example, the 20%-PI is obtained by taking the 4th and the 6th deciles, while the 80%-PI by taking the 1st and the 9th. To visualize the results, we can plot the median price forecasts, the PIs and the observed prices at 3am and 7pm (helper functions for plotting are available in `examples/trading.jl`):
+From the decile forecasts we can construct four prediction intervals (PI) centered around the median, i.e., the 5th decile, with confidence levels of 20%, 40%, 60% and 80%. For example, the 20%-PI is obtained by taking the 4th and the 6th deciles, while the 80%-PI by taking the 1st and the 9th. To visualize the results, we can plot the median price forecasts, the PIs and the observed prices at 3am and 7pm (helper functions for plotting are available in `src/examples/plotting.jl`):
 ```julia
-using Plots
-"""
-    plot_obs!(...
-    plot_quantile!(...
-    plot_intervals!(...
-"""
+# load plot_obs!, plot_quantile! and plot_intervals!
+include(joinpath("src", "examples", "plotting.jl"))
+
 pfbuy = loaddata(Symbol(:epex, 4))      # point forecasts for 3am
 pfsell = loaddata(Symbol(:epex, 20))    # point forecasts for 7pm
 
