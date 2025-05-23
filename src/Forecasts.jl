@@ -161,10 +161,10 @@ function (f::Forecasts)(I::AbstractVector{<:Integer})
 end
 
 """
-    couple(fs::Vector{T}) where T<:Union{PointForecasts, QuantForecasts}
+    couple(fs::AbstractVector{<:T}) where T<:Union{PointForecasts, QuantForecasts}
 Merge elements of `fs` into a single `Forecasts` object.
 """
-function couple(fs::AbstractVector{PointForecasts})
+function couple(fs::AbstractVector{<:PointForecasts})
     checkmatch(fs)
     PointForecasts(
         hcat(getpred.(fs)...),
@@ -172,7 +172,7 @@ function couple(fs::AbstractVector{PointForecasts})
         getid(fs[begin]))
 end
 
-function couple(fs::AbstractVector{QuantForecasts})
+function couple(fs::AbstractVector{<:QuantForecasts})
     checkmatch(fs)
     PointForecasts(
         hcat(getpred.(fs)...),

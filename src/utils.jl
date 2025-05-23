@@ -30,7 +30,7 @@ Return `true` if `window` matches the specification of model `m`, otherwise retu
 matchwindow(::PostModel, ::Integer) = true
 
 """
-    checkmatch(fs::AbstractVector{T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
+    checkmatch(fs::AbstractVector{<:T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
 Check if Forecasts in `fs` correspond to the same timeseries, i.e.:
 - all their `id`entifiers match
 - all their `obs`ervations match.
@@ -43,7 +43,7 @@ The function `checkmatch` can also be called by passing `PointForecasts` or `Qua
 
 Return nothing or throw an `ArgumentError` if any of the requirements above is not met.
 """
-function checkmatch(fs::AbstractVector{T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
+function checkmatch(fs::AbstractVector{<:T}; checkpred::Bool=false) where T<:Union{PointForecasts, QuantForecasts}
     first, state = iterate(fs, firstindex(fs))
     nextstatepair = iterate(fs, state)
     while !isnothing(nextstatepair)
@@ -62,7 +62,7 @@ function checkmatch(fs::AbstractVector{T}; checkpred::Bool=false) where T<:Union
     end
 end
 
-function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
+function checkmatch(fs::Vararg{<:T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
     v = Vector{T}(undef, N)
     v .= fs
     checkmatch(v; checkpred=checkpred)

@@ -4,7 +4,7 @@ Average the pool of point pred from `pf`. Return `PointForecasts` containing ave
 
 ## Methods
 - `average(pf::PointForecasts)` to average the pool of forecasts in `pf`
-- `average(pfs::AbstractVector{PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pfs`
+- `average(pfs::AbstractVector{<:PointForecasts}` to average all individual forecasts from every `PointForecasts` in `pfs`
 - calling with multiple `PointForecasts` objects as consecutive arguments, e.g. `average(pf1, pf2, pf3)`, is equivalent to `average([pf1, pf2, pf3])`
 """
 function average(pf::PointForecasts; agg::Symbol=:mean)
@@ -22,7 +22,7 @@ function average(pf::PointForecasts; agg::Symbol=:mean)
         getid(pf))
 end
 
-function average(pfs::AbstractVector{PointForecasts}; agg::Symbol=:mean)
+function average(pfs::AbstractVector{<:PointForecasts}; agg::Symbol=:mean)
     checkmatch(pfs)
     m = sum(npred.(pfs)) 
     m > 1 || return pfs[begin]
@@ -44,14 +44,14 @@ function average(pfs::AbstractVector{PointForecasts}; agg::Symbol=:mean)
         getid(pfs[begin]))
 end
 
-function average(pfs::Vararg{PointForecasts, N}; agg::Symbol=:mean) where N
+function average(pfs::Vararg{<:PointForecasts, N}; agg::Symbol=:mean) where N
     v = Vector{PointForecasts}(undef, N)
     v .= pfs
     average(v; agg=agg)
 end
 
 """
-    paverage(qfs::AbstractVector{QuantForecasts}[; quantiles])
+    paverage(qfs::AbstractVector{<:QuantForecasts}[; quantiles])
 Average probabilistic predictions from `qfs` by averaging the distributions across probability.
 
 Return `QuantForecasts` containing predictions of specified `quantiles`:
@@ -63,15 +63,15 @@ The function `paverage` can also be called by passing `QuantForecasts` objects a
 
 If `quantiles` argument is not provided, the function will default to the quantiles of the first `QuantForecasts` in `qfs`.
 """
-paverage(qfs::AbstractVector{QuantForecasts}; quantiles=getprob(first(qfs))) = paverage(qfs, quantiles)
+paverage(qfs::AbstractVector{<:QuantForecasts}; quantiles=getprob(first(qfs))) = paverage(qfs, quantiles)
 
-function paverage(qfs::Vararg{QuantForecasts, N}; quantiles) where N
+function paverage(qfs::Vararg{<:QuantForecasts, N}; quantiles) where N
     v = Vector{QuantForecasts}(undef, N)
     v .= qfs
     paverage(v, quantiles) 
 end
 
-function paverage(qfs::AbstractVector{QuantForecasts}, quantiles::AbstractVector{<:AbstractFloat})
+function paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractVector{<:AbstractFloat})
     checkmatch(qfs)
     issorted(quantiles) || throw(ArgumentError("`quantiles` vector has to be sorted"))
     (quantiles[begin] > 0.0 && quantiles[end] < 1.0) || throw(ArgumentError("elements of `quantiles` must belong to an open (0, 1) interval"))
@@ -112,19 +112,19 @@ function paverage(qfs::AbstractVector{QuantForecasts}, quantiles::AbstractVector
         Val(false))
 end
 
-paverage(qfs::AbstractVector{QuantForecasts}, quantiles::AbstractFloat) = paverage(qfs, [quantiles])
+paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractFloat) = paverage(qfs, [quantiles])
 
-paverage(qfs::AbstractVector{QuantForecasts}, quantiles::Integer) = paverage(qfs, equidistant(quantiles))
+paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::Integer) = paverage(qfs, equidistant(quantiles))
 
 """
-    qaverage(qfs::AbstractVector{QuantForecasts})
+    qaverage(qfs::AbstractVector{<:QuantForecasts})
 Average probabilistic predictions from `qfs` by averaging the quantiles.
 
 The function `qaverage` can also be called by passing `QuantForecasts` objects as consecutive arguments, e.g. `qaverage(qf1, qf2, qf3)` is equivalent to `qaverage([qf1, qf2, qf3])`.
 
 Return `QuantForecasts` containing quantile predictions at the same quantile levels as `QuantForecasts` in `qfs`.
 """
-function qaverage(qfs::AbstractVector{QuantForecasts})
+function qaverage(qfs::AbstractVector{<:QuantForecasts})
     checkmatch(qfs; checkpred=true)
     pred = zeros(length(qfs[begin]), npred(qfs[begin]))
     for t in eachindex(qfs[begin])
@@ -143,7 +143,7 @@ function qaverage(qfs::AbstractVector{QuantForecasts})
         Val(false))
 end
 
-function qaverage(qfs::Vararg{QuantForecasts, N}) where N
+function qaverage(qfs::Vararg{<:QuantForecasts, N}) where N
     v = Vector{QuantForecasts}(undef, N)
     v .= qfs
     qaverage(v)
