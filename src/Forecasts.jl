@@ -174,7 +174,7 @@ end
 
 function couple(fs::AbstractVector{<:QuantForecasts})
     checkmatch(fs)
-    PointForecasts(
+    QuantForecasts(
         hcat(getpred.(fs)...),
         getobs(fs[begin]),
         getid(fs[begin]),
@@ -190,7 +190,7 @@ function decouple(f::PointForecasts)
 end
 
 function decouple(f::QuantForecasts) 
-    return [QuantForecasts(@view(f.pred[:, i]), f.obs, f.id, f.prob[[i]]) for i in 1:npred(f)]
+    return [QuantForecasts(@view(f.pred[:, i]), f.obs, f.id, f.prob[i]) for i in 1:npred(f)]
 end
 
 """
