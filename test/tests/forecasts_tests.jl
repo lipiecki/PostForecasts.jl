@@ -1,5 +1,5 @@
 @testset "Forecasts" begin
-    pred = rand(100, 2)
+    pred = sort(rand(100, 2), dims=2)
     obs = rand(100)
     id = Vector(5:5:500)
     pf = PointForecasts(pred, obs, id)
@@ -13,10 +13,10 @@
         viewprob(qf) ≈ getprob(qf)
 
     I = 1:11:100
-    @test viewpred(pf, I) ≈ @view(pred[I]) &&
+    @test viewpred(pf, I) ≈ @view(pred[I, :]) &&
         viewobs(qf, I) ≈ @view(obs[I]) &&
         viewid(pf, I) ≈ @view(id[I]) &&
-        viewprob(qf, 1) ≈ [0.5]
+        viewprob(qf, 1) ≈ [1/3]
           
     @test getpred(pf, 100) ≈ pf[end][:pred] &&
         getobs(qf, 100) ≈ qf[end][:obs] &&
@@ -34,5 +34,5 @@
     io = IOBuffer()
     show(io, pf)
     show(io, qf)
-    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\nQuantForecasts{Float64, Int64} with a pool of 1 forecast(s) at 100 timesteps, between 5 and 500\n"
+    @test String(take!(io)) == "PointForecasts{Float64, Int64} with a pool of 2 forecast(s) at 100 timesteps, between 5 and 500\nQuantForecasts{Float64, Int64} with a pool of 2 forecast(s) at 100 timesteps, between 5 and 500\n"
 end
