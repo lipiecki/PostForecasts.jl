@@ -1,7 +1,7 @@
 name = "PostForecasts"
 uuid = "b2f9963d-2794-4afd-bb03-e604c489c349"
 authors = ["lipiecki <arkadiusz.lipiecki@pwr.edu.pl>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
