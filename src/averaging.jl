@@ -44,7 +44,7 @@ function average(pfs::AbstractVector{<:PointForecasts}; agg::Symbol=:mean)
         getid(pfs[begin]))
 end
 
-function average(pfs::Vararg{<:PointForecasts, N}; agg::Symbol=:mean) where N
+function average(pfs::Vararg{PointForecasts, N}; agg::Symbol=:mean) where N
     v = Vector{PointForecasts}(undef, N)
     v .= pfs
     average(v; agg=agg)
@@ -65,7 +65,7 @@ If `quantiles` argument is not provided, the function will default to the quanti
 """
 paverage(qfs::AbstractVector{<:QuantForecasts}; quantiles=getprob(first(qfs))) = paverage(qfs, quantiles)
 
-function paverage(qfs::Vararg{<:QuantForecasts, N}; quantiles) where N
+function paverage(qfs::Vararg{QuantForecasts, N}; quantiles) where N
     v = Vector{QuantForecasts}(undef, N)
     v .= qfs
     paverage(v, quantiles) 
@@ -143,7 +143,7 @@ function qaverage(qfs::AbstractVector{<:QuantForecasts})
         Val(false))
 end
 
-function qaverage(qfs::Vararg{<:QuantForecasts, N}) where N
+function qaverage(qfs::Vararg{QuantForecasts, N}) where N
     v = Vector{QuantForecasts}(undef, N)
     v .= qfs
     qaverage(v)

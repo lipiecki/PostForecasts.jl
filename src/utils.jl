@@ -62,7 +62,7 @@ function checkmatch(fs::AbstractVector{<:T}; checkpred::Bool=false) where T<:Uni
     end
 end
 
-function checkmatch(fs::Vararg{<:T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
+function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{PointForecasts, QuantForecasts}, N}
     v = Vector{T}(undef, N)
     v .= fs
     checkmatch(v; checkpred=checkpred)
