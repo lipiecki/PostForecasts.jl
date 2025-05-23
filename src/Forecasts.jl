@@ -190,7 +190,7 @@ function decouple(f::PointForecasts)
 end
 
 function decouple(f::QuantForecasts) 
-    return [PointForecasts(@view(f.pred[:, i]), f.obs, f.id, f.prob[i]) for i in 1:npred(f)]
+    return [PointForecasts(@view(f.pred[:, i]), f.obs, f.id, f.prob[[i]]) for i in 1:npred(f)]
 end
 
 """
