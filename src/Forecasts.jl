@@ -178,7 +178,7 @@ function couple(fs::AbstractVector{<:QuantForecasts})
         hcat(getpred.(fs)...),
         getobs(fs[begin]),
         getid(fs[begin]),
-        hcat(getprob.(fs)...))
+        vcat(getprob.(fs)...))
 end
 
 """
