@@ -31,16 +31,6 @@ struct QR{F<:AbstractFloat} <: MultiPostModel{F}
     QR(n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}) = QR(Float64, n, r, prob)
 end
 
-"""
-    iQR(args...)
-    Create an isotonic quantile regression model, constraining the weights to be non-negative. The arguments `args...` are the same as for `QR`.
-"""
-function iQR(args...)
-    iqr = QR(args...)
-    iqr.bounds[1:nreg(iqr)] .= 0.0
-    return iqr
-end
-
 getmodel(::Type{F}, ::Val{:qr}, params::Vararg) where {F<:AbstractFloat} = QR(F, params[1], params[2], params[3])
 
 getmodel(::Type{F}, ::Val{:iqr}, params::Vararg) where {F<:AbstractFloat} = iQR(F, params[1], params[2], params[3])

@@ -1,5 +1,5 @@
 @testset "Forecasts" begin
-    pred = rand(100)
+    pred = rand(100, 2)
     obs = rand(100)
     id = Vector(5:5:500)
     pf = PointForecasts(pred, obs, id)
@@ -28,6 +28,8 @@
         viewobs(qf(id[I])) ≈ @view(obs[I]) &&
         viewobs(pf(id[1], id[10])) ≈ @view(obs[1:10]) &&
         viewobs(pf[I]) ≈ @view(obs[I])
+
+    @test couple(decouple(pf)) == pf && couple(decouple(qf)) == qf
     
     io = IOBuffer()
     show(io, pf)

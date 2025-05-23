@@ -12,9 +12,6 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
     (Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)...,
     (Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)...)
 
-# constant for lasso quantile regression
-const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
-
 import Base: getindex, firstindex, lastindex, eachindex, length, show
 using Combinatorics: combinations
 using DelimitedFiles
@@ -29,7 +26,6 @@ include(joinpath("models", "cp.jl"))
 include(joinpath("models", "idr.jl"))
 include(joinpath("models", "normal.jl"))
 include(joinpath("models", "qr.jl"))
-include(joinpath("models", "lassoqr.jl"))
 include("Forecasts.jl")
 include("helpers.jl")
 include("utils.jl")
@@ -97,12 +93,8 @@ export
 
     # Quantile Regression
     QR,
-    iQR,
-    LassoQR,
     getweights,
     getquantprob,
-    setlambda,
-    getlambda,
 
     # Postprocessing
     point2quant,

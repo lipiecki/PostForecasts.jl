@@ -164,7 +164,7 @@ end
     couple(pfs::Vector{PointForecasts}) 
 Merge elements of `pfs` into a single `PointForecasts` object.
 """
-function couple(pfs::AbstractVector{<:PointForecasts})
+function couple(pfs::AbstractVector{PointForecasts})
     checkmatch(pfs)
     PointForecasts(
         hcat(getpred.(pfs)...),

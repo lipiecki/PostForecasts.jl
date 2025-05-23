@@ -1,12 +1,12 @@
 """
-    shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function[, ∅::AbstractFloat])
+    shapley(fs::Vector{T}, agg::Function, payoff::Function[, ∅::AbstractFloat]) where T<:Union{PointForecasts, QuantForecasts}
 Calculate Shapley values of forecasters in `fs`, using specified `agg`regation function and `payoff` function.
 
 Optional argument `∅` is the payoff value for an empty coalition. If not provided, empty coalition is excluded from calculations.
 
 Return a vector of Shapley values correspinding to each forecaster in `fs`.
 """
-function shapley(fs::Vector{<:Forecasts}, agg::Function, payoff::Function, ∅::Union{Nothing, AbstractFloat}=nothing)
+function shapley(fs::Vector{T}, agg::Function, payoff::Function, ∅::Union{Nothing, AbstractFloat}=nothing) where T<:Union{PointForecasts, QuantForecasts}
     m = length(fs)
     vals = zeros(m)
     
