@@ -132,7 +132,7 @@ We will first load the dataset (select the target variable and the lead time of 
 using PostForecasts
 
 variable = :u10 # u10, c10, t2m, t850 or z500
-leadtime = 24 # between 0 and 186, divisible by 6
+leadtime = 24   # between 0 and 186, divisible by 6
 
 pf = loaddata(Symbol(:pangu, leadtime, variable))
 ```
@@ -182,7 +182,7 @@ qfsell = point2quant(pfsell, method=:idr, window=182, quantiles=9, start=2023040
 From the decile forecasts we can construct four prediction intervals (PI) centered around the median, i.e., the 5th decile, with confidence levels of 20%, 40%, 60% and 80%. For example, the 20%-PI is obtained by taking the 4th and the 6th deciles, while the 80%-PI by taking the 1st and the 9th. To visualize the results, we can plot the median price forecasts, the PIs and the observed prices at 3am and 7pm (helper functions for plotting are available in `src/examples/plotting.jl`):
 ```julia
 # load plot_obs!, plot_quantile! and plot_intervals!
-include(joinpath("src", "examples", "plotting.jl"))
+include("plotting.jl")
 
 pfbuy = loaddata(Symbol(:epex, 4))      # point forecasts for 3am
 pfsell = loaddata(Symbol(:epex, 20))    # point forecasts for 7pm

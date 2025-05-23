@@ -1,5 +1,5 @@
 # Forecasts
-To make working with forecasts easy and user-friendy, **PostForecasts.jl** introduces `Forecasts` type, a supertype that spans `PointForecasts` and `QuantForecast` types.
+To make working with forecasts easy and user-friendy, **PostForecasts.jl** introduces the `Forecasts` supertype that spans `PointForecasts` and `QuantForecast` types.
 
 ## PointForecasts
 `PointForecasts` is a type designed for storing the series of point `pred`ictions (single predictions or prediction pools), along with the `obs`ervations and `id`entifiers (timestamps). The package provides functions for building `PointForecasts` objects from delimited files, averaging point forecasts and calculating error measures.

@@ -2,7 +2,7 @@ using PostForecasts, Plots
 theme(:dark)
 
 variable = :u10 # u10, c10, t2m, t850 or z500
-leadtime = 24 # between 0 and 186, divisible by 6
+leadtime = 24   # between 0 and 186, divisible by 6
 
 pf = loaddata(Symbol(:pangu, leadtime, variable))
 

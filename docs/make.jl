@@ -7,7 +7,7 @@ makedocs(
         inventory_version = ""),
     pages = [
         "Home" => "index.md",
-        "Structures" => "forecasts.md",
+        "Types" => "forecasts.md",
         "Postprocessing" => "postprocess.md",
         "Models" => "models.md",
         "Loading and saving forecasts" => "loadsave.md",

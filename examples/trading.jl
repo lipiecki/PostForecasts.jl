@@ -1,5 +1,5 @@
 using PostForecasts
-include(joinpath("src", "examples", "plotting.jl"))
+include("plotting.jl")
 theme(:dark)
 
 pfbuy = loaddata(Symbol(:epex, 4))      # point forecasts for 3am
