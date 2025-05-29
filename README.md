@@ -48,3 +48,22 @@ Alternatively, you can use the Pkg REPL mode:
 ```julia
 pkg> add PostForecasts
 ```
+
+### Citing
+Check out the original software publication on **PostForecasts.jl** in [SoftwareX](https://doi.org/10.1016/j.softx.2025.102200). If you use the package in your research, then please cite it as:
+```bibtex
+@article{lipiecki:weron:2025,
+    title = {PostForecasts.jl: A Julia package for probabilistic forecasting by postprocessing point predictions},
+    journal = {SoftwareX},
+    volume = {31},
+    pages = {102200},
+    year = {2025},
+    issn = {2352-7110},
+    doi = {https://doi.org/10.1016/j.softx.2025.102200},
+    author = {Arkadiusz Lipiecki and Rafał Weron}
+}
+```
+
+### Research papers
+Below is the list of research papers using **PostForecasts.jl**:
+- A. Lipiecki, B. Uniejewski & R. Weron *Postprocessing of point predictions for probabilistic forecasting of day-ahead electricity prices: The benefits of using isotonic distributional regression* [Energy Economics, 139 (2024) 107934](https://doi.org/10.1016/j.eneco.2024.107934)
