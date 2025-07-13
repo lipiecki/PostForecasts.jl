@@ -81,10 +81,10 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
     n, d = ndims(X) > 1 ? size(X) : (length(X), 1)
     for i in 1:d
         m.zmean[i] = mean(@views(X[:, i]))
-        m.zstd[i] = std(@views(X[:, i]))
+        m.zstd[i] = sqrt(sum(abs2, @views(X[:, i]) .- m.zmean[i])/(n-1))
     end
     m.zmean[end] = mean(Y)
-    m.zstd[end] = std(Y)
+    m.zstd[end] = sqrt(sum(abs2, Y .- m.zmean[end])/(n-1))
     d += 1 # for the intercept
     for (p, α) in enumerate(m.prob)
         bic = Inf
