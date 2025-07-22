@@ -84,6 +84,14 @@ getweights
 getquantprob
 ```
 
+## Regularized quantile regressions
+```@docs
+iQR
+LassoQR
+setlambda
+getlambda
+```
+
 ## Training and prediction
 ```@docs
 train

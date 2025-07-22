@@ -16,8 +16,7 @@ makedocs(
         "Shapley values and ensemble contributions" => "shapley.md",
         "Utilities" => "utils.md",
         "Datasets" => "datasets.md",
-        "Examples" => "examples.md",
-        "Pre-release functionalities" => "prerelease.md"])
+        "Examples" => "examples.md"])
 deploydocs(
     repo = "github.com/lipiecki/PostForecasts.jl.git",
     branch = "gh-pages")
