@@ -67,13 +67,13 @@ function predict(m::MultiPostModel{F}, input::Number, quantiles::AbstractVector{
     _predict(m, [input], quantiles)
 end
 
-function predict(m::QR{F}, input::AbstractVector{<:Number})::Vector{F} where {F<:AbstractFloat}
+function predict(m::Union{QR{F}, LassoQR{F}}, input::AbstractVector{<:Number})::Vector{F} where {F<:AbstractFloat}
     Base.require_one_based_indexing(input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
     _predict(m, input)
 end
 
-function predict(m::QR{F}, input::Number)::Vector{F} where {F<:AbstractFloat}
+function predict(m::Union{QR{F}, LassoQR{F}}, input::Number)::Vector{F} where {F<:AbstractFloat}
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
     _predict(m, [input])
 end
@@ -124,19 +124,19 @@ function predict!(m::MultiPostModel, output::AbstractVector{<:AbstractFloat}, in
     _predict!(m, output, input, quantiles)
 end
 
-function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})::Nothing
+function predict!(m::Union{QR, LassoQR}, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})::Nothing
     Base.require_one_based_indexing(output, input)
     nreg(m) == length(input) || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but $(length(input)) were provided"))
     length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output))) does not match the model specification ($(length(m.prob)))"))
     _predict!(m, output, input)
 end
 
-function predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number)::Nothing
+function predict!(m::Union{QR, LassoQR}, output::AbstractVector{<:AbstractFloat}, input::Number)::Nothing
     Base.require_one_based_indexing(output)
     nreg(m) == 1 || throw(ArgumentError("model `m` requires $(nreg(m)) regressors, but one was provided"))
     length(m.prob) == length(output) || throw(ArgumentError("size of the output vector ($(length(output)) does not match the model specification ($(length(m.prob)))"))
     _predict!(m, output, [input])
 end
 
-predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::Number, ::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
-predict!(m::QR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, ::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
+predict!(m::Union{QR, LassoQR}, output::AbstractVector{<:AbstractFloat}, input::Number, ::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)
+predict!(m::Union{QR, LassoQR}, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, ::AbstractVector{<:AbstractFloat}) = predict!(m, output, input)

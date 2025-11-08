@@ -12,6 +12,8 @@ Return `QuantForecasts` containing forecasts of specified `quantiles`:
 - `:hs` for historical simulation
 - `:idr` for isotonic distributional regression
 - `:qr` for quantile regression
+- `:iqr` for isotonic quantile regression
+- `:lassoqr` for lasso quantile regression
 - `:normal` for normal distribution of errors
 - `:zeronormal` for normal distribution of errors with fixed mean equal to 0
 

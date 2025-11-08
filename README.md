@@ -1,5 +1,6 @@
 # PostForecasts.jl
-[![View Docs](https://img.shields.io/badge/View-Docs-blue)](https://lipiecki.github.io/PostForecasts.jl/)
+[![docs stable](https://img.shields.io/badge/docs-stable-blue)](https://lipiecki.github.io/PostForecasts.jl/)
+[![docs dev](https://img.shields.io/badge/docs-dev-blue)](https://lipiecki.github.io/PostForecasts.jl/dev)
 [![codecov](https://codecov.io/github/lipiecki/PostForecasts.jl/graph/badge.svg?token=JJDOKDJ30H)](https://codecov.io/github/lipiecki/PostForecasts.jl)
 
 ![PostForecasts.jl](https://github.com/lipiecki/PostForecasts.jl/blob/main/docs/src/images/banner.png?raw=true)
@@ -67,4 +68,4 @@ Check out the original software publication on **PostForecasts.jl** in [Software
 ### Research papers
 Below is the list of research papers using **PostForecasts.jl**:
 - A. Lipiecki, B. Uniejewski & R. Weron *Postprocessing of point predictions for probabilistic forecasting of day-ahead electricity prices: The benefits of using isotonic distributional regression* [Energy Economics, 139 (2024) 107934](https://doi.org/10.1016/j.eneco.2024.107934)
-- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* (submitted to journal)
+- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* [arXiv.2507.15079](https://doi.org/10.48550/arXiv.2507.15079) ([GitHub](https://github.com/lipiecki/isotonicQRA))

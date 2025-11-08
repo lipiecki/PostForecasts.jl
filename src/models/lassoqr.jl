@@ -48,7 +48,7 @@ end
 """
  Set the values of the package constant `LAMBDA` to be equal to `lambda`.
 """
-function setlambda(lambda::AbstractVector{<:AbstractFloat})
+function setlambda(lambda::AbstractVector{<:Number})
     empty!(LAMBDA)
     for λ in lambda
         push!(LAMBDA, λ)
@@ -81,10 +81,10 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
     n, d = ndims(X) > 1 ? size(X) : (length(X), 1)
     for i in 1:d
         m.zmean[i] = mean(@views(X[:, i]))
-        m.zstd[i] = std(@views(X[:, i]))
+        m.zstd[i] = sqrt(sum(abs2, @views(X[:, i]) .- m.zmean[i])/(n-1))
     end
     m.zmean[end] = mean(Y)
-    m.zstd[end] = std(Y)
+    m.zstd[end] = sqrt(sum(abs2, Y .- m.zmean[end])/(n-1))
     d += 1 # for the intercept
     for (p, α) in enumerate(m.prob)
         bic = Inf
@@ -114,7 +114,7 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
             @objective(m.lpmodel, Min, sum(h.*x))
             @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
             JuMP.optimize!(m.lpmodel)
-            current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*sum(JuMP.value(x[i]-x[d+i]) > 10eps(F) for i in 1:d)*log(n)/(2n)
+            current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*(sum(JuMP.value(x[i]-x[d+i]) ≉ zero(F) for i in 1:d-1)+1)*log(n)/(2n)
             if current_bic < bic
                 bic = current_bic
                 for i in 1:d

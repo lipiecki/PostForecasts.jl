@@ -64,4 +64,4 @@ Check out the original software publication on **PostForecasts.jl** in [Software
 ### Research papers
 Below is the list of research papers using **PostForecasts.jl**:
 - A. Lipiecki, B. Uniejewski & R. Weron *Postprocessing of point predictions for probabilistic forecasting of day-ahead electricity prices: The benefits of using isotonic distributional regression* [Energy Economics, 139 (2024) 107934](https://doi.org/10.1016/j.eneco.2024.107934)
-- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* (submitted to journal)
+- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* [arXiv.2507.15079](https://doi.org/10.48550/arXiv.2507.15079) ([GitHub](https://github.com/lipiecki/isotonicQRA))
