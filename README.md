@@ -24,11 +24,12 @@ We believe that following these three principles allowed us to develop a robust 
 **PostForecasts.jl** introduces `PointForecasts` and `QuantForecasts` types for storing time series data along with point and probabilistic forecasts respectively.
 
 ### Postprocessing models
-The package provides interface to four selected models for probabilistic forecasting:
+The package provides interface to several models for probabilistic forecasting:
 - `Normal`:  Normal error distribution
 - `CP`: Conformal Prediction (and Historical Simulation)
 - `IDR`: Isotonic Distributional Regression
-- `QR`: Quantile Regression
+- `QR`: Quantile Regression (including Isotonic Quantile Regression)
+- `LassoQR`: Lasso-estimated Quantile Regression
 
 All the models belong to the `PostModel` supertype. They have corresponding `train(m, X, Y)` methods for calibrating a model `m` to inputs `X` and targets `Y`, and `predict(m, input, quantiles)` methods that yield the specified `quantiles` of the predictive distribution from `m` conditional on `input`.
 
@@ -68,4 +69,4 @@ Check out the original software publication on **PostForecasts.jl** in [Software
 ### Research papers
 Below is the list of research papers using **PostForecasts.jl**:
 - A. Lipiecki, B. Uniejewski & R. Weron *Postprocessing of point predictions for probabilistic forecasting of day-ahead electricity prices: The benefits of using isotonic distributional regression* [Energy Economics, 139 (2024) 107934](https://doi.org/10.1016/j.eneco.2024.107934)
-- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* [arXiv.2507.15079](https://doi.org/10.48550/arXiv.2507.15079) ([GitHub](https://github.com/lipiecki/isotonicQRA))
+- A. Lipiecki & B. Uniejewski *Isotonic Quantile Regression Averaging for uncertainty quantification of electricity price forecasts* [arXiv.2507.15079](https://arxiv.org/abs/2507.15079)

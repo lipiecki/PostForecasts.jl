@@ -1,10 +1,10 @@
 """
     LassoQR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}, lambda::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}) where {F<:AbstractFloat}
-Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso quantile regression with regularization strength `lambda` to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
+Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso-estimated quantile regression with regularization strength `lambda` to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
 
 If `lambda` is a vector, the optimal regularization strength will be selected using the Bayesian Information Criterion (BIC) during every training, separately for each quantile.
 
-By default, `lambda` is specified by the package constant `LAMBDA = [0.001, 0.01, 0.1, 1.0, 10.0]`. It can be modified with the `setlambda` method. 
+If not provided, `lambda` is specified by the package constant `LAMBDA`, with the default of `[0.001, 0.01, 0.1, 1.0, 10.0]`. `LAMBDA` can be modified with the [`setLAMBDA`](@ref) method. 
 """
 struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
@@ -46,9 +46,10 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
 end
 
 """
- Set the values of the package constant `LAMBDA` to be equal to `lambda`.
+setLAMBDA(lambda::AbstractVector{<:Number})
+    Set the values of the package constant `LAMBDA` to be equal to `lambda`.
 """
-function setlambda(lambda::AbstractVector{<:Number})
+function setLAMBDA(lambda::AbstractVector{<:Number})
     empty!(LAMBDA)
     for λ in lambda
         push!(LAMBDA, λ)
@@ -56,9 +57,10 @@ function setlambda(lambda::AbstractVector{<:Number})
 end
 
 """
-    Get the values stored in the package constant `LAMBDA`.
+getLAMBDA()
+    Get the vector copy of the package constant `LAMBDA`.
 """
-getlambda() = copy(LAMBDA)
+getLAMBDA() = copy(LAMBDA)
 
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])
 

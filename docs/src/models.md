@@ -88,8 +88,8 @@ getquantprob
 ```@docs
 iQR
 LassoQR
-setlambda
-getlambda
+setLAMBDA
+getLAMBDA
 ```
 
 ## Training and prediction
