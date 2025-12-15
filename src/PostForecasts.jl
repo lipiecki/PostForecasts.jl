@@ -21,6 +21,8 @@ using DelimitedFiles
 using HDF5
 using HiGHS
 using JuMP
+using NLopt
+using ForwardDiff
 using LinearAlgebra
 using SpecialFunctions: erfinv
 using Statistics: mean, median, quantile
@@ -30,6 +32,7 @@ include(joinpath("models", "idr.jl"))
 include(joinpath("models", "normal.jl"))
 include(joinpath("models", "qr.jl"))
 include(joinpath("models", "lassoqr.jl"))
+include(joinpath("models", "garch.jl"))
 include("Forecasts.jl")
 include("helpers.jl")
 include("utils.jl")
@@ -103,6 +106,9 @@ export
     getquantprob,
     setLAMBDA,
     getLAMBDA,
+
+    # GARCH
+    GARCH,
 
     # Postprocessing
     point2quant,
