@@ -52,7 +52,7 @@ matchwindow(m::IDR, window::Integer) = size(m.cdf, 1) == window
 Return a vector of regressor values from model `m` on which cumulative distribution function is defined. Optional argument `r::Integer = 1` corresponds to the regressor index.
 """
 function getx(m::IDR, r::Integer = 1)
-    (r < 1 || r >= length(m.domainsize)) && throwDomainError("`r` must be between 1 and $(m.domainsize-1)")
+    (r < 1 || r >= length(m.domainsize)) && throw(DomainError("`r` must be between 1 and $(m.domainsize-1)"))
     return m.domain[1:m.domainsize[r], r]
 end
 
@@ -69,7 +69,7 @@ end
 Return a vector of cumulative distribution function values from model `m`. Optional argument `r::Integer = 1` corresponds to the regressor index.
 """
 function getcdf(m::IDR, r::Integer = 1)
-    (r < 1 || r >= length(m.domainsize)) && throwDomainError("`r` must be between 1 and $(m.domainsize-1)")
+    (r < 1 || r >= length(m.domainsize)) && throw(DomainError("`r` must be between 1 and $(m.domainsize-1)"))
     return m.cdf[1:m.domainsize[r], 1:m.domainsize[end], r]
 end
 
@@ -234,26 +234,13 @@ function _predict(m::IDR, input::AbstractVector{<:Number}, prob::AbstractFloat)
             return m.domain[j, end]
         end
     end
-end
-
-function _predict(m::IDR{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}
-    output = Vector{F}(undef, length(prob))
-    _setpredstate(m, input)
-    itr = 1
-    for i in eachindex(output)
-        for j in itr:m.domainsize[end]
-            if m.predstate[j] >= prob[i] || m.predstate[j] ≈ prob[i]
-                output[i] = m.domain[j, end]
-                itr = j
-                break
-            end
-        end
-    end
-    return output
+    throw(ErrorException("prediction failed: probability value out of range"))
+    return nothing
 end
 
 function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat})::Nothing
     _setpredstate(m, input)
+    output .= NaN
     itr = 1
     for i in eachindex(output)
         for j in itr:m.domainsize[end]
@@ -264,5 +251,12 @@ function _predict!(m::IDR, output::AbstractVector{<:AbstractFloat}, input::Abstr
             end
         end
     end
+    any(isnan, output) && throw(ErrorException("prediction failed: at least one probability value out of range"))
     return nothing
+end
+
+function _predict(m::IDR{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}
+    output = Vector{F}(undef, length(prob))
+    _predict!(m, output, input, prob)
+    return output
 end
