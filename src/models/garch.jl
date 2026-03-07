@@ -11,10 +11,12 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     optimizer::Opt
     filter::Bool
     function GARCH(::Type{F}, n::Integer; filter::Bool=false) where {F<:AbstractFloat} 
+        tol = 1e-8
+        bounds_eps = 1e-6
         optimizer = NLopt.Opt(:LD_MMA, 2)
-        NLopt.lower_bounds!(optimizer, [0.0, 0.0])
-        NLopt.upper_bounds!(optimizer, [1.0, 1.0])
-        NLopt.xtol_rel!(optimizer, 1e-8)
+        NLopt.lower_bounds!(optimizer, [bounds_eps, bounds_eps])
+        NLopt.upper_bounds!(optimizer, [1-bounds_eps, 1-bounds_eps])
+        NLopt.xtol_rel!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, 100_000)
         function variance_targeting(x::Vector, grad::Vector)
             if length(grad) > 0
@@ -23,7 +25,7 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
             end
             return x[1] + x[2] - 1.0
         end
-        NLopt.inequality_constraint!(optimizer, (x, g) -> variance_targeting(x, g), 1e-8)
+        NLopt.inequality_constraint!(optimizer, (x, g) -> variance_targeting(x, g), tol)
         new{F}(
             Vector{F}(undef, n),
             Vector{F}(undef, n),
