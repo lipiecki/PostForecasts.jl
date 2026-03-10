@@ -52,7 +52,11 @@ function _objective(params::Vector, errors::Vector{<:AbstractFloat})
     for i in eachindex(errors)
         squared_error = abs2(errors[i])
         loss += squared_error/variance + log(variance)
-        variance = ω + α*variance + β*squared_error
+        variance *= α
+        variance *= variance
+        variance = sqrt(variance)
+        variance += ω
+        variance += β*squared_error
     end
     return loss/length(errors)
 end
