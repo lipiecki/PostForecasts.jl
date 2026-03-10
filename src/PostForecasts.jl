@@ -15,6 +15,9 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 # constant for lasso quantile regression
 const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
 
+# constant for multithreading within quantile regression solver
+const SOLVER_THREADS = 1
+
 import Base: getindex, firstindex, lastindex, eachindex, length, show
 using Combinatorics: combinations
 using DelimitedFiles

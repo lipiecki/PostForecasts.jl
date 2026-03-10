@@ -17,6 +17,7 @@ struct QR{F<:AbstractFloat} <: MultiPostModel{F}
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
         set_silent(lpmodel)
+        set_attribute(lpmodel, MOI.NumberOfThreads(), SOLVER_THREADS)
         set_string_names_on_creation(lpmodel, false)
         new{F}(convert(Vector{F}, prob), 
             Matrix{F}(undef, r + 1, length(prob)), 
