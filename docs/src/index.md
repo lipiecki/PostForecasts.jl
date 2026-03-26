@@ -1,5 +1,5 @@
-# PostForecasts.jl
 ![image](images/banner.png)
+# PostForecasts.jl
 
 ## Julia package for postprocessing forecasts
 **PostForecasts.jl** provides structures and functions that allow to easily postprocess point forecasts into predictive distributions. Postprocessing methods use only the past performance of a given point forecasting model (or ensemble of models) to build probabilistic forecasts conditional on point predictions.

@@ -4,7 +4,8 @@ makedocs(
     sitename="PostForecasts.jl",
     format = Documenter.HTML(
         repolink = "https://github.com/lipiecki/PostForecasts.jl",
-        inventory_version = ""),
+        inventory_version = "",
+        sidebar_sitename = false),
     pages = [
         "Home" => "index.md",
         "Types" => "forecasts.md",

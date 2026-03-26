@@ -3,7 +3,7 @@
 [![docs dev](https://img.shields.io/badge/docs-dev-blue)](https://lipiecki.github.io/PostForecasts.jl/dev)
 [![codecov](https://codecov.io/github/lipiecki/PostForecasts.jl/graph/badge.svg?token=JJDOKDJ30H)](https://codecov.io/github/lipiecki/PostForecasts.jl)
 
-![PostForecasts.jl](https://github.com/lipiecki/PostForecasts.jl/blob/main/docs/src/images/banner.png?raw=true)
+![PostForecasts.jl](https://github.com/lipiecki/PostForecasts.jl/blob/main/docs/src/assets/logo.svg?raw=true)
 
 ## Julia package for postprocessing forecasts
 **PostForecasts.jl** provides structures and functions that allow to easily postprocess point forecasts into predictive distributions. Postprocessing methods use only the past performance of a given point forecasting model (or ensemble of models) to build probabilistic forecasts conditional on point predictions.
