@@ -15,6 +15,10 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 # constant for lasso quantile regression
 const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
 
+# constants for GARCH optimization
+const TOL = Ref{Float64}(1e-6)
+const MAXEVAL = Ref{Int}(100_000)
+
 import Base: getindex, firstindex, lastindex, eachindex, length, show
 using Combinatorics: combinations
 using DelimitedFiles
@@ -109,6 +113,10 @@ export
 
     # GARCH
     GARCH,
+    setTOL,
+    setMAXEVAL,
+    getTOL,
+    getMAXEVAL,
 
     # Postprocessing
     point2quant,

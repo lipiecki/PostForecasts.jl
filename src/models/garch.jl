@@ -10,14 +10,14 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     σ::Base.RefValue{F}
     optimizer::Opt
     filter::Bool
-    tol::F
+    tol::Float64
     function GARCH(::Type{F}, n::Integer; filter::Bool=false) where {F<:AbstractFloat} 
-        tol = 1e-6
+        tol = TOL[]
         optimizer = NLopt.Opt(:LD_MMA, 2)
         NLopt.lower_bounds!(optimizer, [tol, tol])
         NLopt.upper_bounds!(optimizer, [1-tol, 1-tol])
         NLopt.xtol_abs!(optimizer, tol)
-        NLopt.nlopt_set_maxeval(optimizer, 100_000)
+        NLopt.nlopt_set_maxeval(optimizer, MAXEVAL[])
         function variance_targeting(x::Vector, grad::Vector)
             if length(grad) > 0
                 grad[1] = 1.0
@@ -44,6 +44,24 @@ getmodel(::Type{F}, ::Val{:garch}, params::Vararg) where {F<:AbstractFloat} = GA
 getmodel(::Type{F}, ::Val{:hsgarch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true)
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
+
+function setTOL(tol::AbstractFloat)
+    TOL[] = tol
+    return nothing
+end
+
+function setMAXEVAL(maxeval::Integer)
+    MAXEVAL[] = maxeval
+    return nothing
+end
+
+function getTOL()
+    return TOL[]
+end
+
+function getMAXEVAL()
+    return MAXEVAL[]
+end
 
 function _objective(params::Vector, errors::Vector{<:AbstractFloat})
     α, β = params
