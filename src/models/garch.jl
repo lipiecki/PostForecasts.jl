@@ -10,22 +10,22 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     σ::Base.RefValue{F}
     optimizer::Opt
     filter::Bool
+    tol::F
     function GARCH(::Type{F}, n::Integer; filter::Bool=false) where {F<:AbstractFloat} 
-        tol = 1e-8
-        bounds_eps = 1e-6
+        tol = 1e-6
         optimizer = NLopt.Opt(:LD_MMA, 2)
-        NLopt.lower_bounds!(optimizer, [bounds_eps, bounds_eps])
-        NLopt.upper_bounds!(optimizer, [1-bounds_eps, 1-bounds_eps])
-        NLopt.xtol_rel!(optimizer, tol)
+        NLopt.lower_bounds!(optimizer, [tol, tol])
+        NLopt.upper_bounds!(optimizer, [1-tol, 1-tol])
+        NLopt.xtol_abs!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, 100_000)
         function variance_targeting(x::Vector, grad::Vector)
             if length(grad) > 0
                 grad[1] = 1.0
                 grad[2] = 1.0
             end
-            return x[1] + x[2] - 1.0
+            return x[1] + x[2] - 1.0 + tol
         end
-        NLopt.inequality_constraint!(optimizer, (x, g) -> variance_targeting(x, g), tol)
+        NLopt.inequality_constraint!(optimizer, (x, g) -> variance_targeting(x, g))
         new{F}(
             Vector{F}(undef, n),
             Vector{F}(undef, n),
@@ -33,7 +33,8 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
             Vector{F}(undef, 2),
             Ref{F}(1.0),
             optimizer,
-            filter
+            filter,
+            tol
         )
     end
 end
@@ -52,7 +53,9 @@ function _objective(params::Vector, errors::Vector{<:AbstractFloat})
     for i in eachindex(errors)
         squared_error = abs2(errors[i])
         loss += squared_error/variance + log(variance)
-        variance = ω + α*variance + β*squared_error
+        variance *= α
+        variance += β*squared_error
+        variance = max(variance, 0) + ω
     end
     return loss/length(errors)
 end
@@ -73,7 +76,9 @@ function _filter!(m::GARCH)
     for i in eachindex(m.errors)
         m.scores[i] = m.errors[i]/sqrt(variance)
         squared_error = abs2(m.errors[i])
-        variance = ω + α*variance + β*squared_error
+        variance *= α
+        variance += β*squared_error
+        variance = max(variance, 0) + ω
     end
     sort!(m.scores)
     m.σ[] = sqrt(variance)*m.scale[]
