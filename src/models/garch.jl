@@ -45,24 +45,6 @@ getmodel(::Type{F}, ::Val{:hsgarch}, params::Vararg) where {F<:AbstractFloat} = 
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
-function setTOL(tol::AbstractFloat)
-    TOL[] = tol
-    return nothing
-end
-
-function setMAXEVAL(maxeval::Integer)
-    MAXEVAL[] = maxeval
-    return nothing
-end
-
-function getTOL()
-    return TOL[]
-end
-
-function getMAXEVAL()
-    return MAXEVAL[]
-end
-
 function _objective(params::Vector, errors::Vector{<:AbstractFloat})
     α, β = params
     ω = 1.0 - α - β

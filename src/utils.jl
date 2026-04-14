@@ -68,3 +68,47 @@ function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{Poi
     checkmatch(v; checkpred=checkpred)
     return true
 end
+
+
+"""
+setLAMBDA(lambda::AbstractVector{<:Number})
+    Set the values of the package constant `LAMBDA` to be equal to `lambda`.
+"""
+function setLAMBDA(lambda::AbstractVector{<:Number})
+    empty!(LAMBDA)
+    for λ in lambda
+        push!(LAMBDA, λ)
+    end
+end
+
+"""
+getLAMBDA()
+    Get the vector copy of the package constant `LAMBDA`.
+"""
+getLAMBDA() = copy(LAMBDA)
+
+function setPARALLELQR(parallel::Bool)
+    PARALLELQR[] = parallel
+end
+
+function getPARALLELQR()
+    return PARALLELQR[]
+end
+
+function setTOL(tol::AbstractFloat)
+    TOL[] = tol
+    return nothing
+end
+
+function setMAXEVAL(maxeval::Integer)
+    MAXEVAL[] = maxeval
+    return nothing
+end
+
+function getTOL()
+    return TOL[]
+end
+
+function getMAXEVAL()
+    return MAXEVAL[]
+end

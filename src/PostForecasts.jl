@@ -12,8 +12,9 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
     (Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)...,
     (Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)...)
 
-# constant for lasso quantile regression
+# constants for quantile regressions
 const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
+const PARALLELQR = Ref(true)
 
 # constants for GARCH optimization
 const TOL = Ref{Float64}(1e-6)
@@ -108,15 +109,9 @@ export
     LassoQR,
     getweights,
     getquantprob,
-    setLAMBDA,
-    getLAMBDA,
 
     # GARCH
     GARCH,
-    setTOL,
-    setMAXEVAL,
-    getTOL,
-    getMAXEVAL,
 
     # Postprocessing
     point2quant,
@@ -138,6 +133,14 @@ export
     nreg,
     matchwindow,
     checkmatch,
+    setLAMBDA,
+    getLAMBDA,
+    setPARALLELQR,
+    getPARALLELQR,
+    setTOL,
+    setMAXEVAL,
+    getTOL,
+    getMAXEVAL,
 
     # Data
     loaddata,

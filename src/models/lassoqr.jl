@@ -24,6 +24,11 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
+        if Threads.nthreads() == 1 && !PARALLELQR[]
+            Highs_resetGlobalScheduler(1)
+            set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
+        end
+        MOI.get(lpmodel, MOI.NumberOfThreads()) > 1 && Threads.nthreads() > 1 && @warn "running multiple threads ($(Threads.nthreads())) and HiGHS uses within solver parallelism"
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         new{F}(convert(Vector{F}, prob), 
@@ -44,23 +49,6 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
 
     LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}) = LassoQR(Float64, n, r, prob)
 end
-
-"""
-setLAMBDA(lambda::AbstractVector{<:Number})
-    Set the values of the package constant `LAMBDA` to be equal to `lambda`.
-"""
-function setLAMBDA(lambda::AbstractVector{<:Number})
-    empty!(LAMBDA)
-    for λ in lambda
-        push!(LAMBDA, λ)
-    end
-end
-
-"""
-getLAMBDA()
-    Get the vector copy of the package constant `LAMBDA`.
-"""
-getLAMBDA() = copy(LAMBDA)
 
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])
 
