@@ -92,6 +92,11 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
         m.errors[i] = Y[i] - X[i]
     end
     m.scale[] = sqrt(sum(abs2, m.errors)/length(m.errors))
+    if m.scale[] < m.tol
+        m.scores .= 0.0
+        m.σ[] = 0.0
+        return nothing
+    end
     m.errors .= m.errors./m.scale[]
     f(u) = _objective(u, m.errors)
     NLopt.min_objective!(m.optimizer, _autodiff(f))
