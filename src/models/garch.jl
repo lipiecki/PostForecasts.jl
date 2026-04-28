@@ -10,8 +10,9 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     σ::Base.RefValue{F}
     optimizer::Opt
     filter::Bool
+    abs::Bool
     tol::Float64
-    function GARCH(::Type{F}, n::Integer; filter::Bool=false) where {F<:AbstractFloat} 
+    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false) where {F<:AbstractFloat} 
         tol = TOL[]
         optimizer = NLopt.Opt(:LD_MMA, 2)
         NLopt.lower_bounds!(optimizer, [tol, tol])
@@ -34,6 +35,7 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
             Ref{F}(1.0),
             optimizer,
             filter,
+            abs,
             tol
         )
     end
@@ -42,6 +44,8 @@ end
 getmodel(::Type{F}, ::Val{:garch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1])
 
 getmodel(::Type{F}, ::Val{:hsgarch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true)
+
+getmodel(::Type{F}, ::Val{:cpgarch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true, abs=true)
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
@@ -80,6 +84,9 @@ function _filter!(m::GARCH)
         variance += β*squared_error
         variance = max(variance, 0) + ω
     end
+    if m.abs
+        m.scores .= abs.(m.scores)
+    end
     sort!(m.scores)
     m.σ[] = sqrt(variance)*m.scale[]
     return nothing
@@ -106,8 +113,13 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
 end
 
 function _predict(m::GARCH{F}, input::Number, prob::AbstractFloat) where {F<:AbstractFloat}
-    if m.filter
-        return input + m.σ[]*quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
+    if m.filter 
+        if m.abs
+            sgn::F = prob ≈ 0.5 ? 0.0 : (prob < 0.5 ? -1.0 : 1.0)
+            return input + sgn*quantile(m.scores, (2prob - 1)sgn, sorted=true, alpha=1, beta=1)
+        else
+            return input + quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
+        end
     else
         return input + m.σ[]*(sqrt(2)*erfinv(2*prob - 1))
     end
