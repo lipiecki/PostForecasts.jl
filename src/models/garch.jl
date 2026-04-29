@@ -12,13 +12,12 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     filter::Bool
     abs::Bool
     tol::Float64
-    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false) where {F<:AbstractFloat} 
-        tol = TOL[]
+    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, tol::Float64=TOL[], maxeval::Int=MAXEVAL[]) where {F<:AbstractFloat} 
         optimizer = NLopt.Opt(:LD_MMA, 2)
         NLopt.lower_bounds!(optimizer, [tol, tol])
         NLopt.upper_bounds!(optimizer, [1-tol, 1-tol])
         NLopt.xtol_abs!(optimizer, tol)
-        NLopt.nlopt_set_maxeval(optimizer, MAXEVAL[])
+        NLopt.nlopt_set_maxeval(optimizer, maxeval)
         function variance_targeting(x::Vector, grad::Vector)
             if length(grad) > 0
                 grad[1] = 1.0
