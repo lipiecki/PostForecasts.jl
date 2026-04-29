@@ -116,9 +116,9 @@ function _predict(m::GARCH{F}, input::Number, prob::AbstractFloat) where {F<:Abs
     if m.filter 
         if m.abs
             sgn::F = prob ≈ 0.5 ? 0.0 : (prob < 0.5 ? -1.0 : 1.0)
-            return input + sgn*quantile(m.scores, (2prob - 1)sgn, sorted=true, alpha=1, beta=1)
+			return input + m.σ[]*sgn*quantile(m.scores, (2prob - 1)sgn, sorted=true, alpha=1, beta=1)
         else
-            return input + quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
+			return input + m.σ[]*quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
         end
     else
         return input + m.σ[]*(sqrt(2)*erfinv(2*prob - 1))
