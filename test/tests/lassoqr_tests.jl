@@ -1,7 +1,7 @@
 @testset "LassoQR" begin
     
-    setLAMBDA([0])
-    @test getLAMBDA() ≈ [0]
+    set_hyperparam(:lambda, [0])
+    @test get_hyperparam(:lambda) ≈ [0]
     
     pred = rand(100, 2)
     obs = pred[:, 1].*0.8 + pred[:, 2].*0.2
@@ -37,7 +37,7 @@
 
     @test quantiles ≈ viewpred(qf)
 
-    setLAMBDA([10])
+    set_hyperparam(:lambda, [10])
     lassoqr = LassoQR(100, 2, prob)
     train(lassoqr, pred, obs)
     lassoW = getweights(lassoqr)

@@ -16,7 +16,7 @@ struct QR{F<:AbstractFloat} <: MultiPostModel{F}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
-        if Threads.nthreads() == 1 && !PARALLELQR[]
+        if Threads.nthreads() == 1 && !get_hyperparam(:parsol)
             Highs_resetGlobalScheduler(1)
             set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
         end

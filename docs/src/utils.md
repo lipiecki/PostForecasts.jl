@@ -6,4 +6,6 @@ getmodel
 nreg
 matchwindow
 checkmatch
+set_hyperparam
+get_hyperparam
 ```

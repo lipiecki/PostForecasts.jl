@@ -12,13 +12,13 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
     (Symbol("pangu$(H)t850") => ("pangu_lead$(H).csv", 5, 10) for H in 0:6:186)...,
     (Symbol("pangu$(H)z500") => ("pangu_lead$(H).csv", 6, 11) for H in 0:6:186)...)
 
-# constants for quantile regressions
-const LAMBDA = [0.001, 0.01, 0.1, 1, 10]
-const PARALLELQR = Ref(true)
-
-# constants for GARCH optimization
-const TOL = Ref{Float64}(1e-6)
-const MAXEVAL = Ref{Int}(100_000)
+# hyperparameter constants
+const HYPERPARAMS = Dict{Symbol, Union{Vector{<:Number}, Ref{<:Number}}}(
+    :lambda => Vector{Float64}([0.001, 0.01, 0.1, 1, 10]),
+    :parsol => Ref{Bool}(true),
+    :tol => Ref{Float64}(1e-6),
+    :maxeval => Ref{Int}(100_000)
+)
 
 import Base: getindex, firstindex, lastindex, eachindex, length, show
 using Combinatorics: combinations
@@ -133,14 +133,8 @@ export
     nreg,
     matchwindow,
     checkmatch,
-    setLAMBDA,
-    getLAMBDA,
-    setPARALLELQR,
-    getPARALLELQR,
-    setTOL,
-    setMAXEVAL,
-    getTOL,
-    getMAXEVAL,
+    set_hyperparam,
+    get_hyperparam,
 
     # Data
     loaddata,

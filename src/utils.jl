@@ -69,46 +69,28 @@ function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{Poi
     return true
 end
 
-
 """
-setLAMBDA(lambda::AbstractVector{<:Number})
-    Set the values of the package constant `LAMBDA` to be equal to `lambda`.
+    set_hyperparam(name::Symbol, value::Union{Number, AbstractVector{<:Number}})
+Set the value of the hyperparameter `name` to `value`. The hyperparameters are stored in the package dictionary `HYPERPARAMS`.
 """
-function setLAMBDA(lambda::AbstractVector{<:Number})
-    empty!(LAMBDA)
-    for λ in lambda
-        push!(LAMBDA, λ)
+function set_hyperparam(name::Symbol, value::Union{Number, AbstractVector{<:Number}})
+    haskey(HYPERPARAMS, name) || throw(ArgumentError("hyperparameter not found"))
+    if isa(HYPERPARAMS[name], Ref)
+        HYPERPARAMS[name][] = eltype(HYPERPARAMS[name])(value)
+    else
+        HYPERPARAMS[name] = convert(typeof(HYPERPARAMS[name]), copy(value))
     end
 end
 
 """
-getLAMBDA()
-    Get the vector copy of the package constant `LAMBDA`.
+    get_hyperparam(name::Symbol)
+Get the value of the hyperparameter `name` from the package dictionary `HYPERPARAMS`.
 """
-getLAMBDA() = copy(LAMBDA)
-
-function setPARALLELQR(parallel::Bool)
-    PARALLELQR[] = parallel
-end
-
-function getPARALLELQR()
-    return PARALLELQR[]
-end
-
-function setTOL(tol::AbstractFloat)
-    TOL[] = tol
-    return nothing
-end
-
-function setMAXEVAL(maxeval::Integer)
-    MAXEVAL[] = maxeval
-    return nothing
-end
-
-function getTOL()
-    return TOL[]
-end
-
-function getMAXEVAL()
-    return MAXEVAL[]
+function get_hyperparam(name::Symbol)
+    haskey(HYPERPARAMS, name) || throw(ArgumentError("hyperparameter not found"))
+    if isa(HYPERPARAMS[name], Ref)
+        return HYPERPARAMS[name][]
+    else
+        return copy(HYPERPARAMS[name])
+    end
 end

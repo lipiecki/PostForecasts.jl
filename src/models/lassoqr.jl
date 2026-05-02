@@ -4,7 +4,7 @@ Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso-estimate
 
 If `lambda` is a vector, the optimal regularization strength will be selected using the Bayesian Information Criterion (BIC) during every training, separately for each quantile.
 
-If not provided, `lambda` is specified by the package constant `LAMBDA`, with the default of `[0.001, 0.01, 0.1, 1.0, 10.0]`. `LAMBDA` can be modified with the [`setLAMBDA`](@ref) method. 
+If not provided, `lambda` is specified in the package constant `HYPERPARAMS`, with the default of `[0.001, 0.01, 0.1, 1.0, 10.0]`. `LAMBDA` can be modified with the [`set_hyperparam`](@ref) method. 
 """
 struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
@@ -20,11 +20,11 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     zmean::Vector{F}
     zstd::Vector{F}
 
-    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::AbstractVector{<:AbstractFloat}=LAMBDA) where {F<:AbstractFloat}
+    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::Vector{Float64}=get_hyperparam(:lambda)) where {F<:AbstractFloat}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
-        if Threads.nthreads() == 1 && !PARALLELQR[]
+        if Threads.nthreads() == 1 && !get_hyperparam(:parsol)
             Highs_resetGlobalScheduler(1)
             set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
         end
