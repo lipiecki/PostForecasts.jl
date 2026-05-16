@@ -13,22 +13,20 @@ struct PointForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts{F, I}
     obs::Vector{F}
     id::Vector{I}
 
-    function PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer}
+    function PointForecasts(pred::AbstractMatrix{F1}, obs::AbstractVector{F2}, id::AbstractVector{I}) where {F1<:AbstractFloat, F2<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         isunique(id) || throw(ArgumentError("`id` must contain only unique elements"))
+        F = promote_type(F1, F2)
         new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id))
     end
 end
 
 PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
-        PointForecasts(reshape(pred, length(pred), 1), obs, id)
+    PointForecasts(reshape(pred, length(pred), 1), obs, id)
 
-PointForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
+PointForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
     PointForecasts(pred, obs, 1:length(obs))
-
-    PointForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
-        PointForecasts(reshape(pred, length(pred), 1), obs, 1:length(obs))
 
 """
     QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}[, id::AbstractVector{I}, prob::Union{F, AbstractVector{F}}]) where {F<:AbstractFloat, I<:Integer}
@@ -45,8 +43,7 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts{F, I}
     id::Vector{I}
     prob::Vector{F}
 
-    # unsafe non-copying constructor
-    function QuantForecasts(pred::Matrix{F}, obs::Vector{F}, id::Vector{I}, prob::Vector{F}, safe::Val{false}) where {F<:AbstractFloat, I<:Integer}
+    function QuantForecasts(pred::Matrix{F1}, obs::Vector{F2}, id::Vector{I}, prob::Vector{F3}) where {F1<:AbstractFloat, F2<:AbstractFloat, F3<:AbstractFloat, I<:Integer}
         size(pred, 1) == length(obs) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `obs` is $(length(obs))"))
         size(pred, 1) == length(id) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `id` is $(length(id))"))
         size(pred, 2) == length(prob) || throw(ArgumentError("size of `pred` is $(size(pred)) while length of `prob` is $(length(prob))"))
@@ -58,39 +55,33 @@ struct QuantForecasts{F<:AbstractFloat, I<:Integer} <: Forecasts{F, I}
                 throw(ArgumentError("quantile `pred` passed to the constructor are decreasing"))
             end
         end
-        new{F, I}(pred, obs, id, prob)
-    end
-
-    # safe copying constructor
-    function QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}, safe::Val{true}) where {F<:AbstractFloat, I<:Integer}
-        QuantForecasts(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob), Val(false))
-    end
-    
+        F = promote_type(F1, F2, F3)
+        new{F, I}(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob))
+    end    
 end
 
-QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer} = 
-    QuantForecasts(pred, obs, id, prob, Val(true))
+function QuantForecasts(pred::AbstractMatrix{F1}, obs::AbstractVector{F2}, id::AbstractVector{I}, prob::AbstractVector{F3}) where {F1<:AbstractFloat, F2<:AbstractFloat, F3<:AbstractFloat, I<:Integer}
+    F = promote_type(F1, F2, F3)
+    QuantForecasts(Matrix{F}(pred), Vector{F}(obs), Vector{I}(id), Vector{F}(prob))
+end
 
-QuantForecasts(pred::AbstractMatrix{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
-    QuantForecasts(pred, obs, id, equidistant(size(pred, 2), F))
+QuantForecasts(pred::AbstractMatrix{F1}, obs::AbstractVector{F2}, id::AbstractVector{<:Integer}) where {F1<:AbstractFloat, F2<:AbstractFloat} =
+    QuantForecasts(pred, obs, id, equidistant(size(pred, 2), promote_type(F1, F2)))
 
-QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::AbstractVector{F}) where {F<:AbstractFloat, I<:Integer} =
+QuantForecasts(pred::AbstractVector{<:AbstractFloat}, obs::AbstractVector{<:AbstractFloat}, id::AbstractVector{<:Integer}, prob::AbstractVector{<:AbstractFloat}) =
     QuantForecasts(reshape(pred, length(pred), 1), obs, id, prob)
 
-QuantForecasts(pred::AbstractVector{F}, obs::AbstractVector{F}, id::AbstractVector{I}) where {F<:AbstractFloat, I<:Integer} =
-    QuantForecasts(reshape(pred, length(pred), 1), obs, id)
-
-QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, prob::AbstractVector{F}) where {F<:AbstractFloat} =
+QuantForecasts(pred::AbstractVecOrMat{<:AbstractFloat}, obs::AbstractVector{<:AbstractFloat}, prob::AbstractVector{<:AbstractFloat}) =
     QuantForecasts(pred, obs, 1:length(obs), prob)
 
-QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}) where {F<:AbstractFloat} =
-    QuantForecasts(pred, obs, 1:length(obs))
-
-QuantForecasts(pred::AbstractVecOrMat{F}, obs::AbstractVector{F}, id::AbstractVector{I}, prob::F) where {F<:AbstractFloat, I<:Integer} =
+QuantForecasts(pred::AbstractVecOrMat{<:AbstractFloat}, obs::AbstractVector{<:AbstractFloat}, id::AbstractVector{<:Integer}, prob::AbstractFloat) =
     QuantForecasts(pred, obs, id, [prob])
 
-QuantForecasts(pred::AbstractVecOrMat{F}, obs::Vector{F}, prob::F) where {F<:AbstractFloat} =
-    QuantForecasts(pred, obs, 1:length(obs), prob)
+QuantForecasts(pred::AbstractVecOrMat{<:AbstractFloat}, obs::AbstractVector{<:AbstractFloat}, prob::AbstractFloat) =
+    QuantForecasts(pred, obs, [prob])
+
+QuantForecasts(pred::AbstractVecOrMat{<:AbstractFloat}, obs::AbstractVector{<:AbstractFloat}) =
+    QuantForecasts(pred, obs, 1:length(obs))
 
 Base.show(io::IO, f::Forecasts) = println(io, typeof(f), " with a pool of ", npred(f),  " forecast(s) at ", length(f), " timesteps, between ", f.id[begin], " and ", f.id[end])
 

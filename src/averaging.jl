@@ -108,8 +108,8 @@ function paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractVect
         pred,
         getobs(qfs[begin]),
         getid(qfs[begin]),
-        prob,
-        Val(false))
+        prob
+    )
 end
 
 paverage(qfs::AbstractVector{<:QuantForecasts}, quantiles::AbstractFloat) = paverage(qfs, [quantiles])
@@ -139,8 +139,8 @@ function qaverage(qfs::AbstractVector{<:QuantForecasts})
         pred,
         getobs(qfs[begin]),
         getid(qfs[begin]),
-        getprob(qfs[begin]), 
-        Val(false))
+        getprob(qfs[begin])
+    )
 end
 
 function qaverage(qfs::Vararg{QuantForecasts, N}) where N
