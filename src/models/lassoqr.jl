@@ -24,11 +24,7 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
-        if Threads.nthreads() == 1 && !get_hyperparam(:parsol)
-            Highs_resetGlobalScheduler(1)
-            set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
-        end
-        MOI.get(lpmodel, MOI.NumberOfThreads()) > 1 && Threads.nthreads() > 1 && @warn "running multiple threads ($(Threads.nthreads())) and HiGHS uses within solver parallelism"
+        _config_solver_threads(lpmodel)
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         new{F}(convert(Vector{F}, prob), 
@@ -78,31 +74,32 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
     d += 1 # for the intercept
     for (p, α) in enumerate(m.prob)
         bic = Inf
-        for λ in m.lambda
-            empty!(m.lpmodel)  
-            fill!(H, 0.0)
-            fill!(h, 0.0)
-            
-            for i in 1:n
-                H[i, d] = 1.0
-                H[i, 2d] = -1.0
-                H[i, 2d+i] = 1.0
-                H[i, 2d+n+i] = -1.0
-                for j in 1:d-1
-                    z = (X[i, j] - m.zmean[j]) / m.zstd[j]
-                    H[i, j] = z
-                    H[i, d+j] = -z
-                end
+        empty!(m.lpmodel)  
+        fill!(H, 0.0)
+        fill!(h, 0.0)
+        
+        for i in 1:n
+            H[i, d] = 1.0
+            H[i, 2d] = -1.0
+            H[i, 2d+i] = 1.0
+            H[i, 2d+n+i] = -1.0
+            for j in 1:d-1
+                z = (X[i, j] - m.zmean[j]) / m.zstd[j]
+                H[i, j] = z
+                H[i, d+j] = -z
             end
-            
+        end
+        h[2d+1:2d+n] .= α
+        h[2d+n+1:2d+2n] .= 1.0 - α
+        @variable(m.lpmodel, x[axes(H, 2)] >= 0)
+        @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
+        for (l, λ) in enumerate(m.lambda)
             h[1:d-1] .= λ
             h[d+1:2d-1] .= λ
-            h[2d+1:2d+n] .= α
-            h[2d+n+1:2d+2n] .= 1.0 - α
-        
-            @variable(m.lpmodel, x[axes(H, 2)] >= 0)
-            @objective(m.lpmodel, Min, sum(h.*x))
-            @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
+            if l > 1
+                set_start_value(x, JuMP.value(x))
+            end
+            @objective(m.lpmodel, Min, sum(h.*x)) 
             JuMP.optimize!(m.lpmodel)
             current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*(sum(JuMP.value(x[i]-x[d+i]) ≉ zero(F) for i in 1:d-1)+1)*log(n)/(2n)
             if current_bic < bic

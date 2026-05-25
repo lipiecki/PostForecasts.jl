@@ -27,3 +27,14 @@ function isunique(X::AbstractVector{<:Integer})
     end
     return true
 end
+
+function _config_solver_threads(lpmodel::GenericModel)
+    Threads.threadid() > 1 && @warn "configuring solver parallelization is not thread-safe, construct the model in the main thread to avoid issues"
+    if get_hyperparam(:parsol) & Threads.nthreads() > 1
+        Highs_resetGlobalScheduler(1)
+        set_attribute(lpmodel, MOI.NumberOfThreads(), Threads.nthreads())
+    elseif !get_hyperparam(:parsol)
+        Highs_resetGlobalScheduler(1)
+        set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
+    end
+end
