@@ -10,15 +10,17 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
     W::Matrix{F} # weights of quantile regressions
 
-    # variables for constructing a linear programming problem
-    h::Vector{F}
-    H::Matrix{F}
-    lambda::Vector{F}
-    lpmodel::GenericModel{F}
-    
     # z-score parameters
     zmean::Vector{F}
     zstd::Vector{F}
+
+    # variables for constructing a linear programming problem
+    solutions::Vector{F}
+    h::Vector{F}
+    H::Matrix{F}
+    lambda::Vector{F}
+    optimal_lambda_inds::Vector{Int}    
+    lpmodel::GenericModel{F}
 
     function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::Vector{Float64}=get_hyperparam(:lambda)) where {F<:AbstractFloat}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
@@ -28,13 +30,15 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         new{F}(convert(Vector{F}, prob), 
-            Matrix{F}(undef, r + 1, length(prob)), 
+            Matrix{F}(undef, r + 1, length(prob)),
+            Vector{F}(undef, r + 1),
+            Vector{F}(undef, r + 1),
+            Vector{F}(undef, 2(r + 1 + n)),
             Vector{F}(undef, 2(r + 1 + n)),
             Matrix{F}(undef, n, 2(r + 1 + n)),
-            convert(Vector{F}, lambda),
-            lpmodel,
-            Vector{F}(undef, r + 1),
-            Vector{F}(undef, r + 1))
+            Vector{F}(sort(lambda, rev=true)),
+            Vector{Int}(undef, length(prob)),
+            lpmodel)
     end
 
     LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat) where {F<:AbstractFloat} = LassoQR(F, n, r, [prob])
@@ -72,40 +76,41 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
     m.zmean[end] = mean(Y)
     m.zstd[end] = sqrt(sum(abs2, Y .- m.zmean[end])/(n-1))
     d += 1 # for the intercept
-    for (p, α) in enumerate(m.prob)
-        bic = Inf
-        empty!(m.lpmodel)  
-        fill!(H, 0.0)
-        fill!(h, 0.0)
-        
-        for i in 1:n
-            H[i, d] = 1.0
-            H[i, 2d] = -1.0
-            H[i, 2d+i] = 1.0
-            H[i, 2d+n+i] = -1.0
-            for j in 1:d-1
-                z = (X[i, j] - m.zmean[j]) / m.zstd[j]
-                H[i, j] = z
-                H[i, d+j] = -z
-            end
+    fill!(H, 0.0)
+    fill!(h, 0.0)
+    empty!(m.lpmodel)
+    for i in 1:n
+        H[i, d] = 1.0
+        H[i, 2d] = -1.0
+        H[i, 2d+i] = 1.0
+        H[i, 2d+n+i] = -1.0
+        for j in 1:d-1
+            z = (X[i, j] - m.zmean[j]) / m.zstd[j]
+            H[i, j] = z
+            H[i, d+j] = -z
         end
+    end
+    @variable(m.lpmodel, x[axes(H, 2)] >= 0)
+    @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
+    for (p, α) in enumerate(m.prob)
         h[2d+1:2d+n] .= α
         h[2d+n+1:2d+2n] .= 1.0 - α
-        @variable(m.lpmodel, x[axes(H, 2)] >= 0)
-        @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == (Y[j]-m.zmean[end])/m.zstd[end])
+        bic = Inf
         for (l, λ) in enumerate(m.lambda)
             h[1:d-1] .= λ
             h[d+1:2d-1] .= λ
-            if l > 1
-                set_start_value(x, JuMP.value(x))
+            if p > 1
+                foreach(i -> set_start_value(x[i], m.solutions[i]), eachindex(m.solutions))
             end
             @objective(m.lpmodel, Min, sum(h.*x)) 
             JuMP.optimize!(m.lpmodel)
             current_bic = log(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n)) + log(d)*(sum(JuMP.value(x[i]-x[d+i]) ≉ zero(F) for i in 1:d-1)+1)*log(n)/(2n)
             if current_bic < bic
                 bic = current_bic
+                m.optimal_lambda_inds[p] = l
+                m.solutions .= JuMP.value(x)
                 for i in 1:d
-                    m.W[i, p] = JuMP.value(x[i]-x[d+i])
+                    m.W[i, p] = m.solutions[i] - m.solutions[d+i]
                 end
             end
         end

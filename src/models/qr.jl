@@ -7,6 +7,7 @@ struct QR{F<:AbstractFloat} <: MultiPostModel{F}
     W::Matrix{F} # weights of quantile regressions
 
     # variables for constructing a linear programming problem
+    solutions::Vector{F}
     h::Vector{F}
     H::Matrix{F}
     bounds::Vector{F}
@@ -21,6 +22,7 @@ struct QR{F<:AbstractFloat} <: MultiPostModel{F}
         set_string_names_on_creation(lpmodel, false)
         new{F}(convert(Vector{F}, prob), 
             Matrix{F}(undef, r + 1, length(prob)), 
+            Vector{F}(undef, r + 1 + 2n),
             Vector{F}(undef, r + 1 + 2n),
             Matrix{F}(undef, n, r + 1 + 2n),
             convert(Vector{F}, [-Inf.*ones(r + 1); zeros(2n)]),
@@ -72,29 +74,30 @@ function _train(m::QR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number
     H, h = m.H, m.h
     n, d = ndims(X) > 1 ? size(X) : (length(X), 1)
     d += 1 # for the intercept
-    for (p, α) in enumerate(m.prob)
-        empty!(m.lpmodel)  
-        fill!(H, 0.0)
-        fill!(h, 0.0)
-        
-        for i in 1:n
-            H[i, d] = 1.0
-            H[i, d+i] = 1.0
-            H[i, d+n+i] = -1.0
-            for j in 1:d-1
-                H[i, j] = X[i, j]
-            end
+    fill!(H, 0.0)
+    fill!(h, 0.0)
+    empty!(m.lpmodel)
+    for i in 1:n
+        H[i, d] = 1.0
+        H[i, d+i] = 1.0
+        H[i, d+n+i] = -1.0
+        for j in 1:d-1
+            H[i, j] = X[i, j]
         end
-        
+    end
+    @variable(m.lpmodel, x[i=axes(H, 2)] >= m.bounds[i])
+    @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == Y[j])
+    for (p, α) in enumerate(m.prob)
         h[d+1:d+n] .= α
         h[d+n+1:d+2n] .= 1.0 - α
-    
-        @variable(m.lpmodel, x[i=axes(H, 2)] >= m.bounds[i])
+        if p > 1
+            foreach(i -> set_start_value(x[i], m.solutions[i]), eachindex(m.solutions))
+        end
         @objective(m.lpmodel, Min, sum(h.*x))
-        @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == Y[j])
         JuMP.optimize!(m.lpmodel)
+        m.solutions .= JuMP.value(x)
         for i in 1:d
-            m.W[i, p] = JuMP.value(x[i])
+            m.W[i, p] = m.solutions[i]
         end
     end
     return nothing
