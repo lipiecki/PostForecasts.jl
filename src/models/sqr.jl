@@ -28,7 +28,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_string_names_on_creation(lpmodel, false)
         
         optimizer = NLopt.Opt(:LD_MMA, r + 1)
-        NLopt.xtol_abs!(optimizer, tol)
+        NLopt.xtol_rel!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, maxeval)
 
         new{F}(convert(Vector{F}, prob), 
@@ -56,7 +56,7 @@ Creates an isotonic smoothing quantile regression model (see [Lipiecki & Uniejew
 function iSQR(args...)
     isqr = SQR(args...)
     isqr.bounds[1:nreg(isqr)] .= 0.0
-    NLopt.lower_bounds!(isqr.optimizer, ones(nreg(isqr) + 1).*isqr.tol)
+    NLopt.lower_bounds!(isqr.optimizer, [ones(nreg(isqr)).*isqr.tol; -Inf])
     return isqr
 end
 
