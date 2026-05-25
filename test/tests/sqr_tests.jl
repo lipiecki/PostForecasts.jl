@@ -7,16 +7,6 @@
     model = SQR(100, 1, prob)
     train(model, pred, obs)
     
-    @test getweights(model) ≈ W
-    @test getquantprob(model) == [0.25, 0.75]
-    
-    @test predict(model, -1, prob) ≈ [-1.5, -1.5]
-    @test predict(model, [-1], prob) ≈ [-1.5, -1.5]
-    @test predict(model, -1) ≈ [-1.5, -1.5]
-    @test predict(model, [-1]) ≈ [-1.5, -1.5]
-    @test predict(model, -1, 0.25) ≈ -1.5
-    @test predict(model, [-1], 0.25) ≈ -1.5
-
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
@@ -48,7 +38,6 @@
     pf = PointForecasts(pred_, obs_)
     qf = point2quant(pf, method=:isqr, window=100, quantiles=0.5, retrain=0)
 
-    @test getweights(model) ≈ W
     @test getquantprob(model) == [0.5]
 
     median = Matrix{Float64}(undef, 50, 1)

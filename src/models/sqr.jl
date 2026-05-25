@@ -6,7 +6,12 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
     W::Matrix{F} # weights of quantile regressions
 
+    # z-score parameters
+    zmean::Vector{F}
+    zstd::Vector{F}
+
     residuals::Vector{F}
+
     # variables for constructing a linear programming problem
     solutions::Vector{F}
     h::Vector{F}
@@ -28,11 +33,13 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_string_names_on_creation(lpmodel, false)
         
         optimizer = NLopt.Opt(:LD_MMA, r + 1)
-        NLopt.xtol_rel!(optimizer, tol)
+        NLopt.xtol_abs!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, maxeval)
 
         new{F}(convert(Vector{F}, prob), 
             Matrix{F}(undef, r + 1, length(prob)), 
+            Vector{F}(undef, r + 1),
+            Vector{F}(undef, r + 1),
             Vector{F}(undef, n),
             Vector{F}(undef, r + 1 + 2n),
             Vector{F}(undef, r + 1 + 2n),
@@ -56,7 +63,7 @@ Creates an isotonic smoothing quantile regression model (see [Lipiecki & Uniejew
 function iSQR(args...)
     isqr = SQR(args...)
     isqr.bounds[1:nreg(isqr)] .= 0.0
-    NLopt.lower_bounds!(isqr.optimizer, [ones(nreg(isqr)).*isqr.tol; -Inf])
+    NLopt.lower_bounds!(isqr.optimizer, [zeros(nreg(isqr)); -Inf])
     return isqr
 end
 
@@ -90,7 +97,14 @@ end
 function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number})::Nothing
     H, h = m.H, m.h
     n, d = ndims(X) > 1 ? size(X) : (length(X), 1)
+    for i in 1:d
+        m.zmean[i] = mean(@views(X[:, i]))
+        m.zstd[i] = sqrt(sum(abs2, @views(X[:, i]) .- m.zmean[i])/(n-1))
+    end
     d += 1 # for the intercept
+    m.zmean[end] = mean(Y)
+    m.zstd[end] = sqrt(sum(abs2, Y .- m.zmean[end])/(n-1))
+    targets = (Y .- m.zmean[end]) ./ m.zstd[end]
     fill!(H, 0.0)
     fill!(h, 0.0)
     empty!(m.lpmodel)
@@ -99,11 +113,12 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
         H[i, d+i] = 1.0
         H[i, d+n+i] = -1.0
         for j in 1:d-1
-            H[i, j] = X[i, j]
+            z = (X[i, j] - m.zmean[j]) / m.zstd[j]
+            H[i, j] = z
         end
     end
     @variable(m.lpmodel, x[i=axes(H, 2)] >= m.bounds[i])
-    @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == Y[j])
+    @constraint(m.lpmodel, [j in 1:n], sum(H[j, i]*x[i] for i in axes(H, 2)) == targets[j])
     for (p, α) in enumerate(m.prob)
         # standard quantile regression
         h[d+1:d+n] .= α
@@ -119,8 +134,8 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
         end
         
         # smoothing step
-        m.residuals .= Y
-        @views foreach(i -> m.residuals[i] -= dot(X[i, 1:d-1], m.W[1:d-1, p]), 1:n)
+        m.residuals .= targets
+        @views foreach(i -> m.residuals[i] -= dot(H[i, 1:d-1], m.W[1:d-1, p]), 1:n)
         m.residuals .-= m.W[end, p]
         sigma_res = sqrt(sum(abs2, m.residuals .- mean(m.residuals))/(n-1))
         sigma_res = min(
@@ -128,8 +143,8 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
             (quantile(m.residuals, 0.75) - quantile(m.residuals, 0.25))/1.34898
         )
         bandwidth = 0.9*sigma_res*n^(-1/5)
-        f(u) = _objective_sqr(u, m.prob[p], bandwidth, X, Y)
-        m.params .= m.W[:, p]
+        f(u) = _objective_sqr(u, m.prob[p], bandwidth, @views(H[:, 1:d-1]), targets)
+        m.params .= m.W[:, p] .+ m.tol
         NLopt.min_objective!(m.optimizer, _autodiff(f))
         NLopt.optimize!(m.optimizer, m.params)
         m.W[:, p] .= m.params
@@ -140,7 +155,7 @@ end
 function _predict(m::SQR{F}, input::AbstractVector{<:Number}, prob::AbstractFloat) where {F<:AbstractFloat}
     j = findfirst(p -> p ≈ prob, m.prob)
     isnothing(j) && throw(ArgumentError("cannot match the model quantile to the provided probability ($(prob))"))
-    return m.W[end, j] + dot(@view(m.W[1:end-1, j]), input)
+    return (m.W[end, j] + dot(@view(m.W[1:end-1, j]), (input .- @view(m.zmean[1:end-1]))./@view(m.zstd[1:end-1]))) * m.zstd[end] + m.zmean[end]
 end
 
 function _predict(m::SQR{F}, input::AbstractVector{<:Number}, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}
@@ -160,7 +175,7 @@ end
 
 function _predict!(m::SQR, output::AbstractVector{<:AbstractFloat}, input::AbstractVector{<:Number})::Nothing
     for j in eachindex(output)
-        output[j] = m.W[end, j] + dot(@view(m.W[1:end-1, j]), input)
+        output[j] = (m.W[end, j] + dot(@view(m.W[1:end-1, j]), (input .- @view(m.zmean[1:end-1]))./@view(m.zstd[1:end-1]))) * m.zstd[end] + m.zmean[end]
     end
     sort!(output)
     return nothing
