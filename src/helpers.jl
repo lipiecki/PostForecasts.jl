@@ -28,6 +28,15 @@ function isunique(X::AbstractVector{<:Integer})
     return true
 end
 
+function _autodiff(f::Function)
+    function nlopt_fn(x::Vector, grad::Vector)
+        if length(grad) > 0
+            ForwardDiff.gradient!(grad, f, x)
+        end
+        return f(x)
+    end
+end
+
 function _config_solver_threads(lpmodel::GenericModel)
     Threads.threadid() > 1 && @warn "configuring solver parallelization is not thread-safe, construct the model in the main thread to avoid issues"
     if get_hyperparam(:parsol) & Threads.nthreads() > 1
@@ -37,4 +46,12 @@ function _config_solver_threads(lpmodel::GenericModel)
         Highs_resetGlobalScheduler(1)
         set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
     end
+end
+
+function normal_cdf(x::Number)
+    return 0.5 * (1 + erf(x / sqrt(2)))
+end
+
+function normal_pdf(x::Number)
+    return exp(-0.5 * x^2) / sqrt(2 * π)
 end

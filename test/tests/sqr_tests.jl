@@ -1,10 +1,10 @@
-@testset "QR" begin
+@testset "SQR" begin
     pred = rand(100)
     obs = pred.*2 .+ 0.5
     W = [2. 2.; 0.5 0.5]
 
     prob = [0.25, 0.75]
-    model = QR(100, 1, prob)
+    model = SQR(100, 1, prob)
     train(model, pred, obs)
     
     @test getweights(model) ≈ W
@@ -20,7 +20,7 @@
     pred_ = [pred; rand(50)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, method=:qr, window=100, quantiles=[0.25, 0.75], retrain=0)
+    qf = point2quant(pf, method=:sqr, window=100, quantiles=[0.25, 0.75], retrain=0)
 
     quantiles = Matrix{Float64}(undef, 50, 2)
     quantiles2 = similar(quantiles)
@@ -40,13 +40,13 @@
     obs = pred*[2, 1] .+ 0.5
     W = [2.; 1.; 0.5]
 
-    model = QR(size(pred)..., 0.5)
+    model = SQR(size(pred)..., 0.5)
     train(model, pred, obs)
 
     pred_ = [pred; rand(50, 2)]
     obs_ = [obs; rand(50)]
     pf = PointForecasts(pred_, obs_)
-    qf = point2quant(pf, method=:iqr, window=100, quantiles=0.5, retrain=0)
+    qf = point2quant(pf, method=:isqr, window=100, quantiles=0.5, retrain=0)
 
     @test getweights(model) ≈ W
     @test getquantprob(model) == [0.5]

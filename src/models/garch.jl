@@ -48,7 +48,7 @@ getmodel(::Type{F}, ::Val{:cpgarch}, params::Vararg) where {F<:AbstractFloat} = 
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
-function _objective(params::Vector, errors::Vector{<:AbstractFloat})
+function _objective_garch(params::Vector, errors::Vector{<:AbstractFloat})
     α, β = params
     ω = 1.0 - α - β
     loss = 0.0
@@ -61,15 +61,6 @@ function _objective(params::Vector, errors::Vector{<:AbstractFloat})
         variance = max(variance, 0) + ω
     end
     return loss/length(errors)
-end
-
-function _autodiff(f::Function)
-    function nlopt_fn(x::Vector, grad::Vector)
-        if length(grad) > 0
-            ForwardDiff.gradient!(grad, f, x)
-        end
-        return f(x)
-    end
 end
 
 function _filter!(m::GARCH)
@@ -104,7 +95,7 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
         return nothing
     end
     m.errors .= m.errors./m.scale[]
-    f(u) = _objective(u, m.errors)
+    f(u) = _objective_garch(u, m.errors)
     NLopt.min_objective!(m.optimizer, _autodiff(f))
     NLopt.optimize!(m.optimizer, m.params)
     _filter!(m)

@@ -29,7 +29,7 @@ using JuMP
 using NLopt
 using ForwardDiff
 using LinearAlgebra
-using SpecialFunctions: erfinv
+using SpecialFunctions: erf, erfinv
 using Statistics: mean, median, quantile
 
 include(joinpath("models", "cp.jl"))
@@ -37,6 +37,7 @@ include(joinpath("models", "idr.jl"))
 include(joinpath("models", "normal.jl"))
 include(joinpath("models", "qr.jl"))
 include(joinpath("models", "lassoqr.jl"))
+include(joinpath("models", "sqr.jl"))
 include(joinpath("models", "garch.jl"))
 include("Forecasts.jl")
 include("helpers.jl")
@@ -108,6 +109,8 @@ export
     QR,
     iQR,
     LassoQR,
+    SQR,
+    iSQR,
     getweights,
     getquantprob,
 
