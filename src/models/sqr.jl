@@ -24,7 +24,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
     optimizer::Opt
     tol::Float64
     
-    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval)) where {F<:AbstractFloat}
+    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
@@ -32,7 +32,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         
-        optimizer = NLopt.Opt(:LD_SLSQP, r + 1)
+        optimizer = NLopt.Opt(nloptalg, r + 1)
         NLopt.xtol_abs!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, maxeval)
 

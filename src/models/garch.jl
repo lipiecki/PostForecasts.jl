@@ -12,8 +12,8 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     filter::Bool
     abs::Bool
     tol::Float64
-    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval)) where {F<:AbstractFloat} 
-        optimizer = NLopt.Opt(:LD_MMA, 2)
+    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat} 
+        optimizer = NLopt.Opt(nloptalg, 2)
         NLopt.lower_bounds!(optimizer, [tol, tol])
         NLopt.upper_bounds!(optimizer, [1-tol, 1-tol])
         NLopt.xtol_abs!(optimizer, tol)

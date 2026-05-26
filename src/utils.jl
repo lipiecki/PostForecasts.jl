@@ -70,10 +70,10 @@ function checkmatch(fs::Vararg{T, N}; checkpred::Bool=false) where {T<:Union{Poi
 end
 
 """
-    set_hyperparam(name::Symbol, value::Union{Number, AbstractVector{<:Number}})
+    set_hyperparam(name::Symbol, value::Any)
 Set the value of the hyperparameter `name` to `value`. The hyperparameters are stored in the package dictionary `HYPERPARAMS`.
 """
-function set_hyperparam(name::Symbol, value::Union{Number, AbstractVector{<:Number}})
+function set_hyperparam(name::Symbol, value::Any)
     haskey(HYPERPARAMS, name) || throw(ArgumentError("hyperparameter not found"))
     if isa(HYPERPARAMS[name], Ref)
         HYPERPARAMS[name][] = eltype(HYPERPARAMS[name])(value)
