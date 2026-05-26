@@ -32,7 +32,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         
-        optimizer = NLopt.Opt(:LD_MMA, r + 1)
+        optimizer = NLopt.Opt(:LD_SLSQP, r + 1)
         NLopt.xtol_abs!(optimizer, tol)
         NLopt.nlopt_set_maxeval(optimizer, maxeval)
 
@@ -144,7 +144,8 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
         )
         bandwidth = 0.9*sigma_res*n^(-1/5)
         f(u) = _objective_sqr(u, m.prob[p], bandwidth, @views(H[:, 1:d-1]), targets)
-        m.params .= m.W[:, p] .+ m.tol
+        m.params .= m.W[:, p]
+        m.params[1:end-1] .+= 2m.tol
         NLopt.min_objective!(m.optimizer, _autodiff(f))
         NLopt.optimize!(m.optimizer, m.params)
         m.W[:, p] .= m.params
