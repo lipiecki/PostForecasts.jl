@@ -21,10 +21,12 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
 
     # variables for nonlinear optimization of the smoothing step
     params::Vector{F}
-    optimizer::Opt
-    tol::Float64
+    opt::Opt
     
-    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat}
+    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, 
+            abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
+            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat}
+        
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
@@ -32,9 +34,10 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         set_silent(lpmodel)
         set_string_names_on_creation(lpmodel, false)
         
-        optimizer = NLopt.Opt(nloptalg, r + 1)
-        NLopt.xtol_abs!(optimizer, tol)
-        NLopt.nlopt_set_maxeval(optimizer, maxeval)
+        opt = NLopt.Opt(nloptalg, r + 1)
+        NLopt.xtol_abs!(opt, abstol)
+        NLopt.xtol_rel!(opt, reltol)
+        NLopt.nlopt_set_maxeval(opt, maxeval)
 
         new{F}(convert(Vector{F}, prob), 
             Matrix{F}(undef, r + 1, length(prob)), 
@@ -47,8 +50,8 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
             convert(Vector{F}, [-Inf.*ones(r + 1); zeros(2n)]),
             lpmodel,
             Vector{F}(undef, r + 1),
-            optimizer,
-            tol)
+            opt
+        )
     end
 
     SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat) where {F<:AbstractFloat} = SQR(F, n, r, [prob])
@@ -63,7 +66,7 @@ Creates an isotonic smoothing quantile regression model (see [Lipiecki & Uniejew
 function iSQR(args...)
     isqr = SQR(args...)
     isqr.bounds[1:nreg(isqr)] .= 0.0
-    NLopt.lower_bounds!(isqr.optimizer, [zeros(nreg(isqr)); -Inf])
+    NLopt.lower_bounds!(isqr.opt, [zeros(nreg(isqr)); -Inf])
     return isqr
 end
 
@@ -142,12 +145,11 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
             sigma_res, 
             (quantile(m.residuals, 0.75) - quantile(m.residuals, 0.25))/1.34898
         )
-        bandwidth = 0.9*sigma_res*n^(-1/5)
+        bandwidth = 0.9*sigma_res*n^(-0.2)
         f(u) = _objective_sqr(u, m.prob[p], bandwidth, @views(H[:, 1:d-1]), targets)
-        m.params .= m.W[:, p]
-        m.params[1:end-1] .+= 2m.tol
-        NLopt.min_objective!(m.optimizer, _autodiff(f))
-        NLopt.optimize!(m.optimizer, m.params)
+        foreach(i -> m.params[i] = max(m.opt.lower_bounds[i] + m.opt.xtol_abs[i], m.W[i, p]), 1:d)
+        NLopt.min_objective!(m.opt, _autodiff(f))
+        NLopt.optimize!(m.opt, m.params)
         m.W[:, p] .= m.params
     end
     return nothing

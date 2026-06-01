@@ -8,43 +8,45 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     scale::Base.RefValue{F}
     params::Vector{F}
     σ::Base.RefValue{F}
-    optimizer::Opt
+    opt::Opt
     filter::Bool
     abs::Bool
-    tol::Float64
-    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, tol::Float64=get_hyperparam(:tol), maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat} 
-        optimizer = NLopt.Opt(nloptalg, 2)
-        NLopt.lower_bounds!(optimizer, [tol, tol])
-        NLopt.upper_bounds!(optimizer, [1-tol, 1-tol])
-        NLopt.xtol_abs!(optimizer, tol)
-        NLopt.nlopt_set_maxeval(optimizer, maxeval)
+    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, 
+            abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
+            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat} 
+        
+        opt = NLopt.Opt(nloptalg, 2)
+        NLopt.lower_bounds!(opt, [abstol, abstol])
+        NLopt.upper_bounds!(opt, [1-abstol, 1-abstol])
+        NLopt.xtol_abs!(opt, abstol)
+        NLopt.xtol_rel!(opt, reltol)
+        NLopt.nlopt_set_maxeval(opt, maxeval)
         function variance_targeting(x::Vector, grad::Vector)
             if length(grad) > 0
                 grad[1] = 1.0
                 grad[2] = 1.0
             end
-            return x[1] + x[2] - 1.0 + tol
+            return x[1] + x[2] - 1.0 + abstol
         end
-        NLopt.inequality_constraint!(optimizer, (x, g) -> variance_targeting(x, g))
+        NLopt.inequality_constraint!(opt, (x, g) -> variance_targeting(x, g))
         new{F}(
             Vector{F}(undef, n),
             Vector{F}(undef, n),
             Ref{F}(1.0),
             Vector{F}(undef, 2),
             Ref{F}(1.0),
-            optimizer,
+            opt,
             filter,
-            abs,
-            tol
+            abs
         )
     end
 end
 
 getmodel(::Type{F}, ::Val{:garch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1])
 
-getmodel(::Type{F}, ::Val{:hsgarch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true)
+getmodel(::Type{F}, ::Val{:fhs}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true)
 
-getmodel(::Type{F}, ::Val{:cpgarch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true, abs=true)
+getmodel(::Type{F}, ::Val{:sfhs}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true, abs=true)
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
@@ -89,15 +91,15 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
         m.errors[i] = Y[i] - X[i]
     end
     m.scale[] = sqrt(sum(abs2, m.errors)/length(m.errors))
-    if m.scale[] < m.tol
+    if m.scale[] ≈ 0
         m.scores .= 0.0
         m.σ[] = 0.0
         return nothing
     end
     m.errors .= m.errors./m.scale[]
     f(u) = _objective_garch(u, m.errors)
-    NLopt.min_objective!(m.optimizer, _autodiff(f))
-    NLopt.optimize!(m.optimizer, m.params)
+    NLopt.min_objective!(m.opt, _autodiff(f))
+    NLopt.optimize!(m.opt, m.params)
     _filter!(m)
     return nothing
 end
