@@ -50,6 +50,15 @@ getmodel(::Type{F}, ::Val{:sfhs}, params::Vararg) where {F<:AbstractFloat} = GAR
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
+function advance!(m::GARCH, ::Vararg{Union{Number, AbstractVector{<:Number}}})::Nothing
+    α, β = m.params
+    ω = 1.0 - α - β
+    variance = abs2(m.σ[])*(α + β)
+    variance += ω
+    m.σ[] = sqrt(variance)
+    return nothing
+end
+
 function _objective_garch(params::Vector, errors::Vector{<:AbstractFloat})
     α, β = params
     ω = 1.0 - α - β
@@ -59,13 +68,12 @@ function _objective_garch(params::Vector, errors::Vector{<:AbstractFloat})
         squared_error = abs2(errors[i])
         loss += squared_error/variance + log(variance)
         variance *= α
-        variance += β*squared_error
-        variance = max(variance, 0) + ω
+        variance += β*squared_error + ω
     end
     return loss/length(errors)
 end
 
-function _filter!(m::GARCH)
+function _forward_pass!(m::GARCH)
     α, β = m.params
     ω = 1.0 - α - β
     variance = 1.0
@@ -73,14 +81,13 @@ function _filter!(m::GARCH)
         m.scores[i] = m.errors[i]/sqrt(variance)
         squared_error = abs2(m.errors[i])
         variance *= α
-        variance += β*squared_error
-        variance = max(variance, 0) + ω
+        variance += β*squared_error + ω
     end
     if m.abs
         m.scores .= abs.(m.scores)
     end
     sort!(m.scores)
-    m.σ[] = sqrt(variance)*m.scale[]
+    m.σ[] = sqrt(variance)
     return nothing
 end
 
@@ -91,8 +98,8 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
         m.errors[i] = Y[i] - X[i]
     end
     m.scale[] = sqrt(sum(abs2, m.errors)/length(m.errors))
-    if m.scale[] ≈ 0
-        m.scores .= 0.0
+    if m.scale[] ≈ 0.0
+        m.scale[] = 0.0
         m.σ[] = 0.0
         return nothing
     end
@@ -100,21 +107,23 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
     f(u) = _objective_garch(u, m.errors)
     NLopt.min_objective!(m.opt, _autodiff(f))
     NLopt.optimize!(m.opt, m.params)
-    _filter!(m)
+    _forward_pass!(m)
     return nothing
 end
 
 function _predict(m::GARCH{F}, input::Number, prob::AbstractFloat) where {F<:AbstractFloat}
+    σ = m.σ[]*m.scale[]
     if m.filter 
         if m.abs
             sgn::F = prob ≈ 0.5 ? 0.0 : (prob < 0.5 ? -1.0 : 1.0)
-			return input + m.σ[]*sgn*quantile(m.scores, (2prob - 1)sgn, sorted=true, alpha=1, beta=1)
+			output = input + σ*sgn*quantile(m.scores, (2prob - 1)sgn, sorted=true, alpha=1, beta=1)
         else
-			return input + m.σ[]*quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
+			output = input + σ*quantile(m.scores, prob, sorted=true, alpha=1, beta=1)
         end
     else
-        return input + m.σ[]*(sqrt(2)*erfinv(2*prob - 1))
+        output = input + σ*(sqrt(2)*erfinv(2*prob - 1))
     end
+    return output
 end
 
 function _predict(m::GARCH{F}, input::Number, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}

@@ -141,7 +141,8 @@ export
     checkmatch,
     set_hyperparam,
     get_hyperparam,
-
+    advance!,
+    
     # Data
     loaddata,
     loaddlm,

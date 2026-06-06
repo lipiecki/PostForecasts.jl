@@ -94,3 +94,9 @@ function get_hyperparam(name::Symbol)
         return copy(HYPERPARAMS[name])
     end
 end
+
+"""
+    advance!(model::PostModel[, input])
+Advance the state of `model` by one step, optionaly using `input` as input for the next state.
+"""
+advance!(::PostModel, ::Vararg{Union{Number, AbstractVector{<:Number}}})::Nothing = nothing

@@ -45,7 +45,9 @@ function point2quant(pf::PointForecasts{F, I}, method::Symbol, window::Integer, 
         if t == first || (retrain > 0 && (t - first) % retrain == 0)
             _train(model, viewpred(pf, t-window:t-1), viewobs(pf, t-window:t-1))
         end
-        _predict!(model, @view(pred[t-first+1, :]), viewpred(pf, t), prob)
+        input = viewpred(pf, t)
+        _predict!(model, @view(pred[t-first+1, :]), input, prob)
+        advance!(model, input)
     end
     return QuantForecasts(
         pred,
