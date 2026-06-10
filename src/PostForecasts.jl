@@ -16,7 +16,7 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 const HYPERPARAMS = Dict{Symbol, Union{Vector{<:Any}, Ref{<:Any}}}(
     :lambda => Vector{Float64}([0.001, 0.01, 0.1, 1, 10]),
     :parsol => Ref{Bool}(true),
-    :reltol => Ref{Float64}(1e-5),
+    :reltol => Ref{Float64}(0.0),
     :abstol => Ref{Float64}(1e-7),
     :maxeval => Ref{Int}(1_000),
     :nloptalg => Ref{Symbol}(:LD_MMA)

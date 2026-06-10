@@ -16,8 +16,8 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
             maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat} 
         
         opt = NLopt.Opt(nloptalg, 2)
-        NLopt.lower_bounds!(opt, [abstol, abstol])
-        NLopt.upper_bounds!(opt, [1-abstol, 1-abstol])
+        NLopt.lower_bounds!(opt, zeros(2) .+ abstol)
+        NLopt.upper_bounds!(opt, ones(2) .- abstol)
         NLopt.xtol_abs!(opt, abstol)
         NLopt.xtol_rel!(opt, reltol)
         NLopt.nlopt_set_maxeval(opt, maxeval)
@@ -51,37 +51,35 @@ getmodel(::Type{F}, ::Val{:sfhs}, params::Vararg) where {F<:AbstractFloat} = GAR
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
 
 function advance!(m::GARCH, ::Vararg{Union{Number, AbstractVector{<:Number}}})::Nothing
-    α, β = m.params
-    ω = 1.0 - α - β
-    variance = abs2(m.σ[])*(α + β)
-    variance += ω
+    variance = abs2(m.σ[])*(m.params[1] + m.params[2])
+    variance += 1.0 - m.params[1] - m.params[2]
     m.σ[] = sqrt(variance)
     return nothing
 end
 
 function _objective_garch(params::Vector, errors::Vector{<:AbstractFloat})
-    α, β = params
-    ω = 1.0 - α - β
     loss = 0.0
     variance = 1.0
+    epsilon = eps(eltype(params))
     for i in eachindex(errors)
-        squared_error = abs2(errors[i])
+        squared_error = abs2(errors[i]) + epsilon
         loss += squared_error/variance + log(variance)
-        variance *= α
-        variance += β*squared_error + ω
+        variance *= params[1]
+        variance += params[2]*squared_error
+        variance += 1.0 - params[1] - params[2]
     end
     return loss/length(errors)
 end
 
 function _forward_pass!(m::GARCH)
-    α, β = m.params
-    ω = 1.0 - α - β
     variance = 1.0
+    epsilon = eps(eltype(m.params))
     for i in eachindex(m.errors)
         m.scores[i] = m.errors[i]/sqrt(variance)
-        squared_error = abs2(m.errors[i])
-        variance *= α
-        variance += β*squared_error + ω
+        squared_error = abs2(m.errors[i]) + epsilon
+        variance *= m.params[1]
+        variance += m.params[2]*squared_error
+        variance += 1.0 - m.params[1] - m.params[2]
     end
     if m.abs
         m.scores .= abs.(m.scores)
@@ -92,8 +90,8 @@ function _forward_pass!(m::GARCH)
 end
 
 function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Number})::Nothing
-    m.params[1] = 0.7
-    m.params[2] = 0.15
+    m.params[1] = 0.8
+    m.params[2] = 0.1
     for i in eachindex(m.errors)
         m.errors[i] = Y[i] - X[i]
     end
