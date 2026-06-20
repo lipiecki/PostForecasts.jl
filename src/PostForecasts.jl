@@ -14,7 +14,8 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 
 # hyperparameter constants
 const HYPERPARAMS = Dict{Symbol, Union{Vector{<:Any}, Ref{<:Any}}}(
-    :lambda => Vector{Float64}([0.001, 0.01, 0.1, 1, 10]),
+    :minlambda => Ref{Float64}(1e-5),
+    :nlambdas => Ref{Int}(10),
     :parsol => Ref{Bool}(true),
     :reltol => Ref{Float64}(0.0),
     :abstol => Ref{Float64}(1e-7),
@@ -114,6 +115,7 @@ export
     SQR,
     iSQR,
     getweights,
+    getlambdas,
     getquantprob,
 
     # GARCH

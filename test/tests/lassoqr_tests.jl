@@ -1,7 +1,8 @@
 @testset "LassoQR" begin
     
-    set_hyperparam(:lambda, [0])
-    @test get_hyperparam(:lambda) ≈ [0]
+    # no penalty
+    set_hyperparam(:nlambdas, 1)
+    set_hyperparam(:minlambda, 0)
     
     pred = rand(100, 2)
     obs = pred[:, 1].*0.8 + pred[:, 2].*0.2
@@ -37,10 +38,12 @@
 
     @test quantiles ≈ viewpred(qf)
 
-    set_hyperparam(:lambda, [10])
+    # exceed feasible penalty -> only intercept should be non-zero
+    set_hyperparam(:nlambdas, 1)
+    set_hyperparam(:minlambda, 1.01)
     lassoqr = LassoQR(100, 2, prob)
     train(lassoqr, pred, obs)
     lassoW = getweights(lassoqr)
-    
-    @test @views all(abs.(lassoW[1:end-1, :]) .< abs.(W[1:end-1, :]))
+    println("lassoW = ", lassoW)
+    @test @views all(lassoW[1:end-1, :] .≈ 0.0)
 end
