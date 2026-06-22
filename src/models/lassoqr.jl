@@ -114,7 +114,7 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
             end
             @objective(m.lpmodel, Min, sum(h.*x)) 
             JuMP.optimize!(m.lpmodel)
-            current_bic = log(abs(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n))) + log(d)*(sum(abs(JuMP.value(x[i]-x[d+i])) > get_hyperparam(:abstol) for i in 1:d-1)+1)*log(n)/(2n)
+            current_bic = log(abs(sum(JuMP.value(x[i])*h[i] for i in 2d+1:2d+2n))) + log(d)*(sum(abs(JuMP.value(x[i]-x[d+i])) > eps(zero(F)) for i in 1:d-1)+1)*log(n)/(2n)
             if current_bic < bic
                 bic = current_bic
                 m.optimal_lambda[p] = λ

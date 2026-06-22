@@ -25,7 +25,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
     
     function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, 
             abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
-            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat}
+            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:sqr_solver)) where {F<:AbstractFloat}
         
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
@@ -149,7 +149,8 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
         f(u) = _objective_sqr(u, m.prob[p], bandwidth, @views(H[:, 1:d-1]), targets)
         foreach(i -> m.params[i] = max(m.opt.lower_bounds[i] + m.opt.xtol_abs[i], m.W[i, p]), 1:d)
         NLopt.min_objective!(m.opt, _autodiff(f))
-        NLopt.optimize!(m.opt, m.params)
+        _, _, ret = NLopt.optimize!(m.opt, m.params)
+        _nlopt_check_success(ret, m.params)
         m.W[:, p] .= m.params
     end
     return nothing

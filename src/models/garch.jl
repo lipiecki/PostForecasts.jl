@@ -13,7 +13,7 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     abs::Bool
     function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, 
             abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
-            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:nloptalg)) where {F<:AbstractFloat} 
+            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:garch_solver)) where {F<:AbstractFloat} 
         
         opt = NLopt.Opt(nloptalg, 2)
         NLopt.lower_bounds!(opt, zeros(2) .+ abstol)
@@ -104,7 +104,8 @@ function _train(m::GARCH, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Num
     m.errors .= m.errors./m.scale[]
     f(u) = _objective_garch(u, m.errors)
     NLopt.min_objective!(m.opt, _autodiff(f))
-    NLopt.optimize!(m.opt, m.params)
+    _, _, ret = NLopt.optimize!(m.opt, m.params)
+    _nlopt_check_success(ret, m.params)
     _forward_pass!(m)
     return nothing
 end

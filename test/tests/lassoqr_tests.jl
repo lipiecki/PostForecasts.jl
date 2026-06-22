@@ -44,6 +44,5 @@
     lassoqr = LassoQR(100, 2, prob)
     train(lassoqr, pred, obs)
     lassoW = getweights(lassoqr)
-    println("lassoW = ", lassoW)
     @test @views all(lassoW[1:end-1, :] .≈ 0.0)
 end

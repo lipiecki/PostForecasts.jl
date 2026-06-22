@@ -1,8 +1,7 @@
 @testset "SQR" begin
     pred = rand(100)
-    obs = pred.*2 .+ 0.5
-    W = [2. 2.; 0.5 0.5]
-
+    obs = pred.*2 .+ 0.5 .+ 0.01*randn(100)
+    
     prob = [0.25, 0.75]
     model = SQR(100, 1, prob)
     train(model, pred, obs)
@@ -27,9 +26,8 @@
     @test quantiles ≈ quantiles3
 
     pred = rand(100, 2)
-    obs = pred*[2, 1] .+ 0.5
-    W = [2.; 1.; 0.5]
-
+    obs = pred*[2, 1] .+ 0.5 .+ 0.01*randn(100)
+    
     model = SQR(size(pred)..., 0.5)
     train(model, pred, obs)
 

@@ -14,13 +14,14 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 
 # hyperparameter constants
 const HYPERPARAMS = Dict{Symbol, Union{Vector{<:Any}, Ref{<:Any}}}(
+    :multithread_solver => Ref{Bool}(true),
+    :garch_solver => Ref{Symbol}(:LD_CCSAQ),
+    :sqr_solver => Ref{Symbol}(:LD_SLSQP),
     :minlambda => Ref{Float64}(1e-5),
-    :nlambdas => Ref{Int}(10),
-    :parsol => Ref{Bool}(true),
+    :nlambdas => Ref{Int}(20),
     :reltol => Ref{Float64}(0.0),
     :abstol => Ref{Float64}(1e-7),
-    :maxeval => Ref{Int}(1_000),
-    :nloptalg => Ref{Symbol}(:LD_MMA)
+    :maxeval => Ref{Int}(1_000)
 )
 
 import Base: getindex, firstindex, lastindex, eachindex, length, show

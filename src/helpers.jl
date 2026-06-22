@@ -39,13 +39,20 @@ end
 
 function _config_solver_threads(lpmodel::GenericModel)
     Threads.threadid() > 1 && @warn "configuring solver parallelization is not thread-safe, construct the model in the main thread to avoid issues"
-    if get_hyperparam(:parsol) & Threads.nthreads() > 1
+    multithread_solver = get_hyperparam(:multithread_solver)
+    if multithread_solver && Threads.nthreads() > 1
         Highs_resetGlobalScheduler(1)
         set_attribute(lpmodel, MOI.NumberOfThreads(), Threads.nthreads())
-    elseif !get_hyperparam(:parsol)
+    elseif !multithread_solver
         Highs_resetGlobalScheduler(1)
         set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
     end
+end
+
+function _nlopt_check_success(ret::Symbol, params::Vector{<:Number})::Nothing
+    (ret == :SUCCESS || endswith("$ret", "_REACHED")) || @warn "NLopt optimization failed with return code $ret"
+    any(isnan, params) && @warn "NLopt optimization returned NaN values"
+    return nothing
 end
 
 function normal_cdf(x::Number)
