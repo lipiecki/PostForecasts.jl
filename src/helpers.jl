@@ -50,7 +50,15 @@ function _config_solver_threads(lpmodel::GenericModel)
 end
 
 function _nlopt_check_success(ret::Symbol, params::Vector{<:Number})::Nothing
-    (ret == :SUCCESS || endswith("$ret", "_REACHED")) || @warn "NLopt optimization failed with return code $ret"
+    if ret != :SUCCESS
+        if endswith("$ret", "_REACHED")
+            if ret == :MAXEVAL_REACHED || ret == :MAXTIME_REACHED
+                @warn "NLopt optimization warning: $ret"
+            end
+        else
+            @warn "NLopt optimization failure: $ret"
+        end
+    end
     any(isnan, params) && @warn "NLopt optimization returned NaN values"
     return nothing
 end
