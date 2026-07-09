@@ -14,7 +14,7 @@ const PANGU = Dict((Symbol("pangu$(H)u10") => ("pangu_lead$(H).csv", 2, 7) for H
 
 # hyperparameter constants
 const HYPERPARAMS = Dict{Symbol, Union{Vector{<:Any}, Ref{<:Any}}}(
-    :multithread_solver => Ref{Bool}(true),
+    :highs_nthreads => Ref{Int}(0),
     :garch_solver => Ref{Symbol}(:LD_CCSAQ),
     :sqr_solver => Ref{Symbol}(:LD_SLSQP),
     :minlambda => Ref{Float64}(1e-5),

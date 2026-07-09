@@ -37,15 +37,12 @@ function _autodiff(f::Function)
     end
 end
 
-function _config_solver_threads(lpmodel::GenericModel)
-    Threads.threadid() > 1 && @warn "configuring solver parallelization is not thread-safe, construct the model in the main thread to avoid issues"
-    multithread_solver = get_hyperparam(:multithread_solver)
-    if multithread_solver && Threads.nthreads() > 1
+function _config_solver_threads(model::GenericModel)
+    nthreads = get_hyperparam(:highs_nthreads)
+    if nthreads > 0
+        Threads.threadid() > 1 && error("configuring HiGHS parallelization is not thread-safe, construct the model in the main thread or set `highs_nthreads` to 0 for default behavior")
         Highs_resetGlobalScheduler(1)
-        set_attribute(lpmodel, MOI.NumberOfThreads(), Threads.nthreads())
-    elseif !multithread_solver
-        Highs_resetGlobalScheduler(1)
-        set_attribute(lpmodel, MOI.NumberOfThreads(), 1)
+        set_attribute(model, MOI.NumberOfThreads(), nthreads)
     end
 end
 

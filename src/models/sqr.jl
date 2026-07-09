@@ -111,6 +111,8 @@ function _train(m::SQR, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{<:Numbe
     fill!(H, 0.0)
     fill!(h, 0.0)
     empty!(m.lpmodel)
+    m.solutions .= 0.0
+    m.solutions[1:d-1] .= 1/(d-1)
     for i in 1:n
         H[i, d] = 1.0
         H[i, d+i] = 1.0
