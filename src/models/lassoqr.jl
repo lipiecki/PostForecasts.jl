@@ -75,8 +75,6 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
     fill!(H, 0.0)
     fill!(h, 0.0)# 
     empty!(m.lpmodel)
-    m.solutions .= 0.0
-    m.solutions[1:d-1] .= 1/(d-1)
     for i in 1:n
         H[i, d] = 1.0
         H[i, 2d] = -1.0
@@ -102,6 +100,14 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
             maxlambda = max(maxlambda, abs(sum(H[i, j]*(α - (Y[i] <= sample_quantile)) for i in 1:n)))
         end
 
+        m.solutions .= 0.0
+        q = (sample_quantile - m.zmean[end])/m.zstd[end]
+        if q > 0
+            m.solutions[d] = q
+        else
+            m.solutions[2d] = -q
+        end
+    
         if length(m.lambda_path) == 1
             m.lambda_path[1] = maxlambda*get_hyperparam(:minlambda)
         else
