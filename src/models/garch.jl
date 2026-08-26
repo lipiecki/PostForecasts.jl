@@ -13,22 +13,14 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     abs::Bool
     function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, 
             abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
-            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:garch_solver)) where {F<:AbstractFloat} 
-        
+            maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:garch_solver)) where {F<:AbstractFloat}
         opt = NLopt.Opt(nloptalg, 2)
         NLopt.lower_bounds!(opt, zeros(2) .+ abstol)
         NLopt.upper_bounds!(opt, ones(2) .- abstol)
         NLopt.xtol_abs!(opt, abstol)
         NLopt.xtol_rel!(opt, reltol)
         NLopt.nlopt_set_maxeval(opt, maxeval)
-        function variance_targeting(x::Vector, grad::Vector)
-            if length(grad) > 0
-                grad[1] = 1.0
-                grad[2] = 1.0
-            end
-            return x[1] + x[2] - 1.0 + abstol
-        end
-        NLopt.inequality_constraint!(opt, (x, g) -> variance_targeting(x, g))
+        NLopt.inequality_constraint!(opt, (x, g) -> _variance_targeting(x, g) + abstol)
         new{F}(
             Vector{F}(undef, n),
             Vector{F}(undef, n),
@@ -42,6 +34,8 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     end
 end
 
+GARCH(n::Integer; kwargs...) = GARCH(Float64, n; kwargs...)
+
 getmodel(::Type{F}, ::Val{:garch}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1])
 
 getmodel(::Type{F}, ::Val{:fhs}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true)
@@ -49,6 +43,14 @@ getmodel(::Type{F}, ::Val{:fhs}, params::Vararg) where {F<:AbstractFloat} = GARC
 getmodel(::Type{F}, ::Val{:sfhs}, params::Vararg) where {F<:AbstractFloat} = GARCH(F, params[1], filter=true, abs=true)
 
 matchwindow(m::GARCH, window::Integer) = length(m.errors) == window
+
+"""
+    getparams(m::GARCH)
+Returns the parameters of the GARCH model `m` as a tuple `(α, β, ω)`, where ``\\sigma_{t}^{2} = \\alpha \\sigma_{t-1}^{2} + \\beta \\epsilon_{t-1}^{2} + \\omega``.
+"""
+function getparams(m::GARCH)
+    return (m.params[1], m.params[2], abs2(m.scale[])*(1.0 - m.params[1] - m.params[2]))
+end
 
 function advance!(m::GARCH, ::Vararg{Union{Number, AbstractVector{<:Number}}})::Nothing
     variance = abs2(m.σ[])*(m.params[1] + m.params[2])

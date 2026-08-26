@@ -121,6 +121,7 @@ export
 
     # GARCH
     GARCH,
+    getparams,
 
     # Postprocessing
     point2quant,

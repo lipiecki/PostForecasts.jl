@@ -60,6 +60,14 @@ function _nlopt_check_success(ret::Symbol, params::Vector{<:Number})::Nothing
     return nothing
 end
 
+function _variance_targeting(x::Vector, grad::Vector)
+    if length(grad) > 0
+        grad[1] = 1.0
+        grad[2] = 1.0
+    end
+    return x[1] + x[2] - 1.0
+end
+
 function normal_cdf(x::Number)
     return 0.5 * (1 + erf(x / sqrt(2)))
 end
