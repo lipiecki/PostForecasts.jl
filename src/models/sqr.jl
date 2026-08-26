@@ -1,6 +1,12 @@
 """
-    SQR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}) where {F<:AbstractFloat}
-Creates a `SQR{F}<:MultiPostModel{F}<:PostModel{F}` model for smoothing quantile regression to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
+    SQR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}; kwargs...) where {F<:AbstractFloat}
+Creates a `SQR{F}<:MultiPostModel{F}<:PostModel{F}` model for smoothed quantile regression to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
+
+## Optional keyword arguments
+- `abstol::Float64` specifies the absolute tolerance for the optimization algorithm. The default value is set by the hyperparameter `:abstol`.
+- `reltol::Float64` specifies the relative tolerance for the optimization algorithm. The default value is set by the hyperparameter `:reltol`.
+- `maxeval::Int` specifies the maximum number of evaluations for the optimization algorithm. The default value is set by the hyperparameter `:maxeval`.
+- `nloptalg::Symbol` specifies the optimization algorithm to be used. The default value is set by the hyperparameter `:sqr_solver`.
 """
 struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
@@ -23,7 +29,7 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
     params::Vector{F}
     opt::Opt
     
-    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, 
+    function SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}; 
             abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
             maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:sqr_solver)) where {F<:AbstractFloat}
         
@@ -54,9 +60,9 @@ struct SQR{F<:AbstractFloat} <: MultiPostModel{F}
         )
     end
 
-    SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat) where {F<:AbstractFloat} = SQR(F, n, r, [prob])
+    SQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat; kwargs...) where {F<:AbstractFloat} = SQR(F, n, r, [prob]; kwargs...)
 
-    SQR(n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}) = SQR(Float64, n, r, prob)
+    SQR(n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}; kwargs...) = SQR(Float64, n, r, prob; kwargs...)
 end
 
 """

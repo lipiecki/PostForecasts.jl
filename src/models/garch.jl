@@ -1,6 +1,14 @@
 """
-    GARCH([type::Type{F}=Float64,] n::Integer[; filter::Bool=false]) where {F<:AbstractFloat}
+    GARCH([type::Type{F}=Float64,] n::Integer; kwargs...) where {F<:AbstractFloat}
 Creates a `GARCH{F}<:UniPostModel{F}<:PostModel{F}` model for Generalized Autoregressive Conditional Heteroskedasticity model with filtered empirical distribution, trained on `n` observations.
+
+## Optional keyword arguments
+- `filter::Bool` specifies whether to use filtered empirical distribution of standardized residuals for prediction. The default value is `false`.
+- `abs::Bool` specifies whether to use absolute values of standardized residuals for prediction. The default value is `false`. Relevant only if `filter` is set to `true`.
+- `abstol::Float64` specifies the absolute tolerance for the optimization algorithm. The default value is set by the hyperparameter `:abstol`.
+- `reltol::Float64` specifies the relative tolerance for the optimization algorithm. The default value is set by the hyperparameter `:reltol`.
+- `maxeval::Int` specifies the maximum number of evaluations for the optimization algorithm. The default value is set by the hyperparameter `:maxeval`.
+- `nloptalg::Symbol` specifies the optimization algorithm to be used. The default value is set by the hyperparameter `:garch_solver`.
 """
 struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     errors::Vector{F}
@@ -11,7 +19,8 @@ struct GARCH{F<:AbstractFloat} <: UniPostModel{F}
     opt::Opt
     filter::Bool
     abs::Bool
-    function GARCH(::Type{F}, n::Integer; filter::Bool=false, abs::Bool=false, 
+    function GARCH(::Type{F}, n::Integer; 
+            filter::Bool=false, abs::Bool=false, 
             abstol::Float64=get_hyperparam(:abstol), reltol::Float64=get_hyperparam(:reltol), 
             maxeval::Int=get_hyperparam(:maxeval), nloptalg::Symbol=get_hyperparam(:garch_solver)) where {F<:AbstractFloat}
         opt = NLopt.Opt(nloptalg, 2)

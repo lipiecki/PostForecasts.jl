@@ -84,9 +84,13 @@ getweights
 getquantprob
 ```
 
-### Regularized quantile regressions
+### Isotonic quantile regression
 ```@docs
 iQR
+```
+
+### Lasso quantile regression
+```@docs
 LassoQR
 ```
 
@@ -108,7 +112,7 @@ $$\omega=\bar{\sigma}^2(1-\alpha-\beta),$$
 
 where $\bar{\sigma}$ is the sample standard deviation of the forecast errors in the calibration window.
 
-Optimization is handled with the `NLopt` library, the default algorithm is `:LD_CCSAQ`, see [NLopt docs](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#mma-method-of-moving-asymptotes-and-ccsa) for details.
+Optimization is handled with the `NLopt` library, the default algorithm is set by the hyperparameter `:garch_solver`, see [NLopt docs](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#mma-method-of-moving-asymptotes-and-ccsa) for details.
 
 
 

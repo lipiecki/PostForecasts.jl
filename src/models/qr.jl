@@ -36,7 +36,7 @@ end
 
 """
     iQR(args...)
-Creates an isotonic quantile regression model (see [Lipiecki & Uniejewski (2025)](https://arxiv.org/abs/2507.15079)), constraining the weights to be non-negative. The arguments `args...` are the same as for `QR`.
+Creates a `QR` model for isotonic quantile regression, constraining the weights to be non-negative. The arguments `args...` are the same as for `QR`.
 """
 function iQR(args...)
     iqr = QR(args...)

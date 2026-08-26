@@ -1,7 +1,9 @@
 """
-    LassoQR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}[; nlambdas::Integer]) where {F<:AbstractFloat}
-Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso-estimated quantile regression with regularization strength `lambda` to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
-
+    LassoQR([type::Type{F}=Float64,] n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}; kwargs...) where {F<:AbstractFloat}
+Creates a `LassoQR{F}<:MultiPostModel{F}<:PostModel{F}` model for lasso-estimated quantile regression to be trained on `n` observations with `r` forecasts (regressors), fitting quantiles at probabilities specified by `prob`.
+## Optional keyword arguments 
+- `nlambdas::Integer` specifies the number of regularization strength values to be considered in the regularization path. The default value is set by the hyperparameter `:nlambdas`.
+- `minlambda::AbstractFloat` specifies the relative minimum regularization strength. The default value is set by the hyperparameter `:minlambda`.
 """
 struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     prob::Vector{F} # vector of probabilities for which quantile regressions are fitted
@@ -16,10 +18,12 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     h::Vector{F}
     H::Matrix{F}
     lambda_path::Vector{F}
+    minlambda::Base.RefValue{F}
     optimal_lambda::Vector{F}
     lpmodel::GenericModel{F}
 
-    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}; nlambdas::Integer=get_hyperparam(:nlambdas)) where {F<:AbstractFloat}
+    function LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat};
+        nlambdas::Integer=get_hyperparam(:nlambdas), minlambda::AbstractFloat=get_hyperparam(:minlambda)) where {F<:AbstractFloat}
         issorted(prob) || throw(ArgumentError("`prob` vector has to be sorted"))
         (prob[begin] > 0.0 && prob[end] < 1.0) || throw(ArgumentError("elements of `prob` must belong to an open (0, 1) interval"))
         lpmodel = GenericModel{F}(HiGHS.Optimizer, add_bridges=false)
@@ -34,11 +38,12 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
             Vector{F}(undef, 2(r + 1 + n)),
             Matrix{F}(undef, n, 2(r + 1 + n)),
             Vector{F}(undef, nlambdas),
+            Base.RefValue{F}(minlambda),
             Vector{F}(undef, length(prob)),
             lpmodel)
     end
-    LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat) where {F<:AbstractFloat} = LassoQR(F, n, r, [prob])
-    LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}) = LassoQR(Float64, n, r, prob)
+    LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat; kwargs...) where {F<:AbstractFloat} = LassoQR(F, n, r, [prob]; kwargs...)
+    LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}; kwargs...) = LassoQR(Float64, n, r, prob; kwargs...)
 end
 
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])
@@ -109,9 +114,9 @@ function _train(m::LassoQR{F}, X::AbstractVecOrMat{<:Number}, Y::AbstractVector{
         end
     
         if length(m.lambda_path) == 1
-            m.lambda_path[1] = maxlambda*get_hyperparam(:minlambda)
+            m.lambda_path[1] = maxlambda*m.minlambda[]
         else
-            m.lambda_path .= exp.(range(log(maxlambda), log(get_hyperparam(:minlambda)*maxlambda), length=get_hyperparam(:nlambdas)))
+            m.lambda_path .= exp.(range(log(maxlambda), log(m.minlambda[]*maxlambda), length=length(m.lambda_path)))
         end
 
         for λ in m.lambda_path
