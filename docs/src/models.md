@@ -84,10 +84,51 @@ getweights
 getquantprob
 ```
 
-## Regularized quantile regressions
+### Regularized quantile regressions
 ```@docs
 iQR
 LassoQR
+```
+
+### Smoothed quantile regression
+```@docs
+SQR
+```
+
+## Generalized Autoregressive Conditional Heteroskedasticity
+Generalized Autoregressive Conditional Heteroskedasticity [(GARCH; Bollerslev, 1986)](https://doi.org/10.1016/0304-4076(86)90063-1) is a seminal model for modeling time-varying volatility in financial markets. **PostForecasts.jl** implements GARCH(1,1) specification, given by:
+
+$$\hat{\sigma}^2_{t}=\alpha\varepsilon^2_{t-1}+\beta\hat{\sigma}^2_{t-1}+\omega,$$
+
+where $\hat{\sigma}^2_{t}$ is the conditional prediction error variance at time $t$, $\varepsilon_{t-1}$ is the forecast error at the previous time step and $\alpha$, $\beta$ and $\omega$ are the model parameters. 
+
+Parameters are estimated via maximum likelihood, assuming the standardized forecast errors follow a normal distribution, $\varepsilon_t \sim \mathcal{N}(0, \hat{\sigma}^2_t)$. To reduce computational cost and improve estimation robustness against model misspecification, the asymptotic variance $\omega$ is determined using volatility targeting: 
+
+$$\omega=\bar{\sigma}^2(1-\alpha-\beta),$$
+
+where $\bar{\sigma}$ is the sample standard deviation of the forecast errors in the calibration window.
+
+Optimization is handled with the `NLopt` library, the default algorithm is `:LD_CCSAQ`, see [NLopt docs](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#mma-method-of-moving-asymptotes-and-ccsa) for details.
+
+
+
+### Multi-Step-Ahead Forecasting
+For multi-step-ahead volatility forecasting, when he future error $\varepsilon_{t}$ is unknown, the model replaces its squared value with its conditional expectation, $\mathbb{E}[\varepsilon^2_{t}]=\hat{\sigma}^2_{t}$, leading to the multi-step formula:
+
+$$\hat{\sigma}^2_{i,t+1}=(\alpha+\beta)\hat{\sigma}^2_{t} + \omega$$
+
+### Quantile Forecasts
+The quantile forecasts can be generated in three different approaches, depending on two keyword argumnents of the `GARCH` constructor, `filter` and `abs`. 
+
+- `filter=false` (default): the quantile forecasts are generated from the $\mathcal{N}(0, \hat{\sigma}^2_t)$
+
+- `filter=false` and `abs=false`: the quantile forecasts are derived from the empirical distribution of forecast errors standardized by the estimated time-varying volatility and then scaled by $\hat{\sigma}_t$ (you can think of this as a hybrid of GARCH and HS)
+
+- `filter=false` and `abs=true`: the quantile forecasts are derived from the empriical distribution of absolute forecast errors standardized by the estimated time-varying volatility and then scaled by $\hat{\sigma}_t$ (you can think of this as a hybrid of GARCH and CP)
+
+```@docs
+GARCH
+getparams
 ```
 
 ## Training and prediction
