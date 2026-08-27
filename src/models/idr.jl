@@ -66,7 +66,9 @@ end
 
 """
     getcdf(m::IDR [, r])
-Return a vector of cumulative distribution function values from model `m`. Optional argument `r::Integer = 1` corresponds to the regressor index.
+Return a matrix corresponding to the cumulative distribution function values from model `m`. The [i,j] element of the output matrix represents the cumulative probability at the j-th order statistic of response values conditional on the i-th order statistic of regressor values. 
+    
+If the model has multiple regressors, the optional argument `r::Integer = 1` can be used to specify the regressor index.
 """
 function getcdf(m::IDR, r::Integer = 1)
     (r < 1 || r >= length(m.domainsize)) && throw(DomainError("`r` must be between 1 and $(m.domainsize-1)"))
