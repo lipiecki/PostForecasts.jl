@@ -118,7 +118,13 @@ export
     getweights,
     getlambdas,
     getquantprob,
-
+    
+    # TODO: remove in 0.1.4
+    # compatibility with 0.1.2 begin
+    setLAMBDA,
+    getLAMBDA,
+    # end
+    
     # GARCH
     GARCH,
     getparams,

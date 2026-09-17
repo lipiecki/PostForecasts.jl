@@ -46,6 +46,27 @@ struct LassoQR{F<:AbstractFloat} <: MultiPostModel{F}
     LassoQR(n::Integer, r::Integer, prob::Union{AbstractFloat, Vector{<:AbstractFloat}}; kwargs...) = LassoQR(Float64, n, r, prob; kwargs...)
 end
 
+# TODO: remove in 0.1.4
+# compatibility with 0.1.2 begin
+function _deprecated_lassoqr(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat}
+    @warn "`lambda` argument is deprecated and will be removed in 0.1.4, the lambda path is now constructed automatically, use `nlambdas` and `minlambda` keyword arguments to control the regularization path"
+    return LassoQR(F, n, r, prob)
+end
+
+LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractVector{<:AbstractFloat}, lambda::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat} = _deprecated_lassoqr(F, n, r, prob)
+LassoQR(::Type{F}, n::Integer, r::Integer, prob::AbstractFloat, lambda::AbstractVector{<:AbstractFloat}) where {F<:AbstractFloat} = LassoQR(F, n, r, [prob], lambda)
+LassoQR(::Type{F}, n::Integer, r::Integer, prob::Union{AbstractFloat, AbstractVector{<:AbstractFloat}}, lambda::AbstractFloat) where {F<:AbstractFloat} = LassoQR(F, n, r, prob, [lambda])
+
+function setLAMBDA(lambda::AbstractVector{<:Number})
+    @warn "`setLAMBDA` function is deprecated and will be removed in 0.1.4, the lambda path is now constructed automatically, use `nlambdas` and `minlambda` hyperparameters to control the regularization path"
+end
+
+function getLAMBDA()
+    @warn "`getLAMBDA` function is deprecated and will be removed in 0.1.4, the lambda path is now constructed automatically, use `nlambdas` and `minlambda` hyperparameters to control the regularization path"
+    return Float64[]
+end
+# end
+
 getmodel(::Type{F}, ::Val{:lassoqr}, params::Vararg) where {F<:AbstractFloat} = LassoQR(F, params[1], params[2], params[3])
 
 matchwindow(m::LassoQR, window::Integer) = size(m.H, 1) == window
